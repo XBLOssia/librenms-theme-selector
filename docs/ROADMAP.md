@@ -37,9 +37,12 @@ Measuring against A alone reported **100%** while the navbar search dropdown was
 stock Bootstrap. `scripts/coverage.sh` now reports both.
 
 The ~31 still uncovered in B are overwhelmingly dead Observium-era classes
-(`.datacell`, `.body-1`, `.shadetabs`, `.dropdown_3columns`) with zero
-references in `resources/views`. Deliberately not chased; run
-`coverage.sh <path> <skin> -v` to see them.
+(`.datacell`, `.shadetabs`, `.dropdown_3columns`). That was first judged from
+`resources/views` alone; a full survey across every emitter (FINDINGS section 7)
+confirms the pattern and finds 127 dead rules in `styles.css`, 671 lines.
+`.body-1`, named here originally, turns out to be *at risk* rather than dead —
+something concatenates a `body-` prefix. Deliberately not chased for the
+skins; run `coverage.sh <path> <skin> -v` to see them.
 
 All three sit at the same number because they share structure. Fix a gap in one
 and the same gap exists in the other two; the work is parallel by construction.

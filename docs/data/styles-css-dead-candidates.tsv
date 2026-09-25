@@ -1,0 +1,229 @@
+# styles.css selector survey against librenms/librenms master a28d0842 (2026-09-25).
+# verdict: dead = candidate (no emitter found), risk = could be built at runtime, live = found.
+# Candidates, not verdicts - see docs/FINDINGS.md section 7. Regenerate with scripts/dead-css.py.
+line	verdict	selector	evidence
+39	dead	.sectionhead	sectionhead
+46	dead	.tablehead	tablehead
+69	risk	.page-header	page-header
+69	risk	.device-header	device-header
+75	dead	.top-subtitle	top-subtitle
+81	risk	.device-header	device-header
+85	risk	.device-head	device-head
+134	risk	.device-head	device-head
+150	dead	.front-page	front-page
+195	dead	.welcome	welcome
+207	dead	.left-2-col-fluid	left-2-col-fluid
+214	dead	.right-2-col-fixed	right-2-col-fixed
+231	dead	.front-syslog	front-syslog
+237	dead	.front-eventlog	front-eventlog
+247	risk	.port-down	port-down
+259	dead	.footer-text	footer-text
+266	dead	.header-text-3	header-text-3
+273	risk	.body-1	body-1
+294	risk	.body-2	body-2
+301	risk	.body-field-1	body-field-1
+308	risk	.body-head-1	body-head-1
+315	risk	.body-head	body-head
+322	risk	.body-head-2	body-head-2
+322	dead	.table-head-2	table-head-2
+329	dead	.table-head-2	table-head-2
+333	risk	.text-more	text-more
+340	risk	.body-blue	body-blue
+344	dead	.top-menu:link	top-menu
+348	dead	.top-menu:visited	top-menu
+352	dead	.top-menu:hover	top-menu
+356	dead	.top-menu:active	top-menu
+361	dead	.menu-box-dash-off	menu-box-dash-off
+379	dead	.vspace	vspace
+380	dead	p.vspace	vspace
+381	dead	.content-mat	content-mat
+382	dead	.clearer	clearer
+384	dead	.borderless-table tr td	borderless-table
+387	risk	#header #page-title	#page-title
+388	risk	#header #page-subtitle	#page-subtitle
+405	dead	#topnav	#topnav
+412	dead	#topnav ul	#topnav
+413	dead	#topnav ul li	#topnav
+414	dead	#topnav a	#topnav
+415	dead	#topnav a:hover	#topnav
+433	dead	#popupmenu a	#popupmenu
+434	dead	#popupmenu li	#popupmenu
+435	dead	#popupmenu a:hover	#popupmenu
+436	dead	#popupmenu li:hover	#popupmenu
+437	dead	#popupmenu li:hover ul	#popupmenu
+438	dead	#popupmenu ul	#popupmenu
+439	dead	#popupmenu ul li	#popupmenu
+441	dead	#popupmenu li ul	#popupmenu
+455	dead	#popupmenu li ul li	#popupmenu
+461	dead	#popupmenu li ul li:hover	#popupmenu
+463	dead	#toext	#toext
+474	dead	.graphcell	graphcell
+474	dead	.ifcell	ifcell
+474	dead	.devicecell	devicecell
+474	dead	.datacell	datacell
+477	dead	.datacell	datacell
+478	dead	.devicecell	devicecell
+480	dead	.sidepane	sidepane
+481	dead	.mainpane	mainpane
+483	dead	.nofloat	nofloat
+541	dead	.infobox-down	infobox-down
+556	dead	.infobox-down	infobox-down
+560	dead	.errorbox	errorbox
+568	dead	.messagebox	messagebox
+580	dead	.shadetabs	shadetabs
+589	dead	.shadetabs li	shadetabs
+594	dead	.shadetabs li a	shadetabs
+615	dead	.shadetabs li a img	shadetabs
+620	dead	.shadetabs li a:visited	shadetabs
+624	dead	.shadetabs li a:hover	shadetabs
+636	dead	.shadetabs li.selected	shadetabs
+639	dead	.shadetabs li.selected a	shadetabs
+653	dead	.shadetabs li.selected a:hover	shadetabs
+656	dead	.contentstyle	contentstyle
+664	dead	.optionicon	optionicon
+671	dead	#menium	#menium
+697	dead	#menium li	#menium
+713	dead	#menium li:hover	#menium
+738	dead	#menium li .greybox li:hover	greybox #menium
+745	dead	#menium li .greybox li	greybox #menium
+758	dead	#menium li.menium-nodrop:hover	menium-nodrop #menium
+766	dead	#menium li a	#menium
+776	dead	#menium li:hover a	#menium
+783	dead	.dropdown_1column	dropdown_1column
+783	dead	.dropdown_2columns	dropdown_2columns
+783	dead	.dropdown_3columns	dropdown_3columns
+783	dead	.dropdown_4columns	dropdown_4columns
+783	dead	.dropdown_5columns	dropdown_5columns
+810	dead	.dropdown_1column	dropdown_1column
+811	dead	.dropdown_2columns	dropdown_2columns
+812	dead	.dropdown_3columns	dropdown_3columns
+813	dead	.dropdown_4columns	dropdown_4columns
+814	dead	.dropdown_5columns	dropdown_5columns
+816	dead	#menium li:hover .dropdown_1column	dropdown_1column #menium
+816	dead	#menium li:hover .dropdown_2columns	dropdown_2columns #menium
+816	dead	#menium li:hover .dropdown_3columns	dropdown_3columns #menium
+816	dead	#menium li:hover .dropdown_4columns	dropdown_4columns #menium
+816	dead	#menium li:hover .dropdown_5columns	dropdown_5columns #menium
+827	dead	.col_1	col_1
+827	dead	.col_2	col_2
+827	dead	.col_3	col_3
+827	dead	.col_4	col_4
+827	dead	.col_5	col_5
+838	dead	.col_1	col_1
+839	dead	.col_2	col_2
+840	dead	.col_3	col_3
+841	dead	.col_4	col_4
+842	dead	.col_5	col_5
+846	dead	#menium .menu_right	menu_right #menium
+851	dead	#menium li .align_right	align_right #menium
+858	dead	#menium li:hover .align_right	align_right #menium
+866	dead	#menium p	#menium
+866	dead	#menium h2	#menium
+866	dead	#menium h3	#menium
+866	dead	#menium ul li	#menium
+873	dead	#menium h2	#menium
+882	dead	#menium h3	#menium
+889	dead	#menium p	#menium
+894	dead	#menium li:hover div a	#menium
+899	dead	#menium li:hover div a:hover	#menium
+911	dead	.imgshadow	imgshadow
+921	risk	.img_left	img_left
+927	dead	#menium li .black_box	black_box #menium
+943	dead	#menium li ul	#menium
+949	dead	#menium li ul li	#menium
+960	dead	#menium li ul li:hover	#menium
+971	risk	#gumax-header	#gumax-header
+983	dead	#gumax-p-login	#gumax-p-login
+990	dead	#gumax-p-login ul	#gumax-p-login
+997	dead	#gumax-p-login ul li	#gumax-p-login
+1004	dead	#gumax-p-login ul li a	#gumax-p-login
+1010	dead	#gumax-p-login ul li a:hover	#gumax-p-login
+1014	risk	#p-logo	#p-logo
+1014	risk	#p-logo a	#p-logo
+1014	risk	#p-logo a:hover	#p-logo
+1021	risk	#p-logo	#p-logo
+1026	risk	#p-logo h5	#p-logo
+1027	risk	#p-logo a	#p-logo
+1027	risk	#p-logo a:hover	#p-logo
+1037	risk	.bubbleInfo	bubbleInfo
+1046	dead	.div-normal	div-normal
+1049	dead	.div-alert	div-alert
+1054	dead	.div-ignore	div-ignore
+1057	dead	.div-ignore-alert	div-ignore-alert
+1061	dead	.div-disabled	div-disabled
+1065	dead	.auto-hint	auto-hint
+1071	risk	.tabBox .tabs	tabBox
+1078	risk	.tabBox .tabs li	tabBox
+1088	risk	.tabBox .tabs li.selected	tabBox
+1092	risk	.tabBox .tabs a	tabBox
+1109	risk	.tabBox .tabs img	tabBox
+1114	risk	.tabBox .tabs .selected a	tabBox
+1121	risk	.tabBox .tabs a:hover	tabBox
+1131	dead	.tabBox .tabcontent	tabcontent
+1153	dead	tr.iftype:nth-child(even)	iftype
+1217	dead	.paddedcell	paddedcell
+1264	dead	.example-sports .league-name	example-sports league-name
+1289	dead	.ui-autocomplete	ui-autocomplete
+1298	dead	* html .ui-autocomplete	ui-autocomplete
+1302	dead	.glyphicon-large	glyphicon-large
+1328	risk	.threeqtr-width	threeqtr-width
+1333	dead	.tt-menu	tt-menu
+1352	dead	.tt-open	tt-open
+1356	dead	.tt-open	tt-open
+1376	dead	.tt-selectable	tt-selectable
+1380	dead	.tt-suggestion:hover a	tt-suggestion
+1384	dead	.tt-suggestion:hover	tt-suggestion
+1389	dead	.tt-suggestion img	tt-suggestion
+1406	risk	.mapTooltip	mapTooltip
+1445	risk	#leaflet-map	#leaflet-map
+1475	risk	.badge-primary	badge-primary
+1478	risk	.badge-primary[href]:hover	badge-primary
+1478	risk	.badge-primary[href]:focus	badge-primary
+1482	risk	.badge-success	badge-success
+1485	risk	.badge-success[href]:hover	badge-success
+1485	risk	.badge-success[href]:focus	badge-success
+1489	risk	.badge-info	badge-info
+1492	risk	.badge-info[href]:hover	badge-info
+1492	risk	.badge-info[href]:focus	badge-info
+1496	risk	.badge-warning	badge-warning
+1499	risk	.badge-warning[href]:hover	badge-warning
+1499	risk	.badge-warning[href]:focus	badge-warning
+1512	risk	.thumbnail_graph_table b	thumbnail_graph_table
+1513	risk	.thumbnail_graph_table img	thumbnail_graph_table
+1520	risk	.thumbnail_graph_table b	thumbnail_graph_table
+1521	risk	.thumbnail_graph_table img	thumbnail_graph_table
+1529	risk	.thumbnail_graph_table b	thumbnail_graph_table
+1530	risk	.thumbnail_graph_table img	thumbnail_graph_table
+1537	risk	.thumbnail_graph_table b	thumbnail_graph_table
+1538	risk	.thumbnail_graph_table img	thumbnail_graph_table
+1547	risk	.redCluster	redCluster
+1557	risk	.blueCluster	blueCluster
+1567	risk	.greenCluster	greenCluster
+1709	dead	.widget-alert-map-compact-ok	widget-alert-map-compact-ok
+1716	dead	.widget-alert-map-compact-warning	widget-alert-map-compact-warning
+1723	dead	.widget-alert-map-compact-critical	widget-alert-map-compact-critical
+1730	risk	.widget-alert-map-widget-header	widget-alert-map-widget-header
+1771	risk	.availability-map-oldview-box-ignored-up	availability-map-oldview-box-ignored-up
+1778	risk	.availability-map-oldview-box-ignored-down	availability-map-oldview-box-ignored-down
+1785	risk	.availability-map-widget-header	availability-map-widget-header
+1810	dead	.devices-font-bold	devices-font-bold
+1814	dead	.devices-float-right	devices-float-right
+1818	dead	.devices-graphs-select	devices-graphs-select
+1822	risk	.devices-search-header	devices-search-header
+1826	dead	.devices-status-box-detail	devices-status-box-detail
+1838	dead	.devices-status-box-basic	devices-status-box-basic
+1850	dead	.devices-overlib-box	devices-overlib-box
+1926	risk	.device-services-page-no-service	device-services-page-no-service
+2116	risk	.multiselect--active:not(.multiselect--above) .multiselect__current	multiselect__current
+2127	risk	.multiselect--above.multiselect--active .multiselect__current	multiselect__current
+2239	risk	.multiselect__current	multiselect__current
+2395	risk	.multiselect--disabled .multiselect__current	multiselect__current
+2437	risk	.multiselect-enter-active	multiselect-enter-active
+2437	risk	.multiselect-leave-active	multiselect-leave-active
+2442	risk	.multiselect-enter	multiselect-enter
+2442	risk	.multiselect-leave-active	multiselect-leave-active
+2499	risk	.multiselect__loading-enter-active	multiselect__loading-enter-active
+2499	risk	.multiselect__loading-leave-active	multiselect__loading-leave-active
+2505	risk	.multiselect__loading-enter	multiselect__loading-enter
+2505	risk	.multiselect__loading-leave-active	multiselect__loading-leave-active
+2532	dead	*[dir=rtl] .multiselect__clear	multiselect__clear

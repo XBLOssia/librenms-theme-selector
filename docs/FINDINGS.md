@@ -65,12 +65,13 @@ measurement is only as good as the last time anyone checked it.
 | §2b: PR #20294 is precedent - it "did exactly that for a different element" | **corrected** | It was closed unmerged, and it was the same element. The blocker was adding rules to `tw_dark.css` ("will be deleted in the future") and a disputed design, not the markup. |
 | §2c: `.active` is a near-miss - "five of six pass", links short by 0.08 | **corrected** | The table measured three inks. A real disabled-rule row also has `.text-muted` at 2.06:1. |
 | §2c re-verification: "neither page's table is `.table-hover`" | **corrected**, same day | Only `/poller` was checked. `/alert-rules` is `.table-hover`; hover then observed at 4.60:1. |
+| "~31 dead classes" as evidence that `tw_dark.css` is full of dead CSS | **corrected** | The ~31 were `styles.css` classes, searched in `resources/views` only. A full survey across every emitter finds 2 dead rules in `tw_dark.css` and 127 in `styles.css`. Direction right, file and number wrong. |
 
-**The pattern worth naming:** twelve entries, and most were wrong the moment
+**The pattern worth naming:** thirteen entries, and most were wrong the moment
 they were written — miscounts, a variable-name typo, a test that did not do
 what it appeared to. They survived because nothing here re-checks a finding
 once it is written down, so a correction only happens when something forces
-one: nine were forced by later work in this same repo, three by outside
+one: ten were forced by later work in this same repo, three by outside
 review. If you are reading this document to decide whether to act on it,
 weight the reproduction commands over the prose.
 
@@ -1040,6 +1041,114 @@ change.
 
 ---
 
+## 7. Dead CSS: almost none in `tw_dark.css`, a quarter of `styles.css`
+
+*(Surveyed 2026-09-25 against master `a28d0842`.)*
+
+The expectation going in was that `tw_dark.css` would be full of dead rules — a
+maintainer described it as carrying "a lot of unneeded css", and this document
+had claimed "~31 colour-bearing classes with zero references". Both turned out
+to be about something else.
+
+| Stylesheet | Lines | Rules | Candidates | Lines if removed |
+|---|---|---|---|---|
+| `tw_dark.css` | 1,303 | 240 | **2** | ~10 |
+| `styles.css` | 2,556 | 452 | **127** | **671** |
+
+`tw_dark.css` is almost entirely *matched*: two rules, `.nav-tabs.nav-justified`
+(only ever named inside `<style>` blocks, never in markup) and
+`tr.iftype:nth-child(even)` (`iftype` only exists as the PHP variable `$iftype`).
+Whatever is "unneeded" in it, it is not selectors that match nothing. The
+likelier shape is rules that restate what Bootstrap or a later rule already
+computes — a different test (remove each rule, compare computed styles) that has
+not been run.
+
+`styles.css`, the first-party stylesheet, is where the dead weight is — about a
+quarter of the file by line count:
+
+| Family | Rules | Lines |
+|---|---|---|
+| `#menium`, `top-menu`, `dropdown_Ncolumns`, `col_N` — an old mega-menu | 38 | 258 |
+| `shadetabs`, `tabcontent` | 10 | 83 |
+| old front page and layout panes (`front-*`, `welcome`, `sidepane`, …) | 13 | 66 |
+| typeahead.js `tt-*`, including its demo CSS (`example-sports`, `league-name`) | 8 | 58 |
+| legacy table cells and boxes (`datacell`, `greybox`, `errorbox`, …) | 15 | 51 |
+| `#gumax-*`, `#topnav` — MediaWiki-era page chrome | 10 | 34 |
+| `#popupmenu` | 10 | 26 |
+| vue-multiselect classes the library no longer emits | 1 | 4 |
+| other | 22 | 91 |
+| **total** | **127** | **671** |
+
+Every candidate is listed with the name that sank it in
+`docs/data/styles-css-dead-candidates.tsv`.
+
+### Method, and four ways it failed first
+
+A deletion list is only worth anything if its false positives are near zero, so
+each stage exists to catch the previous one's mistakes.
+
+1. **Static.** A selector is a candidate if it needs a class or id that never
+   appears inside a string literal or quoted attribute in any markup-emitting
+   source: Blade, legacy PHP, app code, first-party and vendored JS, the built
+   bundle. Translation files, YAML device definitions, CSS files and `<style>`
+   blocks do not count — they are prose or selectors, not emitters.
+2. **Runtime-built names** are held back as *risk*: any class matching a
+   concatenated prefix or suffix (`'label-' . $c`, `` `btn-${x}` ``,
+   `{{ $x }}-danger`).
+3. **Outside the checkout**, on a live install: composer `vendor/` views, the
+   gitignored custom menu, and user HTML in the database (dashboard widgets,
+   alert templates, device notes, custom-map labels). No markup hits.
+4. **Live.** Every selector was run against real pages — 16 for `tw_dark.css`,
+   11 for `styles.css`. A candidate that matches anything is a hole.
+
+The first drafts of this method failed four different ways, and each failure
+is now a rule in `scripts/dead-css.py`:
+
+- **Too generous.** Counting a class as live if its name appears *anywhere*
+  found nothing dead at all, because `info`, `success` and `active` occur in
+  translation strings and PHP variable names. Hence string literals only.
+- **BEM concatenation.** select2 builds `select2-selection__placeholder` from
+  pieces inside minified JS — and it is demonstrably live (§2c measured it). A
+  prefix ending in `__` or `--` now counts as risk, not just `-`.
+- **Minified bundles.** esbuild emits nested backtick templates everywhere,
+  which defeat string matching; vue-multiselect's classes vanished as a result.
+  Minified and vendored JS is now scanned token by token.
+- **camelCase joins** — found by the live crawl, not the static pass.
+  `geo-map.blade.php:107` builds `greenCluster` as a colour plus the string
+  `"Cluster marker-cluster …"`. No hyphen, so no prefix rule could see it; it
+  matched on the dashboard. A camelCase candidate with either half present as a
+  token is now risk.
+
+After those fixes, zero candidates matched on any crawled page.
+
+### What this is not
+
+- **Not verdicts.** "No emitter found" is strong evidence, not proof. The
+  *other* group in particular — `devices-status-box-*`, `widget-alert-map-compact-*`
+  — looks like leftovers from rebuilt pages, which is exactly where an
+  unimagined runtime-built name would hide. Each needs an individual read before
+  it goes in a PR.
+- **Not coverage of every page.** The crawl visited the pages people use; the
+  static pass is what covers the rest.
+- **Not other instances.** User-authored HTML on someone else's install could
+  use any class. Core does not promise to style it, but a reviewer may ask.
+
+### What it means upstream
+
+Removing rules nothing can match is pure deletion and pixel-identical by
+construction, which is the one kind of change the maintainers have asked for
+without qualification. `styles.css` is not `tw_dark.css`, so the "do not modify
+it" rule does not apply to it at all — but "only remove things" fits either way.
+671 lines is too much for one PR from an outside contributor; the families above
+are the natural split, largest and most obviously dead first.
+
+```bash
+python scripts/dead-css.py /path/to/librenms --css html/css/styles.css --tsv out.tsv
+python scripts/dead-css.py /path/to/librenms --extra /path/to/librenms/vendor
+```
+
+---
+
 ## Prior art
 
 [PR #19029](https://github.com/librenms/librenms/pull/19029) (Feb 2026) proposed
@@ -1126,8 +1235,11 @@ pixel-identical, which is what makes them reviewable.
    Tailwind theme toggle — and it is bloated because a previous convention had
    themes copy the entire Bootstrap stylesheet and recolour it. So an unknown
    share of those 272 literals should be **deleted rather than tokenised**.
-   This repo found the same thing from the other end: ~31 colour-bearing
-   classes with zero references in `resources/views`, mostly Observium-era.
+   *(Corrected: this used to cite "~31 colour-bearing classes with zero
+   references" as the same finding from the other end. That count was of
+   `styles.css` classes, searched in `resources/views` only. A full survey
+   finds almost nothing unmatched in `tw_dark.css` — two rules — and 127 dead
+   rules in `styles.css`. See section 7.)*
    each PR pixel-identical.
 7. **Normalise `tw_dark.css` to a consistent selector depth.** Today it mixes
    `.dark .x` and `.dark .y .x`, which is what makes overriding it require

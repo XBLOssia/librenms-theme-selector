@@ -21,8 +21,9 @@ asset ports.
 All three are installed and verified on a production instance. They cover
 **92 of 92** components LibreNMS's dark theme styles, and **183 of 218** once
 you also count the `styles.css` classes the dark theme never touches — most of
-the remainder being dead Observium-era classes with no references in
-`resources/views`.
+the remainder being dead Observium-era classes. A full survey of
+`styles.css` finds 127 rules — 671 lines — that nothing in LibreNMS can match
+(see `docs/FINDINGS.md` section 7).
 
 ```bash
 ./scripts/coverage.sh /opt/librenms          # the floor

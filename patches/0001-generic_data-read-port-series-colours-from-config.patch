@@ -1,4 +1,4 @@
-From: librenms-skins <https://github.com/XBLOssia/librenms-skins>
+From: librenms-theme-selector <https://github.com/XBLOssia/librenms-theme-selector>
 Subject: [PATCH] generic_data: read port series colours from config
 
 port_bits renders through this helper, which hard-codes its six series

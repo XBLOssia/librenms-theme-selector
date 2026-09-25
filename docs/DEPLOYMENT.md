@@ -28,18 +28,23 @@ Layout on that host:
 webui.custom_css                     =       ["css/custom/zerg/zerg.css"]
 ```
 
+The directory still carries the repo's old name, `librenms-skins`; it predates
+the rename to `librenms-theme-selector`.
+
 Files were uploaded over SFTP rather than cloned. That was necessary while the
 repo was private — it avoided putting a git credential on the monitoring host —
 and it is now merely a leftover: the repo is public, so a plain
 `git clone` needs no credential at all.
 
 The trade-off of the SFTP arrangement is that `git pull` will not update it in
-place. Converting it to a real clone is now a one-liner and makes updates
-normal:
+place. Converting it to a real clone under the new name makes updates normal
+and retires the old path in the same step. `install.sh` resolves the repo from
+its own location, so re-running it from the clone re-points the symlink:
 
 ```bash
-sudo -u librenms git clone https://github.com/XBLOssia/librenms-skins.git   /opt/librenms-skins-git
-# then swap it in and re-run install.sh, or just move it into place
+sudo -u librenms git clone https://github.com/XBLOssia/librenms-theme-selector.git /opt/librenms-theme-selector
+sudo -u librenms /opt/librenms-theme-selector/scripts/install.sh zerg
+# once the UI checks out, /opt/librenms-skins can be removed
 ```
 
 Also note the example above shows `zerg` active. Whichever skin is current,
@@ -106,8 +111,8 @@ On the LibreNMS host, as a user that can write to `/opt/librenms/html/css/` and
 run `lnms` (normally `librenms`):
 
 ```bash
-sudo -u librenms git clone https://github.com/XBLOssia/librenms-skins.git /opt/librenms-skins
-cd /opt/librenms-skins
+sudo -u librenms git clone https://github.com/XBLOssia/librenms-theme-selector.git /opt/librenms-theme-selector
+cd /opt/librenms-theme-selector
 ./scripts/install.sh zerg
 ```
 
@@ -125,7 +130,7 @@ which changes nothing and prints every step.
 1. Reads the current `webui.custom_css` and saves it to
    `html/css/custom/.previous-custom_css` — **only on first install**, so
    switching skins later cannot clobber the true original.
-2. Symlinks `html/css/custom/<skin>` → `/opt/librenms-skins/skins/<skin>`.
+2. Symlinks `html/css/custom/<skin>` → `/opt/librenms-theme-selector/skins/<skin>`.
 3. Sets `webui.custom_css` to `["css/custom/<skin>/<skin>.css"]`.
 4. Verifies the stylesheet is readable, the webfonts are present, and the
    config took — and tells you to back out if any check fails.
@@ -137,7 +142,7 @@ step 1 and restored on uninstall.
 ### link vs copy
 
 `--mode link` (default) symlinks. Updating a skin becomes `git pull` in
-`/opt/librenms-skins`, and nothing under `/opt/librenms` is ever edited.
+`/opt/librenms-theme-selector`, and nothing under `/opt/librenms` is ever edited.
 Apache's `html/.htaccess` sets `Options +FollowSymlinks` and nginx follows
 symlinks by default, so this serves correctly.
 
@@ -149,7 +154,7 @@ Both are equally reversible.
 ### Updating a skin
 
 ```bash
-cd /opt/librenms-skins && git pull
+cd /opt/librenms-theme-selector && git pull
 ```
 
 With `link` that is the whole update. With `copy`, re-run `install.sh`.
@@ -239,8 +244,8 @@ Re-apply after each update. The script is idempotent, so this is safe to
 automate:
 
 ```bash
-# /etc/cron.d/librenms-skins-patch  — after daily.sh has run
-30 1 * * *  root  /opt/librenms-skins/scripts/patch-core.sh apply >/dev/null 2>&1
+# /etc/cron.d/librenms-theme-selector-patch  — after daily.sh has run
+30 1 * * *  root  /opt/librenms-theme-selector/scripts/patch-core.sh apply >/dev/null 2>&1
 ```
 
 Check it whenever graphs look wrong after an upgrade:
@@ -266,7 +271,7 @@ and the keys cleared, nothing of this repo remains anywhere in LibreNMS.
 ## Uninstall
 
 ```bash
-cd /opt/librenms-skins
+cd /opt/librenms-theme-selector
 ./scripts/uninstall.sh
 ```
 
@@ -326,7 +331,7 @@ The blast radius is one config row and one directory of static files.
    browser cached the old CSS. Hard-refresh first.
 2. **Fonts look generic** — the `fonts/` directory did not come along. Check
    `ls /opt/librenms/html/css/custom/<skin>/fonts/`. With `link` mode this
-   usually means the webserver user cannot traverse into `/opt/librenms-skins`.
+   usually means the webserver user cannot traverse into `/opt/librenms-theme-selector`.
 3. **Some components still stock-coloured** — expected. The skins cover 40 of
    92 components; see [ROADMAP.md](ROADMAP.md).
 4. **Graphs look wrong** — expected and unfixable from CSS. RRDtool renders

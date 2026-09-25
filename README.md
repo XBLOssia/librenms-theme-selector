@@ -1,4 +1,4 @@
-# librenms-skins
+# Theme Selector for LibreNMS
 
 StarCraft-inspired skins for [LibreNMS](https://github.com/librenms/librenms).
 
@@ -86,8 +86,8 @@ fixed epoch in the synthetic data — so re-running does not churn the repo.
 On the LibreNMS host:
 
 ```bash
-sudo -u librenms git clone https://github.com/XBLOssia/librenms-skins.git /opt/librenms-skins
-cd /opt/librenms-skins
+sudo -u librenms git clone https://github.com/XBLOssia/librenms-theme-selector.git /opt/librenms-theme-selector
+cd /opt/librenms-theme-selector
 ./scripts/install.sh zerg
 ```
 

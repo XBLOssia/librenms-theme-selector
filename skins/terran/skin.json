@@ -1,0 +1,10 @@
+{
+  "id": "terran",
+  "name": "Terran",
+  "description": "Riveted gunmetal plating, hazard striping, red indicator LEDs and green terminal readouts.",
+  "author": "XBLOssia",
+  "version": "1.0.0",
+  "modes": [
+    "dark"
+  ]
+}

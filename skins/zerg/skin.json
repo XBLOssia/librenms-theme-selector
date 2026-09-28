@@ -1,0 +1,10 @@
+{
+  "id": "zerg",
+  "name": "Zerg",
+  "description": "Chitinous carapace over living creep: bone ridges, ichor glow and ember vents.",
+  "author": "XBLOssia",
+  "version": "1.0.0",
+  "modes": [
+    "dark"
+  ]
+}

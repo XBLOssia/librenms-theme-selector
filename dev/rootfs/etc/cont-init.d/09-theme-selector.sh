@@ -7,7 +7,7 @@
 #   1. Header-based login, so nobody types a password into the dev instance.
 #   2. PHP edits in /plugin take effect on the next request.
 #   3. Install /plugin (this repo, bind-mounted) as a package plugin.
-#   4. Serve the bundled skins where the plugin expects them.
+#   4. Run the plugin's migration and publish its skins.
 #   5. Seed one admin and one non-admin user.
 set -e
 
@@ -51,13 +51,16 @@ if [ ! -e "vendor/$PACKAGE" ]; then
   as_librenms php lnms plugin:add "$PACKAGE" '@dev'
 fi
 
-echo "[theme-selector] skins"
-# The served layout SkinRepository expects, linked straight to the repo.
-# (Earlier versions linked the whole directory to /plugin/skins.)
-[ -L html/css/custom/theme-selector ] && rm html/css/custom/theme-selector
-mkdir -p html/css/custom/theme-selector
-ln -sfn /plugin/base/base.css html/css/custom/theme-selector/base.css
-ln -sfn /plugin/skins html/css/custom/theme-selector/skins
+echo "[theme-selector] migrate and publish"
+# The image's own migrate (04) ran before the plugin was installed.
+as_librenms php lnms migrate --force --no-interaction
+# Earlier dev setups linked the published directory to the repo; the plugin
+# now copies into it, the same way it does in production.
+for link in html/css/custom/theme-selector html/css/custom/theme-selector/base.css \
+            html/css/custom/theme-selector/skins; do
+  if [ -L "$link" ]; then rm "$link"; fi
+done
+as_librenms php artisan theme-selector:publish
 
 echo "[theme-selector] users"
 db() { mariadb -h "$DB_HOST" -u "$DB_USER" "-p$DB_PASSWORD" "$DB_NAME" -N -e "$1"; }

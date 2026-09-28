@@ -1,204 +1,211 @@
 # Deployment
 
-Installing a skin on a LibreNMS host, and getting it back off again.
+Installing Theme Selector for LibreNMS, keeping it updated, migrating the one
+host that ran the older `install.sh` setup, and removing it again.
 
-Written against LibreNMS master @ `63e0394`.
+Written against LibreNMS master @ `63e0394`; tested on the `dev/` Docker
+instance (LibreNMS 26.9.1.1).
 
 ---
 
 ## Deployed instances
 
-| LibreNMS version | Devices | Mode | Skins exercised |
+| LibreNMS version | Devices | Install | Status |
 |---|---|---|---|
-| `26.8.1-147-g63e0394bd1` | ~1,400 | `link` | all three |
-
-The host version matches the commit the skins were developed and verified
-against exactly, so there is no selector drift to account for.
+| `26.8.1-147-g63e0394bd1` | ~1,400 | `install.sh`, `link` mode, Zerg | **To migrate** to the plugin (runbook below) |
 
 The instance itself is deliberately not named here. It is a production
 monitoring box, and pairing a resolvable hostname with an exact software
 version in a public repository is free reconnaissance for no benefit to
 anyone reading this.
 
-Layout on that host:
+Its current layout:
 
 ```
-/opt/librenms-skins                          repo, owned librenms:librenms
+/opt/librenms-skins                          SFTP copy of the repo, pre-rename
 /opt/librenms/html/css/custom/zerg   ->      /opt/librenms-skins/skins/zerg
 webui.custom_css                     =       ["css/custom/zerg/zerg.css"]
 ```
-
-The directory still carries the repo's old name, `librenms-skins`; it predates
-the rename to `librenms-theme-selector`.
-
-Files were uploaded over SFTP rather than cloned. That was necessary while the
-repo was private — it avoided putting a git credential on the monitoring host —
-and it is now merely a leftover: the repo is public, so a plain
-`git clone` needs no credential at all.
-
-The trade-off of the SFTP arrangement is that `git pull` will not update it in
-place. Converting it to a real clone under the new name makes updates normal
-and retires the old path in the same step. `install.sh` resolves the repo from
-its own location, so re-running it from the clone re-points the symlink:
-
-```bash
-sudo -u librenms git clone https://github.com/XBLOssia/librenms-theme-selector.git /opt/librenms-theme-selector
-sudo -u librenms /opt/librenms-theme-selector/scripts/install.sh zerg
-# once the UI checks out, /opt/librenms-skins can be removed
-```
-
-Also note the example above shows `zerg` active. Whichever skin is current,
-`install.sh <name>` is what changes it.
-
-To switch the active skin on that host:
-
-```bash
-sudo -u librenms /opt/librenms-skins/scripts/install.sh terran
-```
-
----
-
-## Does this survive `daily.sh`?
-
-**Yes, and unlike a core-file patch it does so by design rather than by luck.**
-
-This was verified by reading `daily.sh` rather than assuming. The update path
-uses only:
-
-```
-git pull --quiet
-git checkout master | <branch> | ${latest_hash}
-git checkout --quiet -- composer.json composer.lock
-```
-
-There is **no `git clean`** anywhere in `daily.sh` or `daily.php`. `git pull`
-and `git checkout` do not delete untracked or ignored files, and
-`html/css/custom/*` is in LibreNMS's own `.gitignore`. So the skin directory is
-invisible to the updater.
-
-The `webui.custom_css` setting lives in the database, not in a file, so it is
-untouched by any code update.
-
-### How this differs from the plugin project
-
-`librenms-network-config`'s research notes record a one-line **core-file**
-patch applied on this same host, with the warning:
-
-> This is a core-file patch, not tracked by this repo's git. It will be
-> silently reverted by any future `git pull`/LibreNMS update on that host.
-> […] reapply this one-line patch after every LibreNMS update.
-
-That hazard does not apply here. **These skins modify zero LibreNMS core
-files.** There is no patch to reapply, and nothing to re-check after an update.
-If a skin ever needs a core change to work, that is a bug in the skin.
-
-### The one thing that *would* wipe it
-
-`git clean -fdx` inside `/opt/librenms` deletes ignored files, which includes
-`html/css/custom/`. That is not part of any normal update, but it is a common
-"reset my checkout" reflex.
-
-The `link` install mode below is the mitigation: the canonical skin files live
-outside the LibreNMS tree entirely, so a `git clean` removes only a symlink,
-and re-creating it is one command. This mirrors the pattern the plugin project
-already uses for `/etc/librenms-network-config/`.
 
 ---
 
 ## Install
 
-On the LibreNMS host, as a user that can write to `/opt/librenms/html/css/` and
-run `lnms` (normally `librenms`):
+On the LibreNMS host, as the `librenms` user, from `/opt/librenms`:
 
 ```bash
-sudo -u librenms git clone https://github.com/XBLOssia/librenms-theme-selector.git /opt/librenms-theme-selector
-cd /opt/librenms-theme-selector
-./scripts/install.sh zerg
+composer config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
+./lnms plugin:add xblossia/librenms-theme-selector dev-main
+./lnms migrate --force
+./lnms theme-selector:publish
 ```
 
-Then in the browser:
+1. **The repository goes in the global Composer config**, not LibreNMS's
+   `composer.json`. `daily.sh` resets `composer.json` on every update; an entry
+   there disappears, and the failed `composer require` that follows can take
+   other packages down with it (the Network Command Suite deploy lost M365 SSO
+   this way).
+2. **`plugin:add`** runs `composer require` and records the package in
+   `composer.plugins.json`, which `daily.sh` reads to reinstall plugins after
+   each update. The plugin is enabled by default.
+3. **`migrate`** creates the plugin's one table, `theme_selector_settings`.
+   `plugin:add` doesn't run migrations; `daily.sh` does, so this step only
+   saves waiting for the next nightly run.
+4. **`theme-selector:publish`** copies the base stylesheet and bundled skins
+   into `html/css/custom/theme-selector/`. The first page load after any
+   plugin update does this anyway; running it by hand confirms the directory
+   is writable by `librenms`.
 
-1. **Preferences → Theme → Dark.** The skins are an overlay on the stock dark
-   theme; on the light base they look broken.
-2. Hard-refresh (Ctrl-Shift-R).
+Then, in the web UI:
 
-Substitute `terran` or `protoss` for `zerg`. Preview first with `--dry-run`,
-which changes nothing and prints every step.
+- **Plugins → Theme Selector.** Every user picks a skin here: the instance
+  default, stock LibreNMS, or a named skin.
+- **Instance default** (admins only, on the same page): what users who haven't
+  chosen get, and what the login page shows. Its graph palette also becomes
+  the instance's graph colours; see [Graph colours](#graph-colours).
 
-### What the installer does
+Skins apply in dark mode. A user on **Preferences → Theme → Light** sees stock
+LibreNMS whatever they picked.
 
-1. Reads the current `webui.custom_css` and saves it to
-   `html/css/custom/.previous-custom_css` — **only on first install**, so
-   switching skins later cannot clobber the true original.
-2. Symlinks `html/css/custom/<skin>` → `/opt/librenms-theme-selector/skins/<skin>`.
-3. Sets `webui.custom_css` to `["css/custom/<skin>/<skin>.css"]`.
-4. Verifies the stylesheet is readable, the webfonts are present, and the
-   config took — and tells you to back out if any check fails.
+### Where things live
 
-It replaces `custom_css` rather than appending, because two skins loaded at
-once cascade into mush. If you had your own custom CSS there, it is recorded in
-step 1 and restored on uninstall.
+| What | Where |
+|---|---|
+| Plugin code | `vendor/xblossia/librenms-theme-selector` (Composer) |
+| Published skins | `html/css/custom/theme-selector/` (gitignored by LibreNMS) |
+| Instance default, graph originals | table `theme_selector_settings` |
+| Each user's choice | `users_prefs`, key `theme_selector.skin` |
+| Graph colours | LibreNMS config rows (`graph_colours.*`, `rrdgraph_def_text_dark`, `rrdgraph_def_text_color_dark`) |
 
-### link vs copy
+Nothing under `/opt/librenms` is edited, and no core file is touched, except
+by the optional [port-graph patch](#optional-the-port-graph-core-patch).
 
-`--mode link` (default) symlinks. Updating a skin becomes `git pull` in
-`/opt/librenms-theme-selector`, and nothing under `/opt/librenms` is ever edited.
-Apache's `html/.htaccess` sets `Options +FollowSymlinks` and nginx follows
-symlinks by default, so this serves correctly.
+---
 
-`--mode copy` copies the directory instead. Use it if the repo lives somewhere
-the webserver user cannot read.
+## Updates
 
-Both are equally reversible.
+**LibreNMS updates:** `daily.sh` resets `composer.json`, pulls, then
+re-requires every package in `composer.plugins.json` and runs
+`composer install --no-dev` and `lnms migrate` (`daily.sh:302, 361-367`). The
+plugin survives, and `html/css/custom/` survives because `daily.sh` never runs
+`git clean`.
 
-### Updating a skin
+**Plugin updates:** installed as `dev-main`. On each update run, `daily.sh`
+resets `composer.lock` and re-requires every plugin
+(`FORCE=1 composer require ... xblossia/librenms-theme-selector:dev-main`), so
+it resolves the latest `main`. To update immediately, re-run the same
+`plugin:add`, as `librenms` in `/opt/librenms`:
 
 ```bash
-cd /opt/librenms-theme-selector && git pull
+./lnms plugin:add xblossia/librenms-theme-selector dev-main
 ```
 
-With `link` that is the whole update. With `copy`, re-run `install.sh`.
+(Plain `composer update` is refused: LibreNMS's Composer hooks block it unless
+`FORCE=1` is set.)
 
-**Then hard-refresh — and tell your users to.** LibreNMS emits `custom_css`
-entries as a plain path with no version query:
+The next page load republishes changed skins. Every stylesheet link carries a
+`?v=<mtime>` cache-buster, so browsers fetch the new files without a hard
+refresh. (The old `webui.custom_css` setup had no cache-buster, which made
+every skin deploy look like it hadn't worked.)
 
-```html
-<link rel="stylesheet" href="css/custom/protoss/protoss.css">
-```
+---
 
-Nothing in that URL changes when the file does, so browsers serve the cached
-copy until it expires. A normal reload is not enough; the skin will look
-exactly as it did before you deployed, which is a convincing way to waste
-twenty minutes debugging a change that already shipped correctly.
+## Migrating from install.sh
 
-- **Ctrl-Shift-R** (Cmd-Shift-R on macOS) on each client, or
-- from devtools on the page:
-  ```js
-  await fetch('/css/custom/protoss/protoss.css', {cache: 'reload'});
-  location.reload();
-  ```
+For the host above. Every step is reversible, and the old setup keeps working
+until step 3.
 
-To confirm what the *server* is sending, independent of any cache:
+**0. Before you start: push this repo.** The host installs the plugin from
+GitHub, so `main` must contain it.
+
+**1. Record the current state**, so there's something to compare against:
 
 ```bash
-curl -s https://your-instance/css/custom/protoss/protoss.css | wc -c
+cd /opt/librenms
+sudo -u librenms ./lnms config:get webui.custom_css
+sudo -u librenms ./lnms config:get graph_colours.greens
+sudo -u librenms ./lnms config:get rrdgraph_def_text_dark
+ls -la html/css/custom/
 ```
 
-This is only a papercut for skin authors — end users get the file once and it
-is correct — but it bites every single deploy.
+**2. Install the plugin** ([Install](#install)), still as `librenms`. With no
+default set and no user choices, it changes nothing visible yet: the old
+`custom_css` skin is still loading.
+
+**3. Remove the old setup** with the uninstaller from the host's own copy,
+which restores `webui.custom_css` and the graph keys to their values before
+the first `install.sh`:
+
+```bash
+sudo -u librenms /opt/librenms-skins/scripts/uninstall.sh --dry-run
+sudo -u librenms /opt/librenms-skins/scripts/uninstall.sh
+```
+
+Pages go stock dark at this point.
+
+**4. Set the default** to the skin the host was running: Plugins → Theme
+Selector → Instance default → **Zerg** → Set default. That restores the look
+for everyone and re-applies Zerg's graph palette. The plugin records each
+graph key's original state before overwriting it; because step 3 ran first,
+those originals are LibreNMS's own values, not the old installer's.
+
+**5. Check:**
+
+- [ ] A page shows two `data-theme-selector` links in `<head>` (view source),
+      and no `css/custom/zerg/zerg.css`.
+- [ ] **The login page shows the default skin.** Log out to see it. (The Docker
+      instance logs in by header, so this is the first place it can be seen.)
+- [ ] The navbar stays pinned when scrolling (fixed in `080046e`).
+- [ ] Graphs use Zerg's colours.
+- [ ] A second user can pick a different skin without affecting yours.
+
+**6. Let one `daily.sh` run happen** (or run it: `sudo -u librenms ./daily.sh`),
+then check the plugin is still listed in `composer.plugins.json`, the
+Theme Selector menu entry is still there, and the skin still applies.
+
+**7. Clean up** once satisfied:
+
+```bash
+sudo rm -rf /opt/librenms-skins
+```
+
+Then `scripts/install.sh` and `scripts/uninstall.sh` can be deleted from this
+repo (docs/PLUGIN.md, phase 2).
+
+**If something goes wrong** before step 7, the old setup is one command away:
+`sudo -u librenms /opt/librenms-skins/scripts/install.sh zerg`, after
+disabling the plugin (`./lnms plugin:disable ThemeSelector`).
+
+---
+
+## Graph colours
+
+RRDtool draws graphs on the server from instance-wide config, so CSS can't
+reach them and they can't follow each user's skin (yet: docs/PLUGIN.md,
+phase 5). They follow the **instance default** instead:
+
+- Setting a default writes that skin's palette (`skins/<id>/graph.conf`) into
+  LibreNMS config: `rrdgraph_def_text_dark` (background, grid, frame),
+  `rrdgraph_def_text_color_dark`, and the `graph_colours.*` ramps.
+- Before a key is first overwritten, its original state is recorded: whether
+  the database held an override, and its value.
+- Switching to another default restores any key the new palette doesn't set.
+  Clearing the default restores everything. Keys that had no override before
+  are erased rather than pinned, so LibreNMS's own defaults keep applying
+  after upgrades.
+- `graph_colours.port_in` / `port_out` are skipped unless the port-graph patch
+  below has declared them.
 
 ---
 
 ## Optional: the port-graph core patch
 
-**This is the only thing in this repo that touches a LibreNMS core file.**
-Everything else lives in `html/css/custom/` and a few config rows. This is a
-different risk class, so it is opt-in, separate from `install.sh`, and never
-run automatically.
+**This is the only thing in this repo that touches a LibreNMS core file.** It
+is opt-in, separate from the plugin, and never run automatically.
 
 ### Why
 
-`port_bits` — the traffic graph on effectively every dashboard — renders
+`port_bits`, the traffic graph on effectively every dashboard, renders
 through `includes/html/graphs/generic_data.inc.php`, which hard-codes its six
 series colours and reads no config at all. Without the patch, port graphs stay
 stock green-and-lavender under every skin while the rest of the graph themes
@@ -207,16 +214,13 @@ it is only the series that are stuck.
 
 ### What it changes
 
-Two files:
-
 | File | Change |
 |---|---|
 | `includes/html/graphs/generic_data.inc.php` | reads `graph_colours.port_in` / `.port_out`, defaulting to the values it previously hard-coded |
 | `resources/definitions/config_definitions.json` | declares those two keys |
 
-The second is not optional. `lnms config:set` validates every key against the
-definitions file and refuses anything undeclared — *"This is not a valid
-setting."* — and the only wildcard LibreNMS defines is `alert.macros.rule.*`.
+The second is not optional: LibreNMS validates config keys against the
+definitions file, and the plugin skips keys it doesn't declare.
 
 **With no config set, output is byte-identical.** Verified rather than
 asserted: the same graph URL, with `from`/`to` pinned so the data window is
@@ -225,9 +229,12 @@ patching.
 
 ```bash
 ./scripts/patch-core.sh status
-./scripts/patch-core.sh apply     # then re-run install.sh to set the colours
+./scripts/patch-core.sh apply     # then re-save the instance default
 ./scripts/patch-core.sh revert
 ```
+
+After applying, re-save the instance default (Plugins → Theme Selector) so the
+plugin writes the two port keys now that they exist.
 
 `apply` dry-runs first, so a version drift fails loudly instead of scattering
 `.rej` files through core. It keeps a pristine `*.pre-skins-patch` copy of each
@@ -235,79 +242,41 @@ file, and `revert` prefers that copy over reversing the diff.
 
 ### The catch: `daily.sh` reverts it
 
-`daily.sh` updates LibreNMS with `git pull` and `git checkout`, which restores
-tracked files. **Both patched files go back to stock on every update.** The
-config values survive — they are database rows — but they stop being read, so
-port graphs quietly return to green and lavender.
-
-Re-apply after each update. The script is idempotent, so this is safe to
-automate:
+`daily.sh` restores tracked files, so **both patched files go back to stock on
+every update**. The config values survive (they are database rows) but stop
+being read. Re-apply after each update; the script is idempotent, so this is
+safe to automate:
 
 ```bash
-# /etc/cron.d/librenms-theme-selector-patch  — after daily.sh has run
-30 1 * * *  root  /opt/librenms-theme-selector/scripts/patch-core.sh apply >/dev/null 2>&1
+# /etc/cron.d/librenms-theme-selector-patch  - after daily.sh has run
+30 1 * * *  root  /path/to/librenms-theme-selector/scripts/patch-core.sh apply >/dev/null 2>&1
 ```
-
-Check it whenever graphs look wrong after an upgrade:
-
-```bash
-./scripts/patch-core.sh status
-```
-
-### Reverting completely
-
-```bash
-./scripts/patch-core.sh revert
-./scripts/uninstall.sh
-```
-
-Order does not matter. `uninstall.sh` clears `graph_colours.port_in` /
-`.port_out` back to unset, and it checks whether the core patch is still
-applied and tells you rather than assuming either way. With the patch reverted
-and the keys cleared, nothing of this repo remains anywhere in LibreNMS.
 
 ---
 
 ## Uninstall
 
-```bash
-cd /opt/librenms-theme-selector
-./scripts/uninstall.sh
-```
-
-That removes every skin directory or symlink from `html/css/custom/` and
-restores `webui.custom_css` to whatever it was before the first install
-(clearing it if it was empty). Then hard-refresh.
-
-Options:
-
-| Flag | Effect |
-|---|---|
-| `--dry-run` | Print every step, change nothing |
-| `--skin zerg` | Remove one skin's files, leave `custom_css` alone |
-| `--purge` | Clear `custom_css` outright, ignoring the saved value |
-| `--librenms DIR` | Non-default install path |
-
-The uninstaller also cleans up the older layout (a bare `<skin>.css` dropped
-directly into `custom/`) in case you installed by hand before these scripts
-existed.
-
-### Manual removal
-
-If the scripts are unavailable:
+1. **Clear the instance default** (Plugins → Theme Selector → None). This
+   restores the graph colours. Skipping it leaves the last default's palette
+   in LibreNMS config.
+2. Remove the plugin and its files, as `librenms` in `/opt/librenms`:
 
 ```bash
-rm -rf /opt/librenms/html/css/custom/{terran,protoss,zerg}
-lnms config:clear webui.custom_css
+./lnms plugin:remove xblossia/librenms-theme-selector
+rm -rf html/css/custom/theme-selector
 ```
 
-Then hard-refresh. That is genuinely all of it.
+What stays behind, harmlessly: the `theme_selector_settings` table and
+`theme_selector.skin` rows in `users_prefs`. To remove them too:
 
-### What uninstall deliberately does *not* touch
+```sql
+DROP TABLE theme_selector_settings;
+DELETE FROM users_prefs WHERE pref = 'theme_selector.skin';
+```
 
-Your **theme preference** (Preferences → Theme → Dark) is a per-user setting
-the installer never changed, so the uninstaller leaves it alone. If you were on
-Light before and want to go back, switch it yourself.
+**To switch it off without uninstalling:** `./lnms plugin:disable ThemeSelector`.
+Pages go stock on the next load; the graph palette stays until a default is
+cleared, which needs the plugin enabled.
 
 ---
 
@@ -315,36 +284,25 @@ Light before and want to go back, switch it yourself.
 
 | Question | Answer |
 |---|---|
-| Core files modified? | None |
-| Database schema changed? | None |
-| Files outside `html/css/custom/`? | None |
+| Core files modified? | None (unless you apply the optional port-graph patch) |
+| Database schema changed? | One table of its own, `theme_selector_settings` |
+| Files outside `html/css/custom/`? | The Composer package under `vendor/` |
 | Services restarted or installed? | None |
-| Affects polling, discovery, alerting? | No — CSS only |
-| Affects other users on the instance? | **Yes** — `custom_css` is instance-wide |
-| Recoverable if the skin 500s the UI? | It cannot; CSS cannot break PHP. Worst case is an ugly page, fixed by `lnms config:clear webui.custom_css` |
-
-The blast radius is one config row and one directory of static files.
+| Affects polling, discovery, alerting? | No. CSS, plus graph colour config |
+| Affects other users? | Only through the instance default and the graph palette; each user's own choice affects only them |
+| Can a skin break a page? | The code that adds the stylesheet catches every error and falls back to stock styling. CSS itself can't break PHP. |
 
 ### If something looks wrong
 
-1. **Everything unstyled / stock dark** — theme is not set to Dark, or the
-   browser cached the old CSS. Hard-refresh first.
-2. **Fonts look generic** — the `fonts/` directory did not come along. Check
-   `ls /opt/librenms/html/css/custom/<skin>/fonts/`. With `link` mode this
-   usually means the webserver user cannot traverse into `/opt/librenms-theme-selector`.
-3. **Some components still stock-coloured** — expected. The skins cover 40 of
-   92 components; see [ROADMAP.md](ROADMAP.md).
-4. **Graphs look wrong** — expected and unfixable from CSS. RRDtool renders
-   PNGs server-side; see [FINDINGS.md](FINDINGS.md) §5.
-
----
-
-## Note on terminology
-
-These are **not** yet a LibreNMS plugin. The plugin system's five hooks are
-content-injection only, which is why these ship as `custom_css`. A package
-plugin can still inject CSS from its service provider; that is planned in
-[PLUGIN.md](PLUGIN.md), and until it lands this page describes the only
-install path. Nothing here registers with
-`PluginManager`, so nothing appears under the Plugins menu, and the plugin
-uninstall path is not involved. See [FINDINGS.md](FINDINGS.md) §6.
+1. **Stock styling everywhere.** The user is on Light, has chosen stock, or
+   there's no default. Check Plugins → Theme Selector. If the page source has
+   no `data-theme-selector` links, check `storage/logs/librenms.log` for
+   `ThemeSelector:` lines.
+2. **Skin half-applied, or 404s for `theme-selector/...` files.** Publishing
+   failed, usually because `librenms` can't write
+   `html/css/custom/theme-selector/`. Run `./lnms theme-selector:publish` to
+   see the error.
+3. **Some components still stock-coloured.** Expected: see
+   [ROADMAP.md](ROADMAP.md) for coverage.
+4. **Port graph series still green and lavender.** That needs the port-graph
+   patch; everything else about graphs follows the default skin.

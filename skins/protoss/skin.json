@@ -1,0 +1,10 @@
+{
+  "id": "protoss",
+  "name": "Protoss",
+  "description": "Golden armour over a void-dark hull, crystal facets and psionic blue.",
+  "author": "XBLOssia",
+  "version": "1.0.0",
+  "modes": [
+    "dark"
+  ]
+}

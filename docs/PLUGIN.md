@@ -325,12 +325,32 @@ the original `<id>.css` files (which production still loads). The harness now
 uses the real `navbar-sticky-top` markup; its old `navbar-fixed-top` markup is
 why the bug never showed there.
 
-**2 — v1 plugin, and migrate production.** Bundled skins published to `html/css/custom/theme-selector/`,
-per-user picker page, admin default, composer injection with a cache-buster
-(the skins' current lack of one is FINDINGS' hard-refresh problem). Then
-migrate the production host: `uninstall.sh` to restore `webui.custom_css` and
-the graph keys, `lnms plugin:add`, re-apply the graph palette as the
-instance default. Delete `install.sh`/`uninstall.sh` after.
+**2 — v1 plugin, and migrate production. Plugin done 2026-09-28; migration
+pending.** On the `dev/` instance:
+
+- *Publishing:* the plugin copies `base.css` and the bundled skins (token
+  file, manifest, graph palette, fonts) into `html/css/custom/theme-selector/`
+  on the first request after the package changes, detected by a fingerprint of
+  paths, sizes and mtimes. `lnms theme-selector:publish` does it on demand.
+  Tested: touching a skin in the package republished it on the next page load.
+- *Resolution:* a user's choice (a skin, or stock), else the instance default,
+  else stock. The login page gets the default. Skins carry a `skin.json`
+  manifest (name, description, modes).
+- *Instance default* (admin role only; a non-admin POST gets 403), stored in
+  the plugin's own `theme_selector_settings` table, not plugin settings.
+  Setting it applies the skin's graph palette to LibreNMS config, after
+  recording each key's original state. Switching and clearing restore those
+  states exactly: tested with a hand-set `graph_colours.pinks` override, which
+  survived two default changes and came back when the default was cleared.
+  Keys LibreNMS doesn't declare (`port_in`/`port_out` without the core patch)
+  are skipped.
+- *Every stylesheet link* carries a `?v=<mtime>` cache-buster, which fixes
+  the hard-refresh problem the `custom_css` setup had.
+
+Remaining: migrating the production host (`docs/DEPLOYMENT.md`, "Migrating
+from install.sh"), which needs this repo pushed first. It is also where the two
+checks the dev instance can't make happen: the login page, and surviving a
+real `daily.sh`. After that, delete `install.sh`/`uninstall.sh`.
 
 **3 — Admin upload and delete.** Zip validation, compile, publish, registry.
 Deleting a skin in use falls those users back to the default.

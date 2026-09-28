@@ -2,7 +2,7 @@
 # Apply or revert the optional core patch that lets port graphs read their
 # series colours from config.
 #
-# WHY THIS IS SEPARATE FROM install.sh
+# WHY THIS IS SEPARATE FROM THE PLUGIN
 # Everything else this repo does is confined to html/css/custom/ and a couple
 # of config rows - no core file is touched, and LibreNMS updates leave it all
 # alone. This does touch core, which is a different risk class, so it is
@@ -130,7 +130,8 @@ EOF
       echo "  OK   patch applied"
       for t in $TARGETS; do echo "  OK   original saved as $t.pre-skins-patch"; done
       echo
-      echo "Now set the colours (install.sh does this for you):"
+      echo "Now re-save the instance default in Plugins -> Theme Selector, which"
+      echo "writes these now that they exist. Or by hand (Protoss's colours):"
       echo "  lnms config:set -- graph_colours.port_in  '[\"9CF7DC\",\"3AD6A8\",\"218C6E\"]'"
       echo "  lnms config:set -- graph_colours.port_out '[\"FFE7A8\",\"E3B341\",\"95741F\"]'"
       echo

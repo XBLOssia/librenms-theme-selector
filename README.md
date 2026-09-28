@@ -84,73 +84,59 @@ fixed epoch in the synthetic data — so re-running does not churn the repo.
 
 ## Install
 
-On the LibreNMS host:
+Theme Selector is a LibreNMS plugin. On the LibreNMS host, as the `librenms`
+user in `/opt/librenms`:
 
 ```bash
-sudo -u librenms git clone https://github.com/XBLOssia/librenms-theme-selector.git /opt/librenms-theme-selector
-cd /opt/librenms-theme-selector
-./scripts/install.sh zerg
+composer config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
+./lnms plugin:add xblossia/librenms-theme-selector dev-main
+./lnms migrate --force
 ```
 
-Then in the browser: set **Preferences → Theme → Dark** (the skins are an
-overlay on the stock dark theme and look broken on the light base), and
-hard-refresh.
-
-Substitute `terran` or `protoss` for `zerg`. Add `--dry-run` to preview every
-step without changing anything.
+Then **Plugins → Theme Selector**: each user picks a skin for themselves, and
+admins set the instance default (what the login page and users who haven't
+chosen get). Skins apply in dark mode; users on Light see stock LibreNMS.
 
 **Nothing else to install.** Each skin bundles its own webfonts (~58–77KB of
 Latin-subset woff2, all SIL Open Font License). No system fonts to chase, and
 no request ever leaves the box.
 
-### Uninstall
-
-```bash
-./scripts/uninstall.sh
-```
-
-Removes the skin files and restores `webui.custom_css` to whatever it was
-before the first install. Or by hand:
-
-```bash
-rm -rf /opt/librenms/html/css/custom/{terran,protoss,zerg}
-lnms config:clear webui.custom_css
-```
+Updates, the migration from the older `install.sh` setup, uninstalling and
+troubleshooting: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
 ### Safety
 
-By default, nothing in LibreNMS core is modified, no schema changes, no
-services touched —
-the entire footprint is one config row and one directory of static files under
-`html/css/custom/`, which is gitignored by LibreNMS. Verified against
-`daily.sh`: it updates with `git pull` and `git checkout` and never runs
-`git clean`, so the skin survives updates with no patch to reapply.
+No LibreNMS core file is modified. The plugin adds one table of its own,
+copies static files into `html/css/custom/theme-selector/` (gitignored by
+LibreNMS), and stores each user's choice in `users_prefs`. It survives
+`daily.sh`, which reinstalls plugins after every update and never runs
+`git clean`.
 
-> `webui.custom_css` is instance-wide. Every user on the instance gets the same
-> skin; LibreNMS has no per-user custom theme selection. See
-> [docs/FINDINGS.md](docs/FINDINGS.md) §6.
+> **Graphs follow the instance default, not each user.** RRDtool draws graphs
+> on the server from instance-wide config, so the default skin's graph
+> palette applies to everyone. Per-user graph colours are a later phase.
 
 > **One optional exception.** `scripts/patch-core.sh` patches two core files
 > so port traffic graphs read their colours from config instead of six
 > hard-coded hexes. It is opt-in, byte-identical with no config set, fully
-> reversible — and `daily.sh` reverts it on every LibreNMS update, so it has to
+> reversible, and `daily.sh` reverts it on every LibreNMS update, so it has to
 > be re-applied. Without it, port graphs stay stock green-and-lavender while
 > everything else themes. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-
-Full runbook, rollback detail and troubleshooting:
-**[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
 ---
 
 ## Retheming
 
-Each skin is driven entirely by the token block at the top of its stylesheet —
-[terran](skins/terran/terran.css) · [protoss](skins/protoss/protoss.css) ·
-[zerg](skins/zerg/zerg.css). Change the variables in `:root` and nothing else;
-every rule below reads from them, and no rule names a colour or font directly.
+A skin is a token file, `skins/<id>/skin.css`: `--ts-*` values that the shared
+[base stylesheet](base/base.css) applies to LibreNMS. Every token has a
+default, so a skin sets only what it changes. The 20 core roles (surfaces,
+text, accent, status colours, fonts, radius) are enough for a complete skin;
+[examples/minimal/skin.css](examples/minimal/skin.css) is exactly that. The
+full list with defaults is [docs/TOKENS.md](docs/TOKENS.md).
 
-This is deliberately the affordance LibreNMS core does not have — see
-[docs/FINDINGS.md](docs/FINDINGS.md).
+The bundled skins set far more: [terran](skins/terran/skin.css) ·
+[protoss](skins/protoss/skin.css) · [zerg](skins/zerg/skin.css). Each also
+keeps a private `--p-*` palette its tokens refer to.
 
 ### Typography
 
@@ -186,18 +172,19 @@ built-ins rather than to be installed.
 
 LibreNMS has no theme installation system. There is no packaging format, no
 distribution story, and no way to register a new theme without patching a core
-file that updates overwrite. The two available hooks are:
+file that updates overwrite. The two built-in hooks are:
 
 - `webui.custom_css[]` — an array of stylesheets appended last. Instance-wide,
-  not per-user. **This is what these skins use.**
+  not per-user. The skins used this before the plugin.
 - A `site_style` entry in `resources/definitions/config_definitions.json` —
   gives a per-user dropdown, but that file is core and is overwritten on update.
 
 The plugin system's five hooks (`DeviceOverviewHook`, `MenuEntryHook`,
 `PortTabHook`, `SettingsHook`, `SinglePageHook`) all inject content, and none
 publish CSS or assets. A *package* plugin, though, owns a Laravel service
-provider, and that can push a stylesheet into every page's `<head>`. That is
-the route this repo is now taking; see **[docs/PLUGIN.md](docs/PLUGIN.md)**.
+provider, and that can push a stylesheet into every page's `<head>`, per user,
+with no core change. That is how Theme Selector works; see
+**[docs/PLUGIN.md](docs/PLUGIN.md)**.
 
 Building these surfaced concrete, measurable problems with theming LibreNMS as
 it stands. They are written up in **[docs/FINDINGS.md](docs/FINDINGS.md)** with
@@ -278,16 +265,29 @@ redistributed here.
 ## Repository layout
 
 ```
-skins/<name>/<name>.css     the skin - token block at top drives everything
+composer.json               the LibreNMS package plugin (xblossia/librenms-theme-selector)
+src/                        plugin code: provider, picker, publisher, graph palette
+routes/, resources/views/   the Theme Selector page
+database/migrations/        the plugin's settings table
+base/base.css               the base stylesheet: token defaults + every rule
+skins/<name>/skin.css       a skin: token values, private palette, @font-face
+skins/<name>/skin.json      manifest: name, description, modes
+skins/<name>/graph.conf     graph palette, applied when it's the instance default
 skins/<name>/fonts/         bundled OFL webfonts + licence notices
 skins/<name>/FONTS.md       typography rationale and how to swap faces
+skins/<name>/<name>.css     the original standalone skin; kept until production migrates
+examples/minimal/           a skin that sets only the 20 core roles
 harness/index.html          static preview, real LibreNMS CSS, real DOM
 harness/mockup.html         full dashboard mockup, invented data
+harness/compare.html        original vs base + tokens, computed-style diff
 harness/graphs/             rrdtool graphs rendered from a synthetic RRD
 harness/colorway.html       a skin's tokens and graph ramps, rendered
 harness/audit.js            live-page contrast + stock-colour audit
-scripts/install.sh          install a skin onto a LibreNMS host
-scripts/uninstall.sh        remove skins and restore the previous config
+dev/                        Docker LibreNMS for developing the plugin
+scripts/gen-token-docs.py   regenerate docs/TOKENS.md from base.css
+scripts/extract-base/       how the skins were split, and the equivalence check
+scripts/install.sh          the old install path; removed once production migrates
+scripts/uninstall.sh        its uninstaller; ditto
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/make-demo-graphs.sh generate the mockup's graphs (needs rrdtool)
@@ -295,7 +295,9 @@ scripts/capture-mockups.sh  screenshot the mockup per skin, headlessly
 scripts/patch-core.sh       optional: let port graphs read their colours
 patches/                    that patch, as a reviewable unified diff
 docs/img/                   the screenshots above
-docs/DEPLOYMENT.md          install/uninstall runbook, persistence, rollback
+docs/PLUGIN.md              plugin design, decisions and phases
+docs/TOKENS.md              token reference (generated)
+docs/DEPLOYMENT.md          install, updates, migration, uninstall, rollback
 docs/FINDINGS.md            what building these surfaced about theming LibreNMS
 docs/PROPOSAL.md            upstream proposal, ready to post
 docs/ROADMAP.md             prioritised backlog and open decisions

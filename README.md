@@ -113,9 +113,10 @@ LibreNMS), and stores each user's choice in `users_prefs`. It survives
 `daily.sh`, which reinstalls plugins after every update and never runs
 `git clean`.
 
-> **Graphs follow the instance default, not each user.** RRDtool draws graphs
-> on the server from instance-wide config, so the default skin's graph
-> palette applies to everyone. Per-user graph colours are a later phase.
+> **Graphs follow each user's skin too.** RRDtool draws them on the server
+> from config, so on a graph request the plugin overrides the palette in
+> memory for that one request. The instance default's palette is what
+> LibreNMS stores, for graphs no logged-in user asked for.
 
 > **One optional exception.** `scripts/patch-core.sh` patches two core files
 > so port traffic graphs read their colours from config instead of six

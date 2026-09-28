@@ -52,6 +52,16 @@ A session sticks to the user it started as. To switch in the browser, clear
 the `librenms_session` cookie. This is why port 8000 is published on
 `127.0.0.1` only.
 
+## Testing per-user graph colours
+
+```bash
+docker exec theme-selector-dev-librenms-1 sh /plugin/dev/test-graphs.sh
+```
+
+Builds a dummy device, port and synthetic RRD, then checks that users with
+different skins get different graphs, that an explicit "stock" choice stays
+stock under any default, and that nothing leaks into the persistent config.
+
 ## Resetting the plugin install
 
 `vendor/` is part of the container, not a volume. Recreating the container

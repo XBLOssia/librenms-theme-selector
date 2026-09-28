@@ -358,9 +358,33 @@ Deleting a skin in use falls those users back to the default.
 **4 — Light variants.** Scoping approach from the harness prototype; a light
 token set for at least one bundled skin.
 
-**5 — Per-user graph colours.** Spike: override graph config only for
-graph-render requests, based on the requesting user's skin. Needs a check that
-graph requests carry the session.
+**5 — Per-user graph colours. Done 2026-09-28** on the `dev/` instance; not
+yet on the production host. Smaller than planned: graph images come from
+`/graph` (which `graph.php` is rewritten to), a normal `web`-group route that
+carries the user's session, and the graph code reads its colours from config at
+render time. A middleware in the `web` group (`GraphColours`) sets the palette
+keys with `LibrenmsConfig::set()`, which is in-memory only, for that request.
+The persistent config keeps holding the instance default's palette, so graphs
+with no session user (API, reports, signed URLs) still match the default.
+
+Tested by `dev/test-graphs.sh`, 20 checks over `port_bits` (dark chrome) and
+`port_errors` (colour ramps) with a synthetic RRD and a fixed time window, so
+equal colours mean identical bytes:
+
+- different skins draw different graphs; a skin differs from stock;
+- an explicit "stock" choice stays stock whatever the default is (keys the
+  default overwrote are restored from the recorded originals, or LibreNMS's
+  definition default);
+- following the default equals choosing it; one user's request leaves nothing
+  behind for the next; persistent config never changes during requests.
+
+The same 20 checks pass with the route and config caches built, as on a
+production host. Graph responses are `Cache-Control: no-cache, private` with
+no validators, so browsers refetch and a skin switch shows on the next load.
+
+Known limits: port traffic series need the optional core patch; chrome only
+follows a skin for users on the dark theme; a user on Light still gets the
+`graph_colours.*` ramps of their skin, which is harmless but not "stock".
 
 Out of scope: the `generic_data` port-graph patch stays a separate, optional
 core patch. A plugin can't fix config-blind graph helpers.

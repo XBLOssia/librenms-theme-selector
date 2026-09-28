@@ -191,21 +191,41 @@ disabling the plugin (`./lnms plugin:disable ThemeSelector`).
 
 ## Graph colours
 
-RRDtool draws graphs on the server from instance-wide config, so CSS can't
-reach them and they can't follow each user's skin (yet: docs/PLUGIN.md,
-phase 5). They follow the **instance default** instead:
+RRDtool draws graphs on the server from LibreNMS config, so CSS can't reach
+them. The plugin handles this two ways, from the same `skins/<id>/graph.conf`
+palette (background, grid, frame, font, and the `graph_colours.*` ramps):
 
-- Setting a default writes that skin's palette (`skins/<id>/graph.conf`) into
-  LibreNMS config: `rrdgraph_def_text_dark` (background, grid, frame),
-  `rrdgraph_def_text_color_dark`, and the `graph_colours.*` ramps.
-- Before a key is first overwritten, its original state is recorded: whether
-  the database held an override, and its value.
-- Switching to another default restores any key the new palette doesn't set.
-  Clearing the default restores everything. Keys that had no override before
-  are erased rather than pinned, so LibreNMS's own defaults keep applying
-  after upgrades.
+- **Per user.** On a graph request (`/graph`, and `graph.php`, which core
+  rewrites to it) the plugin overrides the palette keys **in memory, for that
+  request only**, to match the requesting user's skin. Nothing is written, so
+  other users and later requests are untouched. A user who chose stock
+  LibreNMS gets stock graphs whatever the default is.
+- **Instance default.** Setting a default writes that skin's palette into
+  LibreNMS config, so graphs nobody requested through a logged-in session
+  (API, emailed reports, signed or IP-allowed URLs) still match the default.
+  Before a key is first overwritten its original state is recorded: whether the
+  database held an override, and its value. Switching the default restores any
+  key the new palette doesn't set; clearing it restores everything. Keys that
+  had no override before are erased rather than pinned, so LibreNMS's own
+  defaults keep applying after upgrades.
+
+Graph responses carry `Cache-Control: no-cache, private` and no validators, so
+browsers refetch on every load: a skin switch shows on the next graph load with
+no cache to clear.
+
 - `graph_colours.port_in` / `port_out` are skipped unless the port-graph patch
-  below has declared them.
+  below has declared them. Without it port traffic series keep their fixed
+  colours under every skin; the chrome around them still follows.
+- Graph chrome uses the `*_dark` settings, so it only follows a skin for users
+  on the dark theme.
+- The `graph_colours.*` ramps and the `*_dark` keys are the only settings the
+  plugin ever touches, and only from a skin's `graph.conf` (other keys in that
+  file are ignored).
+
+**Testing it:** `dev/test-graphs.sh` builds a dummy device and synthetic RRD in
+the Docker instance and draws the same graphs as users with different skins
+under different defaults: 20 checks, including that nothing leaks into the
+persistent config.
 
 ---
 

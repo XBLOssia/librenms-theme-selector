@@ -43,8 +43,9 @@
     <div class="panel panel-default">
         <div class="panel-heading"><h3 class="panel-title">Instance default <small>admin</small></h3></div>
         <div class="panel-body">
-            <p>Applies to users who haven't chosen a skin, and to the login page. Graphs are drawn by the
-               server from instance-wide settings, so the default skin's graph palette applies to everyone.</p>
+            <p>Applies to users who haven't chosen a skin, and to the login page. Graphs follow each user's
+               own skin; the default skin's graph palette is what LibreNMS stores, so it also applies to users
+               who follow the default and to graphs no logged-in user requested (API, reports).</p>
             <form method="post" action="{{ route('theme-selector.default') }}" class="form-inline">
                 @csrf
                 <select name="default" class="form-control">

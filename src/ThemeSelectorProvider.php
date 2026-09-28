@@ -10,6 +10,7 @@ use LibreNMS\Interfaces\Plugins\PluginManagerInterface;
 use Throwable;
 use Xblossia\ThemeSelector\Console\PublishCommand;
 use Xblossia\ThemeSelector\Hooks\Menu;
+use Xblossia\ThemeSelector\Http\Middleware\GraphColours;
 
 class ThemeSelectorProvider extends ServiceProvider
 {
@@ -19,6 +20,8 @@ class ThemeSelectorProvider extends ServiceProvider
     {
         $root = dirname(__DIR__);
         $this->app->singleton(Settings::class);
+        $this->app->singleton(GraphPalette::class);
+        $this->app->singleton(SkinResolver::class);
         $this->app->singleton(SkinRepository::class, fn () => new SkinRepository(public_path(SkinRepository::PUBLIC_DIR)));
         $this->app->singleton(SkinPublisher::class, fn () => new SkinPublisher($root, public_path(SkinRepository::PUBLIC_DIR)));
     }
@@ -51,6 +54,10 @@ class ThemeSelectorProvider extends ServiceProvider
         // main layout pushes into its @stack('styles'), which renders after
         // webui.custom_css. See docs/PLUGIN.md.
         View::composer('layouts.librenmsv1', SkinInjector::class);
+
+        // Graph images are drawn server-side from config, so they follow the
+        // user's skin through a per-request override on the graph route.
+        $this->app['router']->pushMiddlewareToGroup('web', GraphColours::class);
     }
 
     /**

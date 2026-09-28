@@ -102,8 +102,15 @@ body { padding-top:52px; }
   var SKINS = ['terran', 'protoss', 'zerg'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'terran').toLowerCase();
   if (SKINS.indexOf(skin) === -1) skin = 'terran';
-  document.write('<link id="skin-css" rel="stylesheet" href="../skins/' +
-                 skin + '/' + skin + '.css">');
+  // ?build=tokens loads the plugin's form (base + token file) instead of the
+  // original standalone stylesheet; compare.html diffs the two.
+  if (new URLSearchParams(location.search).get('build') === 'tokens') {
+    document.write('<link rel="stylesheet" href="../base/base.css">' +
+                   '<link id="skin-css" rel="stylesheet" href="../skins/' + skin + '/skin.css">');
+  } else {
+    document.write('<link id="skin-css" rel="stylesheet" href="../skins/' +
+                   skin + '/' + skin + '.css">');
+  }
 </script>
 </head>
 <body>

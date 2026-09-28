@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Skin equivalence check</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; margin: 16px; background: #fff; color: #111; }
+  iframe { width: 1280px; height: 900px; border: 1px solid #ccc; }
+  .frames { display: none; }
+  table { border-collapse: collapse; margin-top: 12px; }
+  td, th { border: 1px solid #ddd; padding: 3px 6px; text-align: left; vertical-align: top;
+           font: 12px/1.3 ui-monospace, monospace; }
+  .ok { color: #176e2f; font-weight: 600; }
+  .bad { color: #a4161a; font-weight: 600; }
+</style>
+</head>
+<body>
+<!--
+  Loads one harness page twice, with the original standalone skin (build=ref)
+  and with base.css + the skin's token file (build=tokens), then compares the
+  computed style of every element and its ::before/::after, property by
+  property. Custom properties are skipped: the token build defines new ones by
+  design. Everything else must match exactly.
+
+    compare.html?page=index.html&skin=zerg
+    compare.html?all=1        every page x every skin
+
+  Results are also left on window.compareResults for scripted runs.
+-->
+<h1>Skin equivalence check</h1>
+<div id="out">running...</div>
+<div class="frames" id="frames"></div>
+<script>
+const PAGES = ['index.html', 'mockup.html'];
+const SKINS = ['terran', 'protoss', 'zerg'];
+const PSEUDOS = [null, '::before', '::after', '::placeholder'];
+
+function load(src) {
+  return new Promise(resolve => {
+    const f = document.createElement('iframe');
+    f.src = src;
+    f.onload = async () => {
+      try { await f.contentDocument.fonts.ready; } catch (e) {}
+      // let pace/animations settle into a stable frame
+      f.contentDocument.getAnimations().forEach(a => { try { a.pause(); a.currentTime = 0; } catch (e) {} });
+      resolve(f);
+    };
+    document.getElementById('frames').appendChild(f);
+  });
+}
+
+function describe(el) {
+  let s = el.tagName.toLowerCase();
+  if (el.id) s += '#' + el.id;
+  if (el.classList.length) s += '.' + [...el.classList].slice(0, 3).join('.');
+  return s;
+}
+
+// The one tolerated difference: style or colour of a border side that is 0px
+// wide in both builds. It cannot render, and some stock rules give the same
+// zero-width side a different style per element, which no single token can
+// reproduce.
+function invisibleBorder(p, ca, cb) {
+  const m = p.match(/^border-(top|right|bottom|left|block-start|block-end|inline-start|inline-end)-(style|color)$/);
+  if (!m) return false;
+  const w = `border-${m[1]}-width`;
+  return ca.getPropertyValue(w) === '0px' && cb.getPropertyValue(w) === '0px';
+}
+
+function compareDocs(a, b) {
+  // <head> differs by design (one stylesheet vs two), so compare what renders.
+  const all = d => [d.documentElement, d.body, ...d.body.querySelectorAll('*')];
+  const ea = all(a), eb = all(b);
+  if (ea.length !== eb.length) return { error: `element count differs: ${ea.length} vs ${eb.length}` };
+  const wa = a.defaultView, wb = b.defaultView;
+  // Freeze every animation on its first frame in both documents, so a pulse
+  // caught at different moments doesn't read as a style difference.
+  for (const d of [a, b]) d.getAnimations().forEach(x => { try { x.pause(); x.currentTime = 0; } catch (e) {} });
+  const diffs = [];
+  for (let i = 0; i < ea.length; i++) {
+    for (const ps of PSEUDOS) {
+      const ca = wa.getComputedStyle(ea[i], ps), cb = wb.getComputedStyle(eb[i], ps);
+      for (let j = 0; j < ca.length; j++) {
+        const p = ca[j];
+        if (p.startsWith('--')) continue;
+        const va = ca.getPropertyValue(p), vb = cb.getPropertyValue(p);
+        if (va !== vb && invisibleBorder(p, ca, cb)) continue;
+        if (va !== vb) diffs.push({ el: describe(ea[i]) + (ps || ''), prop: p, ref: va, tokens: vb });
+      }
+    }
+  }
+  return { elements: ea.length, diffs };
+}
+
+async function run(page, skin) {
+  const q = `skin=${skin}`;
+  const [fa, fb] = await Promise.all([load(`${page}?${q}&build=ref`), load(`${page}?${q}&build=tokens`)]);
+  const r = compareDocs(fa.contentDocument, fb.contentDocument);
+  fa.remove(); fb.remove();
+  return { page, skin, ...r };
+}
+
+(async () => {
+  const qs = new URLSearchParams(location.search);
+  const jobs = qs.get('all')
+    ? PAGES.flatMap(p => SKINS.map(s => [p, s]))
+    : [[qs.get('page') || 'index.html', qs.get('skin') || 'terran']];
+  const results = [];
+  for (const [p, s] of jobs) results.push(await run(p, s));
+  window.compareResults = results;
+
+  let html = '';
+  for (const r of results) {
+    const n = r.error ? r.error : r.diffs.length;
+    const cls = !r.error && r.diffs.length === 0 ? 'ok' : 'bad';
+    html += `<h2>${r.page} / ${r.skin}: <span class="${cls}">${r.error ? r.error : n + ' differences'}</span>` +
+            (r.elements ? ` <small>(${r.elements} elements)</small>` : '') + '</h2>';
+    if (r.diffs && r.diffs.length) {
+      html += '<table><tr><th>element</th><th>property</th><th>original</th><th>base + tokens</th></tr>' +
+        r.diffs.slice(0, 300).map(d => `<tr><td>${d.el}</td><td>${d.prop}</td><td>${d.ref}</td><td>${d.tokens}</td></tr>`).join('') +
+        '</table>';
+    }
+  }
+  document.getElementById('out').innerHTML = html;
+})();
+</script>
+</body>
+</html>

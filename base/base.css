@@ -1,0 +1,1285 @@
+html.dark {
+  background-color: var(--ts-bg);
+  color: var(--ts-text);
+  font-family: var(--ts-root-font-family, initial);
+}
+html.dark body {
+  background-color: var(--ts-bg);
+  color: var(--ts-text);
+  font-family: var(--ts-body-font-family, initial);
+}
+html.dark body {
+  background-image: var(--ts-body-bg-image);
+  background-attachment: fixed;
+}
+html.dark a {
+  color: var(--ts-link);
+  transition: var(--ts-a-transition, all 0s ease 0s);
+}
+html.dark a:hover, html.dark a:focus {
+  color: var(--ts-a-hover-fg);
+  text-decoration: none;
+  text-shadow: var(--ts-a-hover-text-shadow, none);
+}
+html.dark hr {
+  border-top-color: var(--ts-hr-border-top-color, initial);
+  border-width: var(--ts-hr-border-width, initial);
+  height: var(--ts-hr-height, initial);
+  background: var(--ts-hr-bg, initial);
+}
+html.dark .navbar-default {
+  background-color: var(--ts-surface-raised);
+  background-image: var(--ts-navbar-default-bg-image);
+  border: 0;
+  border-bottom: var(--ts-navbar-default-border-bottom);
+  box-shadow: var(--ts-navbar-default-shadow);
+  position: relative;
+}
+html.dark .navbar-default::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--ts-navbar-default-after-bottom);
+  height: var(--ts-navbar-default-after-height);
+  background: var(--ts-navbar-default-after-bg);
+  opacity: var(--ts-navbar-default-after-opacity, 1);
+  pointer-events: none;
+  box-shadow: var(--ts-navbar-default-after-shadow, none);
+  animation: var(--ts-navbar-default-after-animation, none);
+}
+@keyframes zg-breathe {
+  0%, 100% {
+    opacity: .45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+html.dark .navbar-default::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--ts-navbar-default-before-top);
+  height: var(--ts-navbar-default-before-height);
+  background-image: var(--ts-navbar-default-before-bg-image, none);
+  background-size: var(--ts-navbar-default-before-background-size, initial);
+  background-repeat: var(--ts-navbar-default-before-background-repeat, initial);
+  opacity: var(--ts-navbar-default-before-opacity, 1);
+  pointer-events: none;
+  background: var(--ts-navbar-default-before-bg, initial);
+}
+html.dark .navbar-default .navbar-brand {
+  color: var(--ts-brand);
+  font-family: var(--ts-font-display);
+  font-weight: var(--ts-navbar-default-navbar-brand-font-weight, initial);
+  letter-spacing: var(--ts-navbar-default-navbar-brand-letter-spacing);
+  text-transform: uppercase;
+  text-shadow: var(--ts-navbar-default-navbar-brand-text-shadow);
+}
+html.dark .navbar-default .navbar-nav > li > a {
+  color: var(--ts-text-dim);
+  font-family: var(--ts-font-display);
+  letter-spacing: var(--ts-navbar-default-navbar-nav-li-a-letter-spacing);
+  text-transform: uppercase;
+  border-left-width: var(--ts-navbar-default-navbar-nav-li-a-border-left-width, initial);
+  border-left-style: var(--ts-navbar-default-navbar-nav-li-a-border-left-style, initial);
+  border-left-color: var(--ts-navbar-default-navbar-nav-li-a-border-left-color, initial);
+  transition: var(--ts-navbar-default-navbar-nav-li-a-transition);
+  font-size: var(--ts-navbar-default-navbar-nav-li-a-font-size, initial);
+}
+html.dark .navbar-default .navbar-nav > li > a:hover, html.dark .navbar-default .navbar-nav > li > a:focus, html.dark .navbar-default .navbar-nav > .open > a, html.dark .navbar-default .navbar-nav > .open > a:hover, html.dark .navbar-default .navbar-nav > .open > a:focus {
+  background-color: var(--ts-navbar-default-navbar-nav-li-a-hover-bg);
+  color: var(--ts-nav-accent);
+  box-shadow: var(--ts-navbar-default-navbar-nav-li-a-hover-shadow);
+}
+html.dark .fa-nav-icons {
+  color: var(--ts-text-mute);
+}
+html.dark .navbar-nav > li > a:hover .fa-nav-icons, html.dark .navbar-nav > .open > a .fa-nav-icons {
+  color: var(--ts-nav-icon-hover);
+  text-shadow: var(--ts-navbar-nav-li-a-hover-fa-nav-icons-text-shadow, none);
+}
+html.dark .icon-theme {
+  color: var(--ts-text-dim);
+}
+html.dark .navbar-default .dropdown-menu, html.dark .dropdown-menu {
+  background-color: var(--ts-surface);
+  background-image: var(--ts-navbar-default-dropdown-menu-bg-image);
+  border: var(--ts-navbar-default-dropdown-menu-border);
+  border-top: var(--ts-navbar-default-dropdown-menu-border-top);
+  border-radius: var(--ts-navbar-default-dropdown-menu-border-radius);
+  box-shadow: var(--ts-navbar-default-dropdown-menu-shadow);
+  padding: var(--ts-navbar-default-dropdown-menu-padding);
+}
+html.dark .dropdown-menu > li > a {
+  color: var(--ts-text-dim);
+  font-family: var(--ts-font-label);
+  letter-spacing: var(--ts-dropdown-menu-li-a-letter-spacing);
+  padding: var(--ts-dropdown-menu-li-a-padding);
+  border-left: var(--ts-dropdown-menu-li-a-border-left);
+  font-weight: var(--ts-dropdown-menu-li-a-font-weight, initial);
+  transition: var(--ts-dropdown-menu-li-a-transition, all 0s ease 0s);
+}
+html.dark .dropdown-menu > li > a:hover, html.dark .dropdown-menu > li > a:focus {
+  background-color: var(--ts-dropdown-menu-li-a-hover-bg);
+  color: var(--ts-text-bright);
+  border-left-color: var(--ts-highlight);
+  padding-left: var(--ts-dropdown-menu-li-a-hover-padding-left, revert-layer);
+}
+html.dark .dropdown-menu .divider {
+  background-color: var(--ts-dropdown-menu-divider-bg, initial);
+  background: var(--ts-dropdown-menu-divider-bg-2, initial);
+}
+html.dark .dropdown-header {
+  color: var(--ts-accent);
+  font-family: var(--ts-font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--ts-dropdown-header-letter-spacing);
+  font-size: var(--ts-dropdown-header-font-size);
+}
+html.dark .panel, html.dark .panel-default {
+  background-color: var(--ts-surface);
+  border: var(--ts-panel-border);
+  border-radius: var(--ts-radius-lg);
+  box-shadow: var(--ts-panel-shadow);
+  position: var(--ts-panel-position, initial);
+  background-image: var(--ts-panel-bg-image, none);
+  border-left-width: var(--ts-panel-border-left-width, initial);
+  border-bottom-width: var(--ts-panel-border-bottom-width, initial);
+}
+html.dark .panel::before, html.dark .panel::after {
+  content: var(--ts-panel-before-content, initial);
+  position: var(--ts-panel-before-position, initial);
+  width: var(--ts-panel-before-width, initial);
+  height: var(--ts-panel-before-height, initial);
+  pointer-events: var(--ts-panel-before-pointer-events, initial);
+  z-index: var(--ts-panel-before-z-index, initial);
+}
+html.dark .panel::before {
+  top: var(--ts-panel-before-top, initial);
+  left: var(--ts-panel-before-left, initial);
+  border-top: var(--ts-panel-before-border-top, initial);
+  border-left: var(--ts-panel-before-border-left, initial);
+}
+html.dark .panel::after {
+  bottom: var(--ts-panel-after-bottom, initial);
+  right: var(--ts-panel-after-right, initial);
+  border-bottom: var(--ts-panel-after-border-bottom, initial);
+  border-right: var(--ts-panel-after-border-right, initial);
+}
+html.dark .panel-default > .panel-heading, html.dark .panel > .panel-heading {
+  background-color: var(--ts-surface-raised);
+  background-image: var(--ts-panel-default-panel-heading-bg-image);
+  border-bottom: var(--ts-panel-default-panel-heading-border-bottom);
+  border-radius: 0;
+  color: var(--ts-panel-title);
+  font-family: var(--ts-font-display);
+  font-weight: var(--ts-panel-default-panel-heading-font-weight, initial);
+  letter-spacing: var(--ts-panel-default-panel-heading-letter-spacing);
+  text-transform: uppercase;
+  position: relative;
+  padding-left: var(--ts-panel-default-panel-heading-padding-left);
+  text-shadow: var(--ts-panel-default-panel-heading-text-shadow, none);
+}
+html.dark .panel-default > .panel-heading::before, html.dark .panel > .panel-heading::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: var(--ts-panel-default-panel-heading-before-top);
+  bottom: var(--ts-panel-default-panel-heading-before-bottom);
+  width: var(--ts-panel-default-panel-heading-before-width);
+  background: var(--ts-panel-default-panel-heading-before-bg);
+  box-shadow: var(--ts-panel-default-panel-heading-before-shadow);
+  border-radius: var(--ts-panel-default-panel-heading-before-border-radius, 0);
+}
+html.dark .panel-default > .panel-heading::after, html.dark .panel > .panel-heading::after {
+  content: var(--ts-panel-default-panel-heading-after-content, initial);
+  position: var(--ts-panel-default-panel-heading-after-position, initial);
+  left: var(--ts-panel-default-panel-heading-after-left, initial);
+  right: var(--ts-panel-default-panel-heading-after-right, initial);
+  top: var(--ts-panel-default-panel-heading-after-top, initial);
+  height: var(--ts-panel-default-panel-heading-after-height, initial);
+  background-image: var(--ts-panel-default-panel-heading-after-bg-image, none);
+  background-size: var(--ts-panel-default-panel-heading-after-background-size, initial);
+  background-position: var(--ts-panel-default-panel-heading-after-background-position, initial);
+  background-repeat: var(--ts-panel-default-panel-heading-after-background-repeat, initial);
+  opacity: var(--ts-panel-default-panel-heading-after-opacity, 1);
+}
+html.dark .panel-title, html.dark .panel-heading .panel-title a, html.dark .panel-default > .panel-heading .icon-theme, html.dark .panel-default > .panel-heading a:link, html.dark .panel-default > .panel-heading a:visited {
+  color: var(--ts-panel-title);
+}
+html.dark .panel-body {
+  background-color: var(--ts-panel-body-bg);
+  color: var(--ts-text);
+}
+html.dark .panel-footer {
+  background-color: var(--ts-panel-footer-bg);
+  border-top: var(--ts-panel-footer-border-top);
+  color: var(--ts-text-dim);
+}
+html.dark .widget-header {
+  background-image: var(--ts-widget-header-bg-image);
+  color: var(--ts-panel-title);
+  font-family: var(--ts-font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--ts-widget-header-letter-spacing);
+}
+html.dark .table, html.dark .table > tbody > tr > td, html.dark .table > tbody > tr > th, html.dark .table > thead > tr > td, html.dark .table > thead > tr > th {
+  border-color: var(--ts-table-border);
+  color: var(--ts-text);
+}
+html.dark .table > thead > tr > th {
+  background-color: var(--ts-table-thead-tr-th-bg);
+  border-bottom: var(--ts-table-thead-tr-th-border-bottom);
+  color: var(--ts-accent);
+  font-family: var(--ts-font-display);
+  font-weight: var(--ts-table-thead-tr-th-font-weight, initial);
+  letter-spacing: var(--ts-table-thead-tr-th-letter-spacing);
+  text-transform: uppercase;
+  font-size: var(--ts-table-thead-tr-th-font-size);
+}
+html.dark .table > tbody > tr > td {
+  font-family: var(--ts-font-mono);
+  font-size: var(--ts-table-tbody-tr-td-font-size);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-weight: var(--ts-table-tbody-tr-td-font-weight, initial);
+}
+html.dark .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: var(--ts-table-striped-tbody-tr-nth-of-type-odd-bg);
+}
+html.dark .table-striped > tbody > tr:nth-of-type(even) {
+  background-color: var(--ts-table-striped-tbody-tr-nth-of-type-even-bg);
+}
+html.dark .table-hover > tbody > tr:hover, html.dark .table-hover > tbody > tr:hover > td {
+  background-color: var(--ts-table-hover-tbody-tr-hover-bg);
+  box-shadow: var(--ts-table-hover-tbody-tr-hover-shadow);
+}
+html.dark .bootgrid-header, html.dark .bootgrid-footer {
+  background-color: var(--ts-surface-raised);
+  border-color: var(--ts-bootgrid-header-border);
+  color: var(--ts-text-dim);
+}
+html.dark .bootgrid-table th {
+  color: var(--ts-accent);
+}
+html.dark .bootgrid-table td {
+  color: var(--ts-text);
+}
+html.dark .btn {
+  border-radius: var(--ts-radius-sm);
+  letter-spacing: var(--ts-btn-letter-spacing);
+  text-transform: uppercase;
+  border-width: 1px;
+  box-shadow: var(--ts-btn-shadow, none);
+  transition: var(--ts-btn-transition);
+  clip-path: var(--ts-btn-clip-path, initial);
+  font-size: var(--ts-btn-font-size, initial);
+  border-left-width: var(--ts-btn-border-left-width, initial);
+}
+html.dark .btn:hover {
+  filter: var(--ts-btn-hover-filter);
+}
+html.dark .btn:active {
+  box-shadow: var(--ts-btn-active-shadow, none);
+  filter: var(--ts-btn-active-filter, none);
+}
+html.dark .btn-default, html.dark .lnms-btn-default {
+  background-color: var(--ts-button-bg) !important;
+  background-image: var(--ts-btn-default-bg-image) !important;
+  border-color: var(--ts-btn-default-border) !important;
+  color: var(--ts-text) !important;
+}
+html.dark .btn-default:hover, html.dark .lnms-btn-default:hover {
+  box-shadow: var(--ts-btn-default-hover-shadow, none) !important;
+}
+html.dark .btn-primary {
+  background-color: var(--ts-btn-primary-bg) !important;
+  background-image: var(--ts-btn-primary-bg-image) !important;
+  border-color: var(--ts-btn-primary-border) !important;
+  color: var(--ts-text-bright) !important;
+  box-shadow: var(--ts-btn-primary-shadow, none) !important;
+}
+html.dark .lnms-btn-primary {
+  background-color: var(--ts-lnms-btn-primary-bg) !important;
+  background-image: var(--ts-lnms-btn-primary-bg-image) !important;
+  border-color: var(--ts-lnms-btn-primary-border) !important;
+  color: var(--ts-text-bright) !important;
+  box-shadow: var(--ts-lnms-btn-primary-shadow, none) !important;
+}
+html.dark .btn-success, html.dark .lnms-btn-success {
+  background-color: var(--ts-btn-success-bg) !important;
+  background-image: var(--ts-btn-success-bg-image) !important;
+  border-color: var(--ts-btn-success-border) !important;
+  color: var(--ts-btn-success-fg) !important;
+}
+html.dark .btn-danger, html.dark .lnms-btn-danger {
+  background-color: var(--ts-btn-danger-bg) !important;
+  background-image: var(--ts-btn-danger-bg-image) !important;
+  border-color: var(--ts-btn-danger-border) !important;
+  color: #fff !important;
+  box-shadow: var(--ts-btn-danger-shadow) !important;
+}
+html.dark .btn-warning {
+  background-color: var(--ts-btn-warning-bg) !important;
+  background-image: var(--ts-btn-warning-bg-image) !important;
+  border-color: var(--ts-btn-warning-border) !important;
+  color: var(--ts-btn-warning-fg) !important;
+  box-shadow: var(--ts-btn-warning-shadow, none) !important;
+}
+html.dark .lnms-btn-warning {
+  background-color: var(--ts-lnms-btn-warning-bg) !important;
+  background-image: var(--ts-lnms-btn-warning-bg-image) !important;
+  border-color: var(--ts-lnms-btn-warning-border) !important;
+  color: var(--ts-lnms-btn-warning-fg) !important;
+  box-shadow: var(--ts-lnms-btn-warning-shadow, none) !important;
+}
+html.dark .form-control, html.dark input[type="text"], html.dark input[type="password"], html.dark input[type="number"], html.dark input[type="search"], html.dark textarea, html.dark select {
+  background-color: var(--ts-form-control-bg);
+  border: var(--ts-form-control-border);
+  border-top-color: var(--ts-form-control-border-top-color, initial);
+  border-radius: var(--ts-radius-sm);
+  box-shadow: var(--ts-form-control-shadow);
+  color: var(--ts-text);
+  font-family: var(--ts-form-control-font-family, initial);
+  font-weight: var(--ts-form-control-font-weight, initial);
+  transition: var(--ts-form-control-transition, all 0s ease 0s);
+  border-top-width: var(--ts-form-control-border-top-width, initial);
+}
+html.dark .form-control:focus {
+  border-color: var(--ts-highlight);
+  box-shadow: var(--ts-form-control-focus-shadow);
+  outline: 0;
+}
+html.dark .form-control::placeholder {
+  color: var(--ts-text-mute);
+}
+html.dark .input-group-addon {
+  background-color: var(--ts-surface-raised);
+  border-color: var(--ts-input-group-addon-border);
+  color: var(--ts-addon-text);
+}
+html.dark .alert {
+  border-radius: var(--ts-radius-md);
+  border-width: var(--ts-alert-border-width);
+  font-family: var(--ts-font-label);
+  letter-spacing: var(--ts-alert-letter-spacing, initial);
+  box-shadow: var(--ts-bevel);
+  font-weight: var(--ts-alert-font-weight, initial);
+}
+html.dark .alert-danger {
+  background-color: var(--ts-danger-deep);
+  border-color: var(--ts-alert-danger-border);
+  color: var(--ts-alert-danger-fg);
+  box-shadow: var(--ts-alert-danger-shadow, none);
+}
+html.dark .alert-success {
+  background-color: var(--ts-success-deep);
+  border-color: var(--ts-alert-success-border);
+  color: var(--ts-alert-success-fg);
+  box-shadow: var(--ts-alert-success-shadow, none);
+}
+html.dark .alert-warning {
+  background-color: var(--ts-warning-deep);
+  border-color: var(--ts-alert-warning-border);
+  color: var(--ts-alert-warning-fg);
+  box-shadow: var(--ts-alert-warning-shadow, none);
+}
+html.dark .alert-info {
+  background-color: var(--ts-info-deep);
+  border-color: var(--ts-alert-info-border);
+  color: var(--ts-alert-info-fg);
+  box-shadow: var(--ts-alert-info-shadow, none);
+}
+html.dark .label {
+  border-radius: var(--ts-radius-sm);
+  font-family: var(--ts-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: var(--ts-label-letter-spacing);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  box-shadow: var(--ts-label-shadow, none);
+  clip-path: var(--ts-label-clip-path, initial);
+  padding: var(--ts-label-padding, initial);
+}
+html.dark .badge {
+  border-radius: var(--ts-radius-sm);
+  font-family: var(--ts-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: var(--ts-badge-letter-spacing);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  box-shadow: var(--ts-badge-shadow, none);
+  clip-path: var(--ts-badge-clip-path, initial);
+  padding: var(--ts-badge-padding, initial);
+}
+html.dark .badge-navbar-user {
+  padding: var(--ts-badge-navbar-user-padding);
+}
+html.dark .label-danger, html.dark .badge-danger {
+  background-color: var(--ts-label-danger-bg);
+  color: var(--ts-label-danger-fg, initial);
+}
+html.dark .label-success, html.dark .badge-success {
+  background-color: var(--ts-label-success-bg);
+  color: var(--ts-label-success-fg, initial);
+}
+html.dark .label-warning, html.dark .badge-warning {
+  background-color: var(--ts-label-warning-bg);
+  color: var(--ts-label-warning-fg);
+}
+html.dark .label-info, html.dark .badge-info {
+  background-color: var(--ts-label-info-bg);
+  color: var(--ts-label-info-fg, initial);
+}
+html.dark .label-default, html.dark .badge-default {
+  background-color: var(--ts-surface-hover);
+  color: var(--ts-label-default-fg, initial);
+}
+html.dark .badge-navbar-user.badge-danger {
+  background-color: var(--ts-badge-alert);
+  box-shadow: var(--ts-badge-navbar-user-badge-danger-shadow);
+  animation: var(--ts-badge-navbar-user-badge-danger-animation);
+  color: var(--ts-badge-navbar-user-badge-danger-fg, initial);
+  border-radius: var(--ts-badge-navbar-user-badge-danger-border-radius, 0);
+}
+@keyframes zg-swell {
+  0%, 100% {
+    box-shadow: 0 0 7px rgba(216, 69, 63, .5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 17px rgba(216, 69, 63, .95);
+    transform: scale(1.09);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.dark .badge-navbar-user.badge-danger, html.dark .navbar-default::after {
+    animation: none;
+  }
+}
+@keyframes pr-pulse {
+  0%, 100% {
+    box-shadow: 0 0 7px rgba(255, 92, 122, .5);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 92, 122, .95);
+  }
+}
+@keyframes tn-led {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(255, 74, 61, .55);
+  }
+  50% {
+    box-shadow: 0 0 13px rgba(255, 74, 61, .95);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.dark .badge-navbar-user.badge-danger {
+    animation: none;
+  }
+}
+html.dark .device-link-up, html.dark .device-link-down, html.dark .device-link-disabled {
+  font-family: var(--ts-font-mono);
+  font-size: var(--ts-device-link-up-font-size);
+  letter-spacing: var(--ts-device-link-up-letter-spacing);
+  font-weight: var(--ts-device-link-up-font-weight, initial);
+}
+html.dark .device-link-up {
+  color: var(--ts-success) !important;
+}
+html.dark .device-link-down {
+  color: var(--ts-danger-text) !important;
+  text-shadow: var(--ts-device-link-down-text-shadow);
+}
+html.dark .device-link-disabled {
+  color: var(--ts-text-mute) !important;
+}
+html.dark .pace .pace-progress {
+  background: var(--ts-pace-pace-progress-bg);
+}
+html.dark .pace .pace-progress-inner {
+  box-shadow: var(--ts-pace-pace-progress-inner-shadow);
+}
+html.dark .pace .pace-activity {
+  border-top-color: var(--ts-highlight);
+  border-left-color: var(--ts-progress);
+}
+html.dark .pagemenu-selected {
+  background-color: var(--ts-pagemenu-selected-bg);
+  box-shadow: var(--ts-pagemenu-selected-shadow);
+}
+html.dark .well {
+  background-color: var(--ts-well-bg);
+  border: var(--ts-well-border);
+  box-shadow: var(--ts-well-shadow);
+  border-radius: var(--ts-well-border-radius, 0);
+  border-left-width: var(--ts-well-border-left-width, initial);
+}
+html.dark .nav-tabs {
+  border-bottom-color: var(--ts-nav-tabs-border-bottom-color, initial);
+}
+html.dark .nav-tabs > li > a {
+  color: var(--ts-text-dim);
+  border-radius: var(--ts-nav-tabs-li-a-border-radius);
+  font-family: var(--ts-nav-tabs-li-a-font-family, initial);
+  letter-spacing: var(--ts-nav-tabs-li-a-letter-spacing, initial);
+  text-transform: var(--ts-nav-tabs-li-a-text-transform, initial);
+  font-size: var(--ts-nav-tabs-li-a-font-size, initial);
+}
+html.dark .nav-tabs > li.active > a, html.dark .nav-tabs > li.active > a:hover, html.dark .nav-tabs > li.active > a:focus {
+  background-color: var(--ts-surface);
+  border-color: var(--ts-nav-tabs-li-active-a-border);
+  border-top: var(--ts-nav-tabs-li-active-a-border-top);
+  color: var(--ts-panel-title);
+  border-bottom-color: var(--ts-nav-tabs-li-active-a-border-bottom-color, initial);
+}
+html.dark .modal-content {
+  background-color: var(--ts-surface);
+  border: var(--ts-modal-content-border);
+  border-top: var(--ts-modal-content-border-top);
+  border-radius: var(--ts-radius-lg);
+  box-shadow: var(--ts-modal-content-shadow);
+  border-left-width: var(--ts-modal-content-border-left-width, initial);
+}
+html.dark .modal-header, html.dark .modal-footer {
+  border-color: var(--ts-border);
+}
+html.dark pre, html.dark code {
+  background-color: var(--ts-pre-bg);
+  border: var(--ts-pre-border);
+  border-radius: var(--ts-radius-sm);
+  color: var(--ts-code-text);
+  font-family: var(--ts-font-code);
+  box-shadow: var(--ts-pre-shadow);
+  border-left: var(--ts-pre-border-left, initial);
+}
+html.dark .graph-image, html.dark img.graph-image {
+  background-color: var(--ts-surface);
+  border: var(--ts-graph-image-border);
+  border-radius: var(--ts-radius-sm);
+  box-shadow: var(--ts-bevel);
+}
+html.dark .gs-w, html.dark .grid-stack .grid-stack-item-content {
+  background-color: var(--ts-surface);
+  background-image: var(--ts-gs-w-bg-image);
+  border: var(--ts-gs-w-border);
+  border-radius: var(--ts-radius-md);
+  box-shadow: var(--ts-gs-w-shadow);
+  color: var(--ts-text);
+  border-left-width: var(--ts-gs-w-border-left-width, initial);
+}
+html.dark .dashboard-widget-title, html.dark .grid-stack .grid-stack-item-content .widget-header {
+  background-image: var(--ts-dashboard-widget-title-bg-image);
+  border-bottom: var(--ts-dashboard-widget-title-border-bottom);
+  color: var(--ts-panel-title);
+  font-family: var(--ts-font-display);
+  font-weight: var(--ts-dashboard-widget-title-font-weight, initial);
+  letter-spacing: var(--ts-dashboard-widget-title-letter-spacing);
+  text-transform: uppercase;
+}
+html.dark .widget-alert-totals .label, html.dark .widget-availability, html.dark .widget-alert {
+  font-family: var(--ts-font-mono);
+  letter-spacing: var(--ts-widget-alert-totals-label-letter-spacing, initial);
+  font-weight: var(--ts-widget-alert-totals-label-font-weight, initial);
+}
+html.dark .dropdown-submenu > .dropdown-menu {
+  border-top-width: 2px;
+  margin-top: var(--ts-dropdown-submenu-dropdown-menu-margin-top);
+}
+html.dark * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ts-root-scrollbar-color);
+}
+html.dark ::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+html.dark ::-webkit-scrollbar-track {
+  background: var(--ts-webkit-scrollbar-track-bg);
+  border-left: var(--ts-webkit-scrollbar-track-border-left);
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: var(--ts-webkit-scrollbar-thumb-bg);
+  border: var(--ts-webkit-scrollbar-thumb-border);
+  border-radius: 6px;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--ts-webkit-scrollbar-thumb-hover-bg);
+}
+html.dark ::-webkit-scrollbar-corner {
+  background: var(--ts-webkit-scrollbar-corner-bg);
+}
+html.dark .leaflet-container {
+  background: var(--ts-surface);
+}
+html.dark .leaflet-bar a, html.dark .leaflet-control-layers, html.dark .leaflet-popup-content-wrapper, html.dark .leaflet-popup-tip {
+  background-color: var(--ts-surface-raised);
+  color: var(--ts-text);
+  border-color: var(--ts-border);
+}
+html.dark .panel-primary, html.dark .panel-success, html.dark .panel-info, html.dark .panel-warning, html.dark .panel-danger {
+  background-color: var(--ts-surface);
+}
+html.dark .panel-primary > .panel-heading {
+  background: var(--ts-info-deep);
+  border-color: var(--ts-info);
+  color: var(--ts-text-bright);
+}
+html.dark .panel-success > .panel-heading {
+  background: var(--ts-success-deep);
+  border-color: var(--ts-success);
+  color: var(--ts-text-bright);
+}
+html.dark .panel-info > .panel-heading {
+  background: var(--ts-info-deep);
+  border-color: var(--ts-info);
+  color: var(--ts-text-bright);
+}
+html.dark .panel-warning > .panel-heading {
+  background: var(--ts-warning-deep);
+  border-color: var(--ts-warning);
+  color: var(--ts-text-bright);
+}
+html.dark .panel-danger > .panel-heading {
+  background: var(--ts-danger-deep);
+  border-color: var(--ts-danger);
+  color: var(--ts-text-bright);
+}
+html.dark .panel-primary, html.dark .panel-info {
+  border-color: var(--ts-info);
+}
+html.dark .panel-success {
+  border-color: var(--ts-success);
+}
+html.dark .panel-warning {
+  border-color: var(--ts-warning);
+}
+html.dark .panel-danger {
+  border-color: var(--ts-danger);
+}
+html.dark .text-muted {
+  color: var(--ts-text-mute) !important;
+}
+html.dark .text-primary {
+  color: var(--ts-info);
+}
+html.dark .text-info {
+  color: var(--ts-info);
+}
+html.dark .text-success {
+  color: var(--ts-success);
+}
+html.dark .text-warning {
+  color: var(--ts-warning);
+}
+html.dark .text-danger {
+  color: var(--ts-danger);
+}
+html.dark .bg-success {
+  background-color: var(--ts-success-deep) !important;
+  color: var(--ts-text);
+}
+html.dark .bg-info {
+  background-color: var(--ts-info-deep) !important;
+  color: var(--ts-text);
+}
+html.dark .bg-danger {
+  background-color: var(--ts-danger-deep) !important;
+  color: var(--ts-text);
+}
+html.dark mark, html.dark .mark {
+  background-color: var(--ts-accent);
+  color: #14100a;
+  padding: 0 .25em;
+  border-radius: var(--ts-radius-sm);
+}
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6, html.dark .h1, html.dark .h2, html.dark .h3, html.dark .h4, html.dark .h5, html.dark .h6 {
+  color: var(--ts-text-bright);
+  font-family: var(--ts-font-display);
+}
+html.dark .label-primary, html.dark .badge-primary {
+  background-color: var(--ts-info-deep);
+  color: var(--ts-text-bright);
+}
+html.dark .btn-info, html.dark .lnms-btn-info {
+  background-color: var(--ts-info-deep) !important;
+  border-color: var(--ts-info) !important;
+  color: var(--ts-text-bright) !important;
+}
+html.dark .list-group-item {
+  background-color: var(--ts-surface);
+  border-color: var(--ts-border);
+  color: var(--ts-text);
+}
+html.dark .list-group-item:hover {
+  background-color: var(--ts-surface-hover);
+}
+html.dark .list-group-item-danger {
+  background-color: var(--ts-danger-deep);
+  border-color: var(--ts-danger);
+  color: var(--ts-text);
+}
+html.dark .pagination > li > a, html.dark .pagination > li > span {
+  background-color: var(--ts-surface-raised);
+  border-color: var(--ts-border);
+  color: var(--ts-text-dim);
+}
+html.dark .pagination > li > a:hover {
+  background-color: var(--ts-surface-hover);
+  border-color: var(--ts-accent);
+  color: var(--ts-text-bright);
+}
+html.dark .pagination > .active > a, html.dark .pagination > .active > span, html.dark .pagination > .active > a:hover {
+  background-color: var(--ts-surface-hover);
+  border-color: var(--ts-accent);
+  color: var(--ts-accent);
+}
+html.dark .pagination > .disabled > span, html.dark .pagination > .disabled > a {
+  background-color: var(--ts-surface);
+  border-color: var(--ts-border);
+  color: var(--ts-text-mute);
+}
+html.dark .close {
+  color: var(--ts-text-dim);
+  text-shadow: none;
+  opacity: .8;
+}
+html.dark .close:hover {
+  color: var(--ts-danger);
+  opacity: 1;
+}
+html.dark .popover {
+  background-color: var(--ts-surface-raised);
+  border-color: var(--ts-border);
+  color: var(--ts-text);
+}
+html.dark .popover-title {
+  background-color: var(--ts-surface);
+  border-bottom-color: var(--ts-border);
+  color: var(--ts-accent);
+  font-family: var(--ts-font-display);
+}
+html.dark .popover.top > .arrow::after {
+  border-top-color: var(--ts-surface-raised);
+}
+html.dark .popover.bottom > .arrow::after {
+  border-bottom-color: var(--ts-surface-raised);
+}
+html.dark .popover.left > .arrow::after {
+  border-left-color: var(--ts-surface-raised);
+}
+html.dark .popover.right > .arrow::after {
+  border-right-color: var(--ts-surface-raised);
+}
+html.dark .navbar-default .navbar-toggle {
+  border-color: var(--ts-border);
+  background-color: var(--ts-surface-raised);
+}
+html.dark .navbar-default .navbar-toggle:hover, html.dark .navbar-default .navbar-toggle:focus {
+  background-color: var(--ts-surface-hover);
+}
+html.dark .navbar-default .navbar-toggle .icon-bar {
+  background-color: var(--ts-accent);
+}
+html.dark .table-bordered, html.dark .table-bordered > thead > tr > th, html.dark .table-bordered > tbody > tr > td, html.dark .table-bordered > tbody > tr > th {
+  border-color: var(--ts-border);
+}
+html.dark .table-responsive {
+  border-color: var(--ts-border);
+}
+html.dark .help-block {
+  color: var(--ts-text-mute);
+}
+html.dark .has-error .form-control {
+  border-color: var(--ts-danger);
+}
+html.dark .has-error .control-label, html.dark .has-error .help-block {
+  color: var(--ts-danger);
+}
+html.dark .has-success .form-control {
+  border-color: var(--ts-success);
+}
+html.dark .has-success .control-label {
+  color: var(--ts-success);
+}
+html.dark .device-overview, html.dark .device-availability, html.dark .service-availability {
+  background-color: var(--ts-surface);
+  color: var(--ts-text);
+}
+html.dark .expandable {
+  background-color: var(--ts-surface-raised);
+}
+html.dark .interface-upup {
+  color: var(--ts-success);
+}
+html.dark .blue {
+  color: var(--ts-info) !important;
+}
+html.dark .grey {
+  color: var(--ts-text-mute) !important;
+}
+html.dark .red {
+  color: var(--ts-danger) !important;
+}
+html.dark .select2-container--bootstrap .select2-selection, html.dark .select2-container--bootstrap .select2-dropdown {
+  background-color: var(--ts-surface);
+  border-color: var(--ts-border);
+  color: var(--ts-text);
+}
+html.dark .select2-container--bootstrap .select2-selection__rendered {
+  color: var(--ts-text);
+}
+html.dark .select2-container--bootstrap .select2-results__option {
+  background-color: var(--ts-surface);
+  color: var(--ts-text-dim);
+}
+html.dark .select2-container--bootstrap .select2-results__option--highlighted {
+  background-color: var(--ts-surface-hover);
+  color: var(--ts-text-bright);
+}
+html.dark .select2-container--bootstrap .select2-search__field {
+  background-color: var(--ts-surface);
+  border-color: var(--ts-border);
+  color: var(--ts-text);
+}
+html.dark #overDiv, html.dark .overlib, html.dark .overlib-contents {
+  background-color: var(--ts-surface-raised) !important;
+  border-color: var(--ts-border) !important;
+  color: var(--ts-text) !important;
+}
+html.dark .overlib-text {
+  color: var(--ts-text) !important;
+}
+html.dark .page-availability-report-select {
+  color: var(--ts-text);
+  background-color: var(--ts-surface);
+}
+html.dark .with-nav-tabs.panel-default .nav-tabs > li > a {
+  color: var(--ts-text-dim);
+}
+html.dark .with-nav-tabs.panel-default .nav-tabs > li.active > a {
+  color: var(--ts-accent);
+}
+html.dark .grid-stack-item-content > header {
+  background: var(--ts-grid-stack-item-content-header-bg) !important;
+  border-bottom: var(--ts-grid-stack-item-content-header-border-bottom);
+  color: var(--ts-text-bright) !important;
+  font-family: var(--ts-font-display);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+html.dark .grid-stack-item-content > header .dashboard-widget-title {
+  color: var(--ts-text-bright);
+}
+html.dark .grid-stack-item-content > header a, html.dark .grid-stack-item-content > header .fade-edit a {
+  color: var(--ts-text-dim);
+}
+html.dark .grid-stack-item-content > header a:hover {
+  color: var(--ts-accent);
+}
+html.dark .table > thead > tr.success > td, html.dark .table > tbody > tr.success > td, html.dark .table > thead > tr.success > th, html.dark .table > tbody > tr.success > th, html.dark .table > thead > tr > td.success, html.dark .table > tbody > tr > td.success {
+  background-color: var(--ts-success-deep);
+  color: var(--ts-text-bright);
+  box-shadow: var(--ts-table-thead-tr-success-td-shadow);
+}
+html.dark .table > thead > tr.info > td, html.dark .table > tbody > tr.info > td, html.dark .table > thead > tr.info > th, html.dark .table > tbody > tr.info > th, html.dark .table > thead > tr > td.info, html.dark .table > tbody > tr > td.info {
+  background-color: var(--ts-info-deep);
+  color: var(--ts-text-bright);
+  box-shadow: var(--ts-table-thead-tr-info-td-shadow);
+}
+html.dark .table > thead > tr.warning > td, html.dark .table > tbody > tr.warning > td, html.dark .table > thead > tr.warning > th, html.dark .table > tbody > tr.warning > th, html.dark .table > thead > tr > td.warning, html.dark .table > tbody > tr > td.warning {
+  background-color: var(--ts-warning-deep);
+  color: var(--ts-text-bright);
+  box-shadow: var(--ts-table-thead-tr-warning-td-shadow);
+}
+html.dark .table > thead > tr.danger > td, html.dark .table > tbody > tr.danger > td, html.dark .table > thead > tr.danger > th, html.dark .table > tbody > tr.danger > th, html.dark .table > thead > tr > td.danger, html.dark .table > tbody > tr > td.danger {
+  background-color: var(--ts-danger-deep);
+  color: var(--ts-text-bright);
+  box-shadow: var(--ts-table-thead-tr-danger-td-shadow);
+}
+html.dark .table-hover > tbody > tr.success:hover > td, html.dark .table-hover > tbody > tr:hover > td.success {
+  background-color: var(--ts-success);
+  color: #0b1408;
+}
+html.dark .table-hover > tbody > tr.info:hover > td, html.dark .table-hover > tbody > tr:hover > td.info {
+  background-color: var(--ts-info);
+  color: #06111c;
+}
+html.dark .table-hover > tbody > tr.warning:hover > td, html.dark .table-hover > tbody > tr:hover > td.warning {
+  background-color: var(--ts-warning);
+  color: #17100a;
+}
+html.dark .table-hover > tbody > tr.danger:hover > td, html.dark .table-hover > tbody > tr:hover > td.danger {
+  background-color: var(--ts-danger);
+  color: #fff;
+}
+html.dark .table > tbody > tr.success > td a, html.dark .table > tbody > tr.info > td a, html.dark .table > tbody > tr.warning > td a, html.dark .table > tbody > tr.danger > td a {
+  color: var(--ts-text-bright);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+html.dark .bootstrap-switch {
+  border-color: var(--ts-border);
+  border-radius: var(--ts-radius-sm);
+}
+html.dark .bootstrap-switch .bootstrap-switch-handle-on, html.dark .bootstrap-switch .bootstrap-switch-handle-off, html.dark .bootstrap-switch .bootstrap-switch-label {
+  font-family: var(--ts-font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+html.dark .bootstrap-switch .bootstrap-switch-label {
+  background-color: var(--ts-surface-raised);
+  color: var(--ts-text);
+}
+html.dark .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-primary, html.dark .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-default {
+  background-color: var(--ts-success-deep);
+  color: var(--ts-success);
+}
+html.dark .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-default, html.dark .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-primary {
+  background-color: var(--ts-danger-deep);
+  color: var(--ts-danger);
+}
+html.dark .bootstrap-switch.bootstrap-switch-focused {
+  border-color: var(--ts-accent);
+  box-shadow: var(--ts-bootstrap-switch-bootstrap-switch-focuse-shadow);
+}
+html.dark .leaflet-tile {
+  filter: var(--ts-leaflet-tile-filter);
+}
+html.dark .leaflet-overlay-pane path {
+  stroke: var(--ts-accent);
+  stroke-opacity: .85;
+}
+html.dark .leaflet-control-attribution {
+  background: rgba(0, 0, 0, .6) !important;
+  color: var(--ts-text-mute) !important;
+}
+html.dark .leaflet-control-attribution a {
+  color: var(--ts-text-dim) !important;
+}
+html.dark .device-image, html.dark img.os-icon {
+  border-radius: var(--ts-radius-sm);
+  padding: 2px;
+}
+html.dark .tt-menu, html.dark .tt-open {
+  background-color: var(--ts-surface);
+  border: var(--ts-tt-menu-border);
+  border-radius: var(--ts-radius-sm);
+  color: var(--ts-text);
+}
+html.dark .tt-suggestion {
+  color: var(--ts-text-dim);
+}
+html.dark .tt-suggestion:hover {
+  background-color: var(--ts-surface-hover);
+  color: var(--ts-text-bright);
+}
+html.dark .tt-suggestion:hover a {
+  color: var(--ts-text-bright) !important;
+}
+html.dark .device-down {
+  background: var(--ts-danger-deep);
+}
+html.dark .port-down {
+  background: var(--ts-warning-deep);
+}
+html.dark .device-rebooted {
+  background: var(--ts-success-deep);
+}
+html.dark .service-down, html.dark .bgp-down {
+  background: var(--ts-danger-deep);
+}
+html.dark .infobox, html.dark .infobox-down, html.dark .infobox .rrd-pre {
+  background-color: var(--ts-info-deep);
+  color: var(--ts-text);
+}
+html.dark .errorbox {
+  background-color: var(--ts-danger-deep);
+  color: var(--ts-text);
+}
+html.dark .messagebox {
+  background-color: var(--ts-success-deep);
+  color: var(--ts-text);
+}
+html.dark .greybox {
+  background-color: var(--ts-surface);
+}
+html.dark .graphhead, html.dark .sectionhead {
+  color: var(--ts-text-bright);
+  font-family: var(--ts-font-display);
+}
+html.dark .tablehead {
+  color: var(--ts-text-dim);
+}
+html.dark .body-head-2, html.dark .table-head-2 {
+  background-color: var(--ts-surface-raised);
+  color: var(--ts-text-bright);
+}
+html.dark .list-device-down, html.dark a.list-device-down, html.dark a.list-device-down:visited {
+  color: var(--ts-danger);
+}
+html.dark a.list-device-ignored-up {
+  color: var(--ts-success);
+}
+html.dark a.list-device-disabled, html.dark a.list-device-disabled:visited, html.dark a.list-device-ignored {
+  color: var(--ts-text-mute);
+}
+html.dark .interface, html.dark .interface-admindown, html.dark a.interface-admindown {
+  color: var(--ts-text-mute);
+}
+html.dark .interface-updown, html.dark a.interface-updown {
+  color: var(--ts-danger);
+}
+html.dark a.interface-upup:hover, html.dark a.interface-updown:hover {
+  color: var(--ts-accent);
+}
+html.dark .sensor-low, html.dark a.sensor-low, html.dark .sensor-high, html.dark a.sensor-high {
+  color: var(--ts-danger);
+}
+html.dark .sensor-ok, html.dark a.sensor-ok {
+  color: var(--ts-success);
+}
+html.dark a.sensor-ok:hover, html.dark a.sensor-low:hover, html.dark a.sensor-high:hover {
+  color: var(--ts-accent);
+}
+html.dark .availability-map-oldview-box-up, html.dark .availability-map-oldview-box-ignored-up, html.dark .widget-alert-map-compact-ok {
+  background-color: var(--ts-success);
+}
+html.dark .availability-map-oldview-box-warn, html.dark .widget-alert-map-compact-warning {
+  background-color: var(--ts-warning);
+}
+html.dark .availability-map-oldview-box-down, html.dark .widget-alert-map-compact-critical {
+  background-color: var(--ts-danger);
+}
+html.dark .availability-map-oldview-box-ignored, html.dark .availability-map-oldview-box-ignored-down {
+  background-color: var(--ts-text-mute);
+}
+html.dark .report-up {
+  color: var(--ts-success);
+}
+html.dark .report-warning {
+  color: var(--ts-warning);
+}
+html.dark .report-down {
+  color: var(--ts-danger);
+}
+html.dark .rules-group-header .btn-primary {
+  background-color: var(--ts-surface-raised);
+  border-color: var(--ts-border);
+}
+html.dark .rules-group-header .active {
+  background-color: var(--ts-success-deep);
+  border-color: var(--ts-success);
+}
+html.dark .green, html.dark a.green {
+  color: var(--ts-success) !important;
+}
+html.dark .orange, html.dark a.orange {
+  color: var(--ts-warning) !important;
+}
+html.dark .purple, html.dark a.purple {
+  color: var(--ts-info) !important;
+}
+html.dark .minigraph-div {
+  border-color: var(--ts-border);
+}
+html.dark .popover-inner {
+  background-color: var(--ts-surface-raised);
+  color: var(--ts-text);
+}
+html.dark .multiselect__tags, html.dark .multiselect__content-wrapper, html.dark .multiselect__input, html.dark .multiselect__single {
+  background-color: var(--ts-surface);
+  border-color: var(--ts-border);
+  color: var(--ts-text);
+}
+html.dark .multiselect__option--highlight {
+  background-color: var(--ts-surface-hover);
+  color: var(--ts-text-bright);
+}
+html.dark .multiselect__option--selected {
+  background-color: var(--ts-success-deep);
+  color: var(--ts-text-bright);
+}
+html.dark .multiselect__tag {
+  background-color: var(--ts-surface-raised);
+  color: var(--ts-text);
+}
+html.dark .multiselect__placeholder {
+  color: var(--ts-text-mute);
+}
+html.dark .grid-stack-item-content > header {
+  text-transform: none;
+  letter-spacing: .01em;
+  line-height: 1.25;
+  padding-top: .5rem;
+  padding-bottom: .5rem;
+  overflow: hidden;
+}
+html.dark .grid-stack-item-content > header .dashboard-widget-title {
+  text-transform: none;
+  letter-spacing: .01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+html.dark .device-overview > .panel-body > .row:nth-child(odd) {
+  background-color: rgba(255, 255, 255, .025);
+}
+html.dark .device-overview > .panel-body > .row:hover {
+  background-color: var(--ts-surface-hover);
+}
+html.dark tr.search:nth-child(odd) {
+  background: var(--ts-surface);
+}
+html.dark tr.search:nth-child(even) {
+  background: var(--ts-surface-raised);
+}
+html.dark .tooltip.popover .popover-inner {
+  background: var(--ts-surface-raised);
+  color: var(--ts-text);
+}
+html.dark .tooltip.popover .popover-arrow {
+  border-color: var(--ts-surface-raised);
+}
+html.dark .zoomIn, html.dark .zoomOut {
+  background-color: var(--ts-surface-raised);
+  color: var(--ts-text);
+  border-color: var(--ts-border);
+}
+html.dark .device-head, html.dark a.list-device {
+  color: var(--ts-info);
+}
+html.dark .device-table-metrics > a {
+  color: var(--ts-text);
+}
+html.dark .multiselect__spinner {
+  background: var(--ts-surface);
+}
+html.dark .multiselect--disabled .multiselect__current, html.dark .multiselect--disabled .multiselect__select {
+  background: var(--ts-surface);
+  color: var(--ts-text-mute);
+}
+html.dark .multiselect__select:before {
+  border-top-color: var(--ts-text-dim);
+}
+html.dark .multiselect__tag-icon:after {
+  color: var(--ts-text);
+}
+html.dark .multiselect__tag-icon:focus, html.dark .multiselect__tag-icon:hover {
+  background: var(--ts-danger);
+}
+html.dark .multiselect__option--disabled {
+  color: var(--ts-text-mute);
+}
+html.dark .multiselect__option--group {
+  background: var(--ts-surface-raised);
+  color: var(--ts-accent);
+}
+html.dark .imgshadow {
+  background: var(--ts-surface);
+}
+html.dark .black_box {
+  background-color: var(--ts-surface-raised);
+  color: var(--ts-text);
+}
+html.dark .blackbg {
+  background-color: var(--ts-surface);
+}
+html.dark .footer-text, html.dark .header-text-3 {
+  color: var(--ts-text);
+}
+html.dark .greenCluster {
+  background-color: var(--ts-success);
+  color: #0b1408;
+  border-color: transparent;
+}
+html.dark .blueCluster {
+  background-color: var(--ts-info);
+  color: var(--ts-text-bright);
+  border-color: transparent;
+}
+html.dark .redCluster {
+  background-color: var(--ts-danger);
+  color: #fff;
+  border-color: transparent;
+}
+html.dark .marker-cluster {
+  font-weight: 700;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, .35);
+}
+html.dark .table > thead > tr.active > td, html.dark .table > tbody > tr.active > td, html.dark .table > thead > tr.active > th, html.dark .table > tbody > tr.active > th, html.dark .table > thead > tr > td.active, html.dark .table > tbody > tr > td.active {
+  background-color: var(--ts-surface-hover);
+  color: var(--ts-text-bright);
+}
+html.dark .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-success, html.dark .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-success {
+  background: var(--ts-success-deep);
+  color: var(--ts-success);
+}
+html.dark .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-danger, html.dark .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-danger {
+  background: var(--ts-danger-deep);
+  color: var(--ts-danger-text);
+}
+html.dark .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-warning, html.dark .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-warning {
+  background: var(--ts-warning-deep);
+  color: var(--ts-warning);
+}
+html.dark .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-info, html.dark .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-info {
+  background: var(--ts-info-deep);
+  color: var(--ts-info);
+}
+html.dark .select2-container {
+  color: var(--ts-text);
+}
+html.dark .nav > li > a:hover, html.dark .nav > li > a:focus {
+  background-color: var(--ts-surface-hover);
+  border-color: var(--ts-border);
+}
+html.dark .btn:not(.fa):not([class*="fa-"]) {
+  font-family: var(--ts-font-display);
+}
+html.dark .select2-container--bootstrap .select2-selection--single .select2-selection__placeholder, html.dark .select2-container--bootstrap .select2-selection--multiple .select2-selection__placeholder {
+  color: var(--ts-text-mute);
+}
+html.dark .select2-container--bootstrap .select2-selection__clear {
+  color: var(--ts-text-dim);
+}
+html.dark .select2-container--bootstrap .select2-selection__clear:hover {
+  color: var(--ts-danger-text);
+}
+html.dark {
+  --tw-color-dark-gray-500: var(--ts-bg);
+  --tw-color-dark-gray-400: var(--ts-surface);
+  --tw-color-dark-gray-300: var(--ts-surface-raised);
+  --tw-color-dark-gray-200: var(--ts-surface-hover);
+  --tw-color-dark-gray-100: var(--ts-border);
+  --tw-color-dark-white-100: var(--ts-text-bright);
+  --tw-color-dark-white-200: var(--ts-text);
+  --tw-color-dark-white-300: var(--ts-text-dim);
+  --tw-color-dark-white-400: var(--ts-text-mute);
+  --tw-color-red-500: var(--ts-danger-text);
+  --tw-color-red-400: var(--ts-danger-text);
+  --tw-color-blue-400: var(--ts-link);
+}
+@layer utilities {
+  html.dark .tw\:dark\:bg-white\!, html.dark .tw\:bg-white\!, html.dark .tw\:bg-gray-100\! {
+    background-color: var(--ts-surface) !important;
+    color: var(--ts-text) !important;
+  }
+  html.dark input.tw\:bg-white {
+    background-color: var(--ts-surface) !important;
+    color: var(--ts-text) !important;
+  }
+  html.dark .tw\:hover\:bg-gray-200\!:hover, html.dark .tw\:dark\:hover\:bg-gray-200\!:hover {
+    background-color: var(--ts-surface-hover) !important;
+  }
+  html.dark .tw\:text-gray-500\!, html.dark .tw\:visited\:text-gray-500\!, html.dark .tw\:visited\:text-gray-500\!:visited {
+    color: var(--ts-text-mute) !important;
+  }
+}

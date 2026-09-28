@@ -2,3 +2,6 @@
 # Populate with: ./harness/sync-css.sh /path/to/librenms
 harness/css/
 harness/webfonts/
+
+# extract-base: unresolved gaps from the last run.
+scripts/extract-base/missing.json

@@ -1,0 +1,22 @@
+{
+ "html.dark hr :: border :: 0": [
+  [
+   "border-width",
+   "0"
+  ]
+ ],
+ "html.dark .navbar-default .navbar-nav > li > a :: border-left :: 1px solid rgba(255, 255, 255, .04)": [
+  [
+   "border-left-width",
+   "1px"
+  ],
+  [
+   "border-left-style",
+   "solid"
+  ],
+  [
+   "border-left-color",
+   "rgba(255, 255, 255, .04)"
+  ]
+ ]
+}

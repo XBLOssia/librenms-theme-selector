@@ -1,0 +1,3 @@
+[{"after": "html.dark .badge", "selector": "html.dark .badge-navbar-user",
+  "decls": {"padding": "badge-navbar-user-padding"},
+  "values": {"terran": "4px", "protoss": "var(--ts-badge-padding)", "zerg": "var(--ts-badge-padding)"}}]

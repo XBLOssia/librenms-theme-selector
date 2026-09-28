@@ -192,7 +192,6 @@ html.dark .navbar-default {
   border: 0;
   border-bottom: 2px solid var(--zg-carapace);
   box-shadow: 0 3px 16px rgba(0, 0, 0, .7);
-  position: relative;
 }
 
 /* Bone ridge capping the hive. Uneven opacity so it reads as grown bone

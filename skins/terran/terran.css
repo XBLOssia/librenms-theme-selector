@@ -183,7 +183,6 @@ html.dark .navbar-default {
   border: 0;
   border-bottom: 1px solid #000;
   box-shadow: 0 2px 0 0 rgba(0, 0, 0, .6), 0 6px 14px rgba(0, 0, 0, .45);
-  position: relative;
 }
 
 /* Hazard stripe running the full width beneath the command bar. This is the

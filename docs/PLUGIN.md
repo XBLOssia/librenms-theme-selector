@@ -314,15 +314,16 @@ defaults. Both equivalence checks still pass with 0 differences.
 `docs/TOKENS.md` is the token reference, generated from `base.css` by
 `scripts/gen-token-docs.py`.
 
-**Found during 1b, not yet fixed: the skins break LibreNMS's sticky navbar.**
-Core pins the navbar with `nav.navbar-sticky-top { position: sticky }`
+**Found during 1b, fixed 2026-09-28: the skins broke LibreNMS's sticky
+navbar.** Core pins the navbar with `nav.navbar-sticky-top { position: sticky }`
 (`styles.css:1306`, specificity 0,1,1). All three original skins set
-`html.dark .navbar-default { position: relative }` (0,2,1), which wins, so with
-any skin active the navbar should scroll away instead of staying pinned. They
+`html.dark .navbar-default { position: relative }` (0,2,1), which won, so with
+any skin active the navbar scrolled away instead of staying pinned. The skins
 wanted a positioned box for the navbar's `::before`/`::after` decorations, and
-`sticky` already provides one, so the fix is to drop the declaration. Left out
-of 1b to keep the equivalence result clean. The harness hides it: its markup
-still uses the older `navbar-fixed-top` class.
+`sticky` already is one, so the declaration is gone from `base.css` and from
+the original `<id>.css` files (which production still loads). The harness now
+uses the real `navbar-sticky-top` markup; its old `navbar-fixed-top` markup is
+why the bug never showed there.
 
 **2 — v1 plugin, and migrate production.** Bundled skins published to `html/css/custom/theme-selector/`,
 per-user picker page, admin default, composer injection with a cache-buster

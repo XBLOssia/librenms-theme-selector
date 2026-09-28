@@ -59,7 +59,6 @@
 <style>
 /* Layout scaffolding only. No colour is set here - .lnms-btn-*, .device-link-*
    and the Bootstrap components are the genuine article out of app.css. */
-body { padding-top:52px; }
 /* gridstack's real CSS (in app.css) expects its JS to set inline width/height
    and absolutely positions everything - .grid-stack-item comes out 0x0 and the
    page collapses. There is no JS here, so its positioning is neutralised while
@@ -107,21 +106,23 @@ body { padding-top:52px; }
   // Token-build extras: ?skin=example is examples/minimal (core roles only),
   // ?skin=defaults is base.css with no token file at all.
   var extra = new URLSearchParams(location.search).get('skin');
+  // The harness is for editing skins: never let the browser serve a stale copy.
+  var bust = '?t=' + Date.now();
   if (extra === 'example' || extra === 'defaults') {
-    document.write('<link rel="stylesheet" href="../base/base.css">' +
-                   (extra === 'example' ? '<link id="skin-css" rel="stylesheet" href="../examples/minimal/skin.css">' : ''));
+    document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
+                   (extra === 'example' ? '<link id="skin-css" rel="stylesheet" href="../examples/minimal/skin.css' + bust + '">' : ''));
   } else if (new URLSearchParams(location.search).get('build') === 'tokens') {
-    document.write('<link rel="stylesheet" href="../base/base.css">' +
-                   '<link id="skin-css" rel="stylesheet" href="../skins/' + skin + '/skin.css">');
+    document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
+                   '<link id="skin-css" rel="stylesheet" href="../skins/' + skin + '/skin.css' + bust + '">');
   } else {
     document.write('<link id="skin-css" rel="stylesheet" href="../skins/' +
-                   skin + '/' + skin + '.css">');
+                   skin + '/' + skin + '.css' + bust + '">');
   }
 </script>
 </head>
 <body>
 
-<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+<nav class="navbar navbar-default navbar-sticky-top" role="navigation">
   <div class="container-fluid">
     <div class="navbar-header"><a class="navbar-brand" href="#">LibreNMS</a></div>
     <div class="collapse navbar-collapse">

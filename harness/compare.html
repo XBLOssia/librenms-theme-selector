@@ -93,7 +93,7 @@ function compareDocs(a, b) {
 }
 
 async function run(page, skin) {
-  const q = `skin=${skin}`;
+  const q = `skin=${skin}&t=${Date.now()}`;
   const [fa, fb] = await Promise.all([load(`${page}?${q}&build=ref`), load(`${page}?${q}&build=tokens`)]);
   const r = compareDocs(fa.contentDocument, fb.contentDocument);
   fa.remove(); fb.remove();

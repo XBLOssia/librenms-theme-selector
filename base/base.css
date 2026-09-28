@@ -355,7 +355,6 @@ html.dark .navbar-default {
   border: 0;
   border-bottom: var(--ts-navbar-border-bottom);
   box-shadow: var(--ts-navbar-shadow);
-  position: relative;
 }
 html.dark .navbar-default::after {
   content: "";

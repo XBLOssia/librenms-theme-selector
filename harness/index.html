@@ -26,7 +26,6 @@
 .device-link-up   { font-weight:700; color:#f9fafb; }
 .device-link-down { font-weight:700; color:#fb2c36 !important; }
 .device-link-disabled { font-weight:700; color:#6a7282 !important; }
-body { padding-top: 60px; }
 .harness-label { font: 11px/1.4 monospace; color:#7d8a93; text-transform:uppercase;
                  letter-spacing:.1em; margin:26px 0 8px; border-bottom:1px dashed #333;
                  padding-bottom:4px; }
@@ -43,21 +42,23 @@ body { padding-top: 60px; }
   // Token-build extras: ?skin=example is examples/minimal (core roles only),
   // ?skin=defaults is base.css with no token file at all.
   var extra = new URLSearchParams(location.search).get('skin');
+  // The harness is for editing skins: never let the browser serve a stale copy.
+  var bust = '?t=' + Date.now();
   if (extra === 'example' || extra === 'defaults') {
-    document.write('<link rel="stylesheet" href="../base/base.css">' +
-                   (extra === 'example' ? '<link id="skin-css" rel="stylesheet" href="../examples/minimal/skin.css">' : ''));
+    document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
+                   (extra === 'example' ? '<link id="skin-css" rel="stylesheet" href="../examples/minimal/skin.css' + bust + '">' : ''));
   } else if (new URLSearchParams(location.search).get('build') === 'tokens') {
-    document.write('<link rel="stylesheet" href="../base/base.css">' +
-                   '<link id="skin-css" rel="stylesheet" href="../skins/' + skin + '/skin.css">');
+    document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
+                   '<link id="skin-css" rel="stylesheet" href="../skins/' + skin + '/skin.css' + bust + '">');
   } else {
     document.write('<link id="skin-css" rel="stylesheet" href="../skins/' +
-                   skin + '/' + skin + '.css">');
+                   skin + '/' + skin + '.css' + bust + '">');
   }
 </script>
 </head>
 <body>
 
-<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+<nav class="navbar navbar-default navbar-sticky-top" role="navigation">
   <div class="container-fluid">
     <div class="navbar-header">
       <a class="navbar-brand" href="#">LibreNMS</a>

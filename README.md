@@ -193,9 +193,11 @@ file that updates overwrite. The two available hooks are:
 - A `site_style` entry in `resources/definitions/config_definitions.json` —
   gives a per-user dropdown, but that file is core and is overwritten on update.
 
-The plugin system cannot carry a theme. It exposes exactly five hooks
-(`DeviceOverviewHook`, `MenuEntryHook`, `PortTabHook`, `SettingsHook`,
-`SinglePageHook`), all of which inject content. None publish CSS or assets.
+The plugin system's five hooks (`DeviceOverviewHook`, `MenuEntryHook`,
+`PortTabHook`, `SettingsHook`, `SinglePageHook`) all inject content, and none
+publish CSS or assets. A *package* plugin, though, owns a Laravel service
+provider, and that can push a stylesheet into every page's `<head>`. That is
+the route this repo is now taking; see **[docs/PLUGIN.md](docs/PLUGIN.md)**.
 
 Building these surfaced concrete, measurable problems with theming LibreNMS as
 it stands. They are written up in **[docs/FINDINGS.md](docs/FINDINGS.md)** with

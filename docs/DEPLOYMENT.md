@@ -341,8 +341,10 @@ The blast radius is one config row and one directory of static files.
 
 ## Note on terminology
 
-These are **not** a LibreNMS plugin. LibreNMS's plugin system exposes five
-content-injection hooks and cannot carry CSS or assets at all — that is why
-these ship as `custom_css` instead. Nothing here registers with
+These are **not** yet a LibreNMS plugin. The plugin system's five hooks are
+content-injection only, which is why these ship as `custom_css`. A package
+plugin can still inject CSS from its service provider; that is planned in
+[PLUGIN.md](PLUGIN.md), and until it lands this page describes the only
+install path. Nothing here registers with
 `PluginManager`, so nothing appears under the Plugins menu, and the plugin
 uninstall path is not involved. See [FINDINGS.md](FINDINGS.md) §6.

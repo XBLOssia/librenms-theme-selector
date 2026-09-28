@@ -294,11 +294,12 @@ These are deliberately out of scope for this repo. Two of them are out of scope
 because they belong upstream, not because they're unwanted — see
 [PROPOSAL.md](PROPOSAL.md).
 
-- **Per-user theme selection, as a local hack.** It would need a patch to
-  `resources/definitions/config_definitions.json`, which updates overwrite, so
-  doing it downstream means re-patching forever (FINDINGS §6). Upstream this is
-  the *goal*, not a non-goal: Phase 3 makes `site_style` options dynamic and
-  Phase 4 adds the UI.
+- **Per-user theme selection via `site_style`, as a local hack.** It would
+  need a patch to `resources/definitions/config_definitions.json`, which
+  updates overwrite, so doing it downstream means re-patching forever
+  (FINDINGS §6). *Superseded 2026-09-25:* a package plugin can do per-user
+  selection without touching `site_style` or any core file — see
+  [PLUGIN.md](PLUGIN.md).
 
 - **Theming graph interiors beyond what config allows.** Worth stating
   precisely, because an earlier version of this file got it wrong:

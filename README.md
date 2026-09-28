@@ -91,6 +91,7 @@ user in `/opt/librenms`:
 php scripts/composer_wrapper.php config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
 ./lnms plugin:add xblossia/librenms-theme-selector dev-main
 ./lnms migrate --force
+php artisan route:cache
 ```
 
 Then **Plugins → Theme Selector**: each user picks a skin for themselves, and

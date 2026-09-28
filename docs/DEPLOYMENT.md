@@ -37,6 +37,7 @@ On the LibreNMS host, as the `librenms` user, from `/opt/librenms`:
 php scripts/composer_wrapper.php config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
 ./lnms plugin:add xblossia/librenms-theme-selector dev-main
 ./lnms migrate --force
+php artisan route:cache
 ./lnms theme-selector:publish
 ```
 
@@ -53,7 +54,12 @@ php scripts/composer_wrapper.php config --global repositories.theme-selector vcs
 3. **`migrate`** creates the plugin's one table, `theme_selector_settings`.
    `plugin:add` doesn't run migrations; `daily.sh` does, so this step only
    saves waiting for the next nightly run.
-4. **`theme-selector:publish`** copies the base stylesheet and bundled skins
+4. **`route:cache`** rebuilds LibreNMS's route cache. Production installs
+   cache their routes, and while a cache exists Laravel ignores routes that
+   packages register, so without this the Theme Selector page is a 404 even
+   though the plugin is enabled. `lnms plugin:enable` rebuilds the cache;
+   `plugin:add` doesn't. (Found on the production migration, 2026-09-28.)
+5. **`theme-selector:publish`** copies the base stylesheet and bundled skins
    into `html/css/custom/theme-selector/`. The first page load after any
    plugin update does this anyway; running it by hand confirms the directory
    is writable by `librenms`.
@@ -139,9 +145,12 @@ which restores `webui.custom_css` and the graph keys to their values before
 the first `install.sh`:
 
 ```bash
-sudo -u librenms /opt/librenms-skins/scripts/uninstall.sh --dry-run
-sudo -u librenms /opt/librenms-skins/scripts/uninstall.sh
+sudo -u librenms bash /opt/librenms-skins/scripts/uninstall.sh --dry-run
+sudo -u librenms bash /opt/librenms-skins/scripts/uninstall.sh
 ```
+
+(`bash` explicitly: the copy was uploaded over SFTP, which can drop the
+execute bit, and then `sudo` reports `command not found`.)
 
 Pages go stock dark at this point.
 
@@ -175,7 +184,7 @@ Then `scripts/install.sh` and `scripts/uninstall.sh` can be deleted from this
 repo (docs/PLUGIN.md, phase 2).
 
 **If something goes wrong** before step 7, the old setup is one command away:
-`sudo -u librenms /opt/librenms-skins/scripts/install.sh zerg`, after
+`sudo -u librenms bash /opt/librenms-skins/scripts/install.sh zerg`, after
 disabling the plugin (`./lnms plugin:disable ThemeSelector`).
 
 ---

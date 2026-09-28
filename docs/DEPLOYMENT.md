@@ -34,13 +34,15 @@ webui.custom_css                     =       ["css/custom/zerg/zerg.css"]
 On the LibreNMS host, as the `librenms` user, from `/opt/librenms`:
 
 ```bash
-composer config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
+php scripts/composer_wrapper.php config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
 ./lnms plugin:add xblossia/librenms-theme-selector dev-main
 ./lnms migrate --force
 ./lnms theme-selector:publish
 ```
 
-1. **The repository goes in the global Composer config**, not LibreNMS's
+1. **The repository goes in the global Composer config**, through the same
+   wrapper `daily.sh` and `plugin:add` use (it finds a system `composer` or
+   downloads `composer.phar`), and not in LibreNMS's
    `composer.json`. `daily.sh` resets `composer.json` on every update; an entry
    there disappears, and the failed `composer require` that follows can take
    other packages down with it (the Network Command Suite deploy lost M365 SSO

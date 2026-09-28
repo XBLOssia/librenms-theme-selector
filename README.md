@@ -88,7 +88,7 @@ Theme Selector is a LibreNMS plugin. On the LibreNMS host, as the `librenms`
 user in `/opt/librenms`:
 
 ```bash
-composer config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
+php scripts/composer_wrapper.php config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
 ./lnms plugin:add xblossia/librenms-theme-selector dev-main
 ./lnms migrate --force
 ```

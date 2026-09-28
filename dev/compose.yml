@@ -1,0 +1,68 @@
+# Local LibreNMS test instance for developing the plugin. Not for production.
+#
+#   docker compose -f dev/compose.yml up -d --build
+#   open http://localhost:8000
+#
+# See dev/README.md. Pinned to the release that contains 63e0394, the commit
+# the production host runs and the skins are verified against.
+
+name: theme-selector-dev
+
+services:
+  db:
+    image: mariadb:10
+    command:
+      - "mysqld"
+      - "--innodb-file-per-table=1"
+      - "--lower-case-table-names=0"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    volumes:
+      - "db:/var/lib/mysql"
+    environment:
+      - "TZ=UTC"
+      - "MARIADB_RANDOM_ROOT_PASSWORD=yes"
+      - "MYSQL_DATABASE=librenms"
+      - "MYSQL_USER=librenms"
+      # Throwaway: the database is never published outside the compose network.
+      - "MYSQL_PASSWORD=librenms-dev"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    restart: unless-stopped
+
+  librenms:
+    build: .
+    image: theme-selector-dev-librenms
+    hostname: librenms
+    depends_on:
+      - db
+      - redis
+    ports:
+      # Localhost only: the dev auth below trusts a request header.
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - "librenms:/data"
+      - "..:/plugin"
+    environment:
+      - "TZ=UTC"
+      - "PUID=1000"
+      - "PGID=1000"
+      - "DB_HOST=db"
+      - "DB_NAME=librenms"
+      - "DB_USER=librenms"
+      - "DB_PASSWORD=librenms-dev"
+      - "DB_TIMEOUT=60"
+      - "CACHE_DRIVER=redis"
+      - "SESSION_DRIVER=redis"
+      - "REDIS_HOST=redis"
+      - "MEMORY_LIMIT=512M"
+      - "UPLOAD_MAX_SIZE=16M"
+    restart: unless-stopped
+
+# Named volumes, not bind mounts: they live on WSL's own filesystem, and MariaDB
+# refuses a case-insensitive data directory such as /mnt/c.
+volumes:
+  db:
+  librenms:

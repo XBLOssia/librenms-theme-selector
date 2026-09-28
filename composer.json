@@ -1,0 +1,33 @@
+{
+    "name": "xblossia/librenms-theme-selector",
+    "description": "Theme Selector for LibreNMS: per-user skins, with admin-managed custom skins.",
+    "keywords": ["librenms", "plugin", "theme", "skin"],
+    "type": "package",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "XBLOssia"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Xblossia\\ThemeSelector\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^8.2",
+        "librenms/plugin-interfaces": "^1.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Xblossia\\ThemeSelector\\ThemeSelectorProvider"
+            ]
+        }
+    },
+    "archive": {
+        "exclude": ["/harness", "/dev", "/docs", "/scripts", "/patches"]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

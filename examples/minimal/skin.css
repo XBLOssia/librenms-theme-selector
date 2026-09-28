@@ -1,0 +1,36 @@
+/*
+ * Minimal example skin: the 20 core roles and nothing else. Every other token
+ * falls back to a default in base/base.css built from these. Copy this file
+ * to start a skin; docs/TOKENS.md lists what else can be set.
+ */
+html.dark {
+  /* Surfaces, darkest to lightest */
+  --ts-bg: #0f1a1f;
+  --ts-surface: #15242b;
+  --ts-surface-raised: #1c3039;
+  --ts-surface-hover: #254050;
+  --ts-border: #2c4a58;
+
+  /* Text */
+  --ts-text: #c9dde3;
+  --ts-text-dim: #8fa9b2;
+  --ts-text-mute: #7b939b;
+  --ts-text-bright: #eef7f9;
+
+  /* Accents */
+  --ts-accent: #2ec4b6;
+  --ts-link: #6fd3e8;
+  --ts-highlight: #2ec4b6;
+
+  /* Status */
+  --ts-success: #3fbf7f;
+  --ts-warning: #e8b43c;
+  --ts-danger: #e05b5b;
+  --ts-info: #4aa3df;
+  --ts-danger-text: #ff8a80;
+
+  /* Type and shape */
+  --ts-font-display: "Segoe UI", system-ui, sans-serif;
+  --ts-font-mono: Consolas, "SF Mono", Menlo, ui-monospace, monospace;
+  --ts-radius-sm: 3px;
+}

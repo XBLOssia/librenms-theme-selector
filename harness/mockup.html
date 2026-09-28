@@ -104,7 +104,13 @@ body { padding-top:52px; }
   if (SKINS.indexOf(skin) === -1) skin = 'terran';
   // ?build=tokens loads the plugin's form (base + token file) instead of the
   // original standalone stylesheet; compare.html diffs the two.
-  if (new URLSearchParams(location.search).get('build') === 'tokens') {
+  // Token-build extras: ?skin=example is examples/minimal (core roles only),
+  // ?skin=defaults is base.css with no token file at all.
+  var extra = new URLSearchParams(location.search).get('skin');
+  if (extra === 'example' || extra === 'defaults') {
+    document.write('<link rel="stylesheet" href="../base/base.css">' +
+                   (extra === 'example' ? '<link id="skin-css" rel="stylesheet" href="../examples/minimal/skin.css">' : ''));
+  } else if (new URLSearchParams(location.search).get('build') === 'tokens') {
     document.write('<link rel="stylesheet" href="../base/base.css">' +
                    '<link id="skin-css" rel="stylesheet" href="../skins/' + skin + '/skin.css">');
   } else {

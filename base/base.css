@@ -1,12 +1,334 @@
+/*
+ * Theme Selector for LibreNMS: base stylesheet.
+ *
+ * Applies a skin. A skin is a token file (skins/<id>/skin.css) that sets
+ * --ts-* custom properties on html.dark, loaded after this file, so any
+ * token it sets overrides the default below. Token reference: docs/TOKENS.md.
+ */
+html.dark {
+  /* Core roles: a skin normally sets these; the defaults are stock LibreNMS dark. */
+  --ts-bg: #272b30;
+  --ts-surface: #2e3338;
+  --ts-surface-raised: #3e444c;
+  --ts-surface-hover: #484f57;
+  --ts-border: #1f2226;
+  --ts-text: #c8c8c8;
+  --ts-text-dim: #a4a9ae;
+  --ts-text-mute: #8a9097;
+  --ts-text-bright: #f5f6f7;
+  --ts-accent: #5a9fd4;
+  --ts-link: #8ab4d8;
+  --ts-highlight: #66afe9;
+  --ts-success: #5cb85c;
+  --ts-warning: #f0ad4e;
+  --ts-danger: #d9534f;
+  --ts-info: #5bc0de;
+  --ts-danger-text: #ff6b64;
+  --ts-font-display: Verdana, Arial, Helvetica, sans-serif;
+  --ts-font-mono: "DejaVu Sans Mono", Consolas, "SF Mono", Menlo, ui-monospace, monospace;
+  --ts-radius-sm: 4px;
+
+  /* Derived roles: default to a mix of the core roles. */
+  --ts-brand: var(--ts-accent);
+  --ts-nav-accent: var(--ts-accent);
+  --ts-nav-icon-hover: var(--ts-highlight);
+  --ts-font-label: var(--ts-font-display);
+  --ts-radius-lg: var(--ts-radius-sm);
+  --ts-panel-title: var(--ts-text-bright);
+  --ts-button-bg: var(--ts-surface-raised);
+  --ts-addon-text: var(--ts-text-dim);
+  --ts-radius-md: var(--ts-radius-sm);
+  --ts-bevel: inset 0 1px 0 rgba(255, 255, 255, .05), inset 0 -1px 0 rgba(0, 0, 0, .4);
+  --ts-danger-deep: color-mix(in srgb, var(--ts-danger) 22%, var(--ts-bg));
+  --ts-success-deep: color-mix(in srgb, var(--ts-success) 22%, var(--ts-bg));
+  --ts-warning-deep: color-mix(in srgb, var(--ts-warning) 22%, var(--ts-bg));
+  --ts-info-deep: color-mix(in srgb, var(--ts-info) 22%, var(--ts-bg));
+  --ts-badge-alert: var(--ts-danger);
+  --ts-progress: var(--ts-accent);
+  --ts-code-text: var(--ts-highlight);
+  --ts-font-code: var(--ts-font-mono);
+
+  /* Shared effects: used by the defaults below. */
+  --ts-shadow: 0 2px 8px rgba(0, 0, 0, .4);
+  --ts-recess: inset 0 1px 3px rgba(0, 0, 0, .5);
+  --ts-sunken: color-mix(in srgb, var(--ts-bg) 75%, #000);
+  --ts-on-accent: #111;
+
+  /* Components: restrained defaults built from the roles. */
+  --ts-body-bg-image: none;
+  --ts-link-hover-fg: color-mix(in srgb, var(--ts-link) 70%, #fff);
+  --ts-navbar-bg-image: linear-gradient(180deg, var(--ts-surface-raised) 0%, var(--ts-surface) 100%);
+  --ts-navbar-border-bottom: 1px solid var(--ts-border);
+  --ts-navbar-shadow: var(--ts-shadow);
+  --ts-navbar-after-bottom: 0;
+  --ts-navbar-after-height: 0;
+  --ts-navbar-after-bg: none;
+  --ts-navbar-before-height: 0;
+  --ts-navbar-brand-text-shadow: none;
+  --ts-navbar-link-transition: background-color .12s linear, color .12s linear;
+  --ts-navbar-link-hover-bg: var(--ts-surface-hover);
+  --ts-navbar-link-hover-shadow: inset 0 -2px 0 0 var(--ts-accent);
+  --ts-navbar-dropdown-bg-image: none;
+  --ts-navbar-dropdown-border: 1px solid var(--ts-border);
+  --ts-navbar-dropdown-border-top: 1px solid var(--ts-border);
+  --ts-navbar-dropdown-border-radius: 0 0 var(--ts-radius-sm) var(--ts-radius-sm);
+  --ts-navbar-dropdown-shadow: var(--ts-shadow);
+  --ts-navbar-dropdown-padding: 4px 0;
+  --ts-dropdown-item-letter-spacing: normal;
+  --ts-dropdown-item-hover-bg: var(--ts-surface-hover);
+  --ts-dropdown-header-letter-spacing: .06em;
+  --ts-panel-border: 1px solid var(--ts-border);
+  --ts-panel-shadow: var(--ts-shadow);
+  --ts-panel-heading-bg-image: none;
+  --ts-panel-heading-border-bottom: 1px solid var(--ts-border);
+  --ts-panel-heading-padding-left: 15px;
+  --ts-panel-heading-before-top: 0;
+  --ts-panel-heading-before-bottom: 0;
+  --ts-panel-heading-before-width: 0;
+  --ts-panel-heading-before-bg: none;
+  --ts-panel-heading-before-shadow: none;
+  --ts-panel-footer-bg: var(--ts-surface-raised);
+  --ts-panel-footer-border-top: 1px solid var(--ts-border);
+  --ts-widget-header-bg-image: none;
+  --ts-widget-header-letter-spacing: normal;
+  --ts-table-border: var(--ts-border);
+  --ts-table-head-bg: var(--ts-surface-raised);
+  --ts-table-head-border-bottom: 2px solid var(--ts-border);
+  --ts-table-head-letter-spacing: normal;
+  --ts-table-stripe-odd-bg: color-mix(in srgb, var(--ts-surface) 60%, var(--ts-surface-raised));
+  --ts-table-row-hover-bg: var(--ts-surface-hover);
+  --ts-table-row-hover-shadow: inset 3px 0 0 0 var(--ts-accent);
+  --ts-bootgrid-header-border: var(--ts-border);
+  --ts-btn-letter-spacing: normal;
+  --ts-btn-transition: filter .12s linear;
+  --ts-btn-hover-filter: brightness(1.15);
+  --ts-btn-default-bg-image: none;
+  --ts-btn-default-border: var(--ts-border);
+  --ts-btn-primary-bg: var(--ts-info-deep);
+  --ts-btn-primary-bg-image: none;
+  --ts-btn-primary-border: var(--ts-info);
+  --ts-lnms-btn-primary-bg: var(--ts-btn-primary-bg);
+  --ts-lnms-btn-primary-bg-image: var(--ts-btn-primary-bg-image);
+  --ts-lnms-btn-primary-border: var(--ts-btn-primary-border);
+  --ts-btn-success-bg: var(--ts-success-deep);
+  --ts-btn-success-bg-image: none;
+  --ts-btn-success-border: var(--ts-success);
+  --ts-btn-success-fg: var(--ts-text-bright);
+  --ts-btn-danger-bg: var(--ts-danger-deep);
+  --ts-btn-danger-bg-image: none;
+  --ts-btn-danger-border: var(--ts-danger);
+  --ts-btn-danger-shadow: var(--ts-bevel);
+  --ts-btn-warning-bg: var(--ts-warning);
+  --ts-btn-warning-bg-image: none;
+  --ts-btn-warning-border: var(--ts-warning);
+  --ts-btn-warning-fg: var(--ts-on-accent);
+  --ts-lnms-btn-warning-bg: var(--ts-btn-warning-bg);
+  --ts-lnms-btn-warning-bg-image: var(--ts-btn-warning-bg-image);
+  --ts-lnms-btn-warning-border: var(--ts-btn-warning-border);
+  --ts-lnms-btn-warning-fg: var(--ts-btn-warning-fg);
+  --ts-input-bg: var(--ts-sunken);
+  --ts-input-border: 1px solid var(--ts-border);
+  --ts-input-shadow: var(--ts-recess);
+  --ts-input-focus-shadow: var(--ts-recess), 0 0 0 1px var(--ts-highlight);
+  --ts-addon-border: var(--ts-border);
+  --ts-alert-border-width: 1px 1px 1px 4px;
+  --ts-alert-danger-border: var(--ts-border) var(--ts-border) var(--ts-border) var(--ts-danger);
+  --ts-alert-danger-fg: var(--ts-danger-text);
+  --ts-alert-success-border: var(--ts-border) var(--ts-border) var(--ts-border) var(--ts-success);
+  --ts-alert-success-fg: color-mix(in srgb, var(--ts-success) 60%, #fff);
+  --ts-alert-warning-border: var(--ts-border) var(--ts-border) var(--ts-border) var(--ts-warning);
+  --ts-alert-warning-fg: color-mix(in srgb, var(--ts-warning) 60%, #fff);
+  --ts-alert-info-border: var(--ts-border) var(--ts-border) var(--ts-border) var(--ts-info);
+  --ts-alert-info-fg: color-mix(in srgb, var(--ts-info) 60%, #fff);
+  --ts-label-letter-spacing: normal;
+  --ts-badge-letter-spacing: normal;
+  --ts-label-danger-bg: var(--ts-danger);
+  --ts-label-success-bg: color-mix(in srgb, var(--ts-success) 70%, #000);
+  --ts-label-warning-bg: color-mix(in srgb, var(--ts-warning) 75%, #000);
+  --ts-label-info-bg: color-mix(in srgb, var(--ts-info) 60%, #000);
+  --ts-alert-badge-shadow: none;
+  --ts-alert-badge-animation: none;
+  --ts-device-up-letter-spacing: normal;
+  --ts-device-down-text-shadow: none;
+  --ts-progress-bar-bg: var(--ts-progress);
+  --ts-progress-glow-shadow: 0 0 10px var(--ts-progress), 0 0 5px var(--ts-progress);
+  --ts-pagemenu-active-bg: var(--ts-surface-hover);
+  --ts-pagemenu-active-shadow: inset 0 -2px 0 0 var(--ts-accent);
+  --ts-well-bg: var(--ts-sunken);
+  --ts-well-border: 1px solid var(--ts-border);
+  --ts-well-shadow: var(--ts-recess);
+  --ts-tab-active-border: var(--ts-border);
+  --ts-tab-active-border-top: 2px solid var(--ts-accent);
+  --ts-modal-border: 1px solid var(--ts-border);
+  --ts-modal-border-top: 2px solid var(--ts-accent);
+  --ts-modal-shadow: 0 16px 48px rgba(0, 0, 0, .7);
+  --ts-pre-bg: var(--ts-sunken);
+  --ts-pre-border: 1px solid var(--ts-border);
+  --ts-pre-shadow: var(--ts-recess);
+  --ts-graph-border: 1px solid var(--ts-border);
+  --ts-widget-bg-image: none;
+  --ts-widget-border: 1px solid var(--ts-border);
+  --ts-widget-shadow: var(--ts-shadow);
+  --ts-widget-title-bg-image: none;
+  --ts-widget-title-border-bottom: 1px solid var(--ts-border);
+  --ts-scrollbar-color: var(--ts-surface-hover) var(--ts-sunken);
+  --ts-scrollbar-track-bg: var(--ts-sunken);
+  --ts-scrollbar-track-border-left: 1px solid var(--ts-border);
+  --ts-scrollbar-thumb-bg: var(--ts-surface-hover);
+  --ts-scrollbar-thumb-border: 2px solid var(--ts-sunken);
+  --ts-scrollbar-thumb-hover-bg: var(--ts-border);
+  --ts-scrollbar-corner-bg: var(--ts-sunken);
+  --ts-widget-bar-bg: var(--ts-surface-raised);
+  --ts-widget-bar-border-bottom: 1px solid var(--ts-border);
+  --ts-table-row-success-shadow: inset 4px 0 0 0 var(--ts-success);
+  --ts-table-row-info-shadow: inset 4px 0 0 0 var(--ts-info);
+  --ts-table-row-warning-shadow: inset 4px 0 0 0 var(--ts-warning);
+  --ts-table-row-danger-shadow: inset 4px 0 0 0 var(--ts-danger);
+  --ts-switch-focus-shadow: 0 0 0 1px var(--ts-highlight);
+  --ts-map-tile-filter: invert(1) hue-rotate(180deg) brightness(.7) contrast(1.05) saturate(.4);
+  --ts-typeahead-border: 1px solid var(--ts-border);
+
+  /* Components: values two of the bundled skins share. */
+  --ts-navbar-before-top: 0;
+  --ts-navbar-brand-letter-spacing: .1em;
+  --ts-navbar-link-letter-spacing: .06em;
+  --ts-dropdown-item-padding: 6px 18px;
+  --ts-dropdown-item-border-left: 2px solid transparent;
+  --ts-dropdown-header-font-size: 10px;
+  --ts-panel-heading-letter-spacing: .09em;
+  --ts-panel-body-bg: transparent;
+  --ts-table-head-font-size: 11px;
+  --ts-table-cell-font-size: 13.5px;
+  --ts-table-stripe-even-bg: transparent;
+  --ts-label-warning-fg: #2a1f04;
+  --ts-device-up-font-size: 13.5px;
+  --ts-tab-border-radius: 0;
+  --ts-widget-title-letter-spacing: .09em;
+  --ts-dropdown-submenu-margin-top: -4px;
+  --ts-user-badge-padding: var(--ts-badge-padding);
+
+  /* Components: default to stock styling; a skin sets them only to add something. */
+  --ts-root-font-family: sans-serif;
+  --ts-body-font-family: Verdana, Arial, Helvetica, sans-serif;
+  --ts-link-transition: all;
+  --ts-link-hover-text-shadow: none;
+  --ts-hr-border-top-color: rgb(238, 238, 238);
+  --ts-hr-border-width: 1px 0px 0px;
+  --ts-hr-height: 0px;
+  --ts-hr-bg: none;
+  --ts-navbar-after-opacity: 1;
+  --ts-navbar-after-shadow: none;
+  --ts-navbar-after-animation: none;
+  --ts-navbar-before-bg-image: linear-gradient(rgb(255, 220, 138) 0%, rgb(227, 179, 65) 42%, rgb(138, 103, 22) 100%);
+  --ts-navbar-before-background-size: auto;
+  --ts-navbar-before-background-repeat: repeat;
+  --ts-navbar-before-opacity: 1;
+  --ts-navbar-before-background: rgba(0, 0, 0, 0) radial-gradient(circle, rgb(85, 100, 111) 0px, rgb(85, 100, 111) 1.4px, rgba(0, 0, 0, 0.55) 1.4px, rgba(0, 0, 0, 0.55) 2.6px, rgba(0, 0, 0, 0) 2.7px) repeat-x scroll 0% 0% / 34px 6px padding-box border-box;
+  --ts-navbar-brand-font-weight: 400;
+  --ts-navbar-link-border-left-width: 0px;
+  --ts-navbar-link-border-left-style: none;
+  --ts-navbar-link-border-left-color: currentcolor;
+  --ts-navbar-link-font-size: 14px;
+  --ts-navbar-icon-hover-text-shadow: none;
+  --ts-dropdown-item-font-weight: 400;
+  --ts-dropdown-item-transition: all;
+  --ts-dropdown-item-hover-padding-left: 16px;
+  --ts-dropdown-divider-bg: rgba(0, 0, 0, 0);
+  --ts-dropdown-divider-background: rgb(57, 68, 76) none repeat scroll 0% 0% / auto padding-box border-box;
+  --ts-panel-position: static;
+  --ts-panel-bg-image: none;
+  --ts-panel-border-left-width: 1px;
+  --ts-panel-border-bottom-width: 1px;
+  --ts-panel-before-content: none;
+  --ts-panel-before-position: static;
+  --ts-panel-before-width: auto;
+  --ts-panel-before-height: auto;
+  --ts-panel-before-pointer-events: auto;
+  --ts-panel-before-z-index: auto;
+  --ts-panel-before-top: auto;
+  --ts-panel-before-left: auto;
+  --ts-panel-before-border-top: 0px none rgb(198, 206, 212);
+  --ts-panel-before-border-left: 0px none rgb(198, 206, 212);
+  --ts-panel-after-bottom: auto;
+  --ts-panel-after-right: auto;
+  --ts-panel-after-border-bottom: 0px none rgb(198, 206, 212);
+  --ts-panel-after-border-right: 0px none rgb(198, 206, 212);
+  --ts-panel-heading-font-weight: 400;
+  --ts-panel-heading-text-shadow: none;
+  --ts-panel-heading-before-border-radius: 0px;
+  --ts-panel-heading-after-content: none;
+  --ts-panel-heading-after-position: static;
+  --ts-panel-heading-after-left: auto;
+  --ts-panel-heading-after-right: auto;
+  --ts-panel-heading-after-top: auto;
+  --ts-panel-heading-after-height: auto;
+  --ts-panel-heading-after-bg-image: none;
+  --ts-panel-heading-after-background-size: auto;
+  --ts-panel-heading-after-background-position: 0% 0%;
+  --ts-panel-heading-after-background-repeat: repeat;
+  --ts-panel-heading-after-opacity: 1;
+  --ts-table-head-font-weight: 700;
+  --ts-table-cell-font-weight: 400;
+  --ts-btn-shadow: none;
+  --ts-btn-clip-path: none;
+  --ts-btn-font-size: 14px;
+  --ts-btn-border-left-width: 1px;
+  --ts-btn-active-shadow: none;
+  --ts-btn-active-filter: none;
+  --ts-btn-default-hover-shadow: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset;
+  --ts-btn-primary-shadow: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset;
+  --ts-lnms-btn-primary-shadow: none;
+  --ts-btn-warning-shadow: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset;
+  --ts-lnms-btn-warning-shadow: none;
+  --ts-input-border-top-color: rgb(42, 69, 112);
+  --ts-input-font-family: Verdana, Arial, Helvetica, sans-serif;
+  --ts-input-font-weight: 400;
+  --ts-input-transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+  --ts-input-border-top-width: 1px;
+  --ts-alert-letter-spacing: normal;
+  --ts-alert-font-weight: 400;
+  --ts-alert-danger-shadow: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset;
+  --ts-alert-success-shadow: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset;
+  --ts-alert-warning-shadow: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset;
+  --ts-alert-info-shadow: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset;
+  --ts-label-shadow: none;
+  --ts-label-clip-path: none;
+  --ts-label-padding: 2.2px 6.6px 3.3px;
+  --ts-badge-shadow: none;
+  --ts-badge-clip-path: none;
+  --ts-badge-padding: 3px 7px;
+  --ts-label-danger-fg: rgb(255, 255, 255);
+  --ts-label-success-fg: rgb(255, 255, 255);
+  --ts-label-info-fg: rgb(255, 255, 255);
+  --ts-label-default-fg: rgb(255, 255, 255);
+  --ts-alert-badge-fg: rgb(255, 255, 255);
+  --ts-alert-badge-border-radius: 2px;
+  --ts-device-up-font-weight: 700;
+  --ts-well-border-radius: 4px;
+  --ts-well-border-left-width: 1px;
+  --ts-tabs-border-bottom-color: rgb(28, 30, 34);
+  --ts-tab-font-family: Verdana, Arial, Helvetica, sans-serif;
+  --ts-tab-letter-spacing: normal;
+  --ts-tab-text-transform: none;
+  --ts-tab-font-size: 14px;
+  --ts-tab-active-border-bottom-color: rgb(0, 0, 0);
+  --ts-modal-border-left-width: 1px;
+  --ts-pre-border-left: 1px solid rgb(0, 0, 0);
+  --ts-widget-border-left-width: 1px;
+  --ts-widget-title-font-weight: 400;
+  --ts-widget-alert-label-letter-spacing: 1.32px;
+  --ts-widget-alert-label-font-weight: 700;
+}
+
 html.dark {
   background-color: var(--ts-bg);
   color: var(--ts-text);
-  font-family: var(--ts-root-font-family, initial);
+  font-family: var(--ts-root-font-family);
 }
 html.dark body {
   background-color: var(--ts-bg);
   color: var(--ts-text);
-  font-family: var(--ts-body-font-family, initial);
+  font-family: var(--ts-body-font-family);
 }
 html.dark body {
   background-image: var(--ts-body-bg-image);
@@ -14,25 +336,25 @@ html.dark body {
 }
 html.dark a {
   color: var(--ts-link);
-  transition: var(--ts-a-transition, all 0s ease 0s);
+  transition: var(--ts-link-transition);
 }
 html.dark a:hover, html.dark a:focus {
-  color: var(--ts-a-hover-fg);
+  color: var(--ts-link-hover-fg);
   text-decoration: none;
-  text-shadow: var(--ts-a-hover-text-shadow, none);
+  text-shadow: var(--ts-link-hover-text-shadow);
 }
 html.dark hr {
-  border-top-color: var(--ts-hr-border-top-color, initial);
-  border-width: var(--ts-hr-border-width, initial);
-  height: var(--ts-hr-height, initial);
-  background: var(--ts-hr-bg, initial);
+  border-top-color: var(--ts-hr-border-top-color);
+  border-width: var(--ts-hr-border-width);
+  height: var(--ts-hr-height);
+  background: var(--ts-hr-bg);
 }
 html.dark .navbar-default {
   background-color: var(--ts-surface-raised);
-  background-image: var(--ts-navbar-default-bg-image);
+  background-image: var(--ts-navbar-bg-image);
   border: 0;
-  border-bottom: var(--ts-navbar-default-border-bottom);
-  box-shadow: var(--ts-navbar-default-shadow);
+  border-bottom: var(--ts-navbar-border-bottom);
+  box-shadow: var(--ts-navbar-shadow);
   position: relative;
 }
 html.dark .navbar-default::after {
@@ -40,13 +362,13 @@ html.dark .navbar-default::after {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: var(--ts-navbar-default-after-bottom);
-  height: var(--ts-navbar-default-after-height);
-  background: var(--ts-navbar-default-after-bg);
-  opacity: var(--ts-navbar-default-after-opacity, 1);
+  bottom: var(--ts-navbar-after-bottom);
+  height: var(--ts-navbar-after-height);
+  background: var(--ts-navbar-after-bg);
+  opacity: var(--ts-navbar-after-opacity);
   pointer-events: none;
-  box-shadow: var(--ts-navbar-default-after-shadow, none);
-  animation: var(--ts-navbar-default-after-animation, none);
+  box-shadow: var(--ts-navbar-after-shadow);
+  animation: var(--ts-navbar-after-animation);
 }
 @keyframes zg-breathe {
   0%, 100% {
@@ -61,76 +383,76 @@ html.dark .navbar-default::before {
   position: absolute;
   left: 0;
   right: 0;
-  top: var(--ts-navbar-default-before-top);
-  height: var(--ts-navbar-default-before-height);
-  background-image: var(--ts-navbar-default-before-bg-image, none);
-  background-size: var(--ts-navbar-default-before-background-size, initial);
-  background-repeat: var(--ts-navbar-default-before-background-repeat, initial);
-  opacity: var(--ts-navbar-default-before-opacity, 1);
+  top: var(--ts-navbar-before-top);
+  height: var(--ts-navbar-before-height);
+  background-image: var(--ts-navbar-before-bg-image);
+  background-size: var(--ts-navbar-before-background-size);
+  background-repeat: var(--ts-navbar-before-background-repeat);
+  opacity: var(--ts-navbar-before-opacity);
   pointer-events: none;
-  background: var(--ts-navbar-default-before-bg, initial);
+  background: var(--ts-navbar-before-background);
 }
 html.dark .navbar-default .navbar-brand {
   color: var(--ts-brand);
   font-family: var(--ts-font-display);
-  font-weight: var(--ts-navbar-default-navbar-brand-font-weight, initial);
-  letter-spacing: var(--ts-navbar-default-navbar-brand-letter-spacing);
+  font-weight: var(--ts-navbar-brand-font-weight);
+  letter-spacing: var(--ts-navbar-brand-letter-spacing);
   text-transform: uppercase;
-  text-shadow: var(--ts-navbar-default-navbar-brand-text-shadow);
+  text-shadow: var(--ts-navbar-brand-text-shadow);
 }
 html.dark .navbar-default .navbar-nav > li > a {
   color: var(--ts-text-dim);
   font-family: var(--ts-font-display);
-  letter-spacing: var(--ts-navbar-default-navbar-nav-li-a-letter-spacing);
+  letter-spacing: var(--ts-navbar-link-letter-spacing);
   text-transform: uppercase;
-  border-left-width: var(--ts-navbar-default-navbar-nav-li-a-border-left-width, initial);
-  border-left-style: var(--ts-navbar-default-navbar-nav-li-a-border-left-style, initial);
-  border-left-color: var(--ts-navbar-default-navbar-nav-li-a-border-left-color, initial);
-  transition: var(--ts-navbar-default-navbar-nav-li-a-transition);
-  font-size: var(--ts-navbar-default-navbar-nav-li-a-font-size, initial);
+  border-left-width: var(--ts-navbar-link-border-left-width);
+  border-left-style: var(--ts-navbar-link-border-left-style);
+  border-left-color: var(--ts-navbar-link-border-left-color);
+  transition: var(--ts-navbar-link-transition);
+  font-size: var(--ts-navbar-link-font-size);
 }
 html.dark .navbar-default .navbar-nav > li > a:hover, html.dark .navbar-default .navbar-nav > li > a:focus, html.dark .navbar-default .navbar-nav > .open > a, html.dark .navbar-default .navbar-nav > .open > a:hover, html.dark .navbar-default .navbar-nav > .open > a:focus {
-  background-color: var(--ts-navbar-default-navbar-nav-li-a-hover-bg);
+  background-color: var(--ts-navbar-link-hover-bg);
   color: var(--ts-nav-accent);
-  box-shadow: var(--ts-navbar-default-navbar-nav-li-a-hover-shadow);
+  box-shadow: var(--ts-navbar-link-hover-shadow);
 }
 html.dark .fa-nav-icons {
   color: var(--ts-text-mute);
 }
 html.dark .navbar-nav > li > a:hover .fa-nav-icons, html.dark .navbar-nav > .open > a .fa-nav-icons {
   color: var(--ts-nav-icon-hover);
-  text-shadow: var(--ts-navbar-nav-li-a-hover-fa-nav-icons-text-shadow, none);
+  text-shadow: var(--ts-navbar-icon-hover-text-shadow);
 }
 html.dark .icon-theme {
   color: var(--ts-text-dim);
 }
 html.dark .navbar-default .dropdown-menu, html.dark .dropdown-menu {
   background-color: var(--ts-surface);
-  background-image: var(--ts-navbar-default-dropdown-menu-bg-image);
-  border: var(--ts-navbar-default-dropdown-menu-border);
-  border-top: var(--ts-navbar-default-dropdown-menu-border-top);
-  border-radius: var(--ts-navbar-default-dropdown-menu-border-radius);
-  box-shadow: var(--ts-navbar-default-dropdown-menu-shadow);
-  padding: var(--ts-navbar-default-dropdown-menu-padding);
+  background-image: var(--ts-navbar-dropdown-bg-image);
+  border: var(--ts-navbar-dropdown-border);
+  border-top: var(--ts-navbar-dropdown-border-top);
+  border-radius: var(--ts-navbar-dropdown-border-radius);
+  box-shadow: var(--ts-navbar-dropdown-shadow);
+  padding: var(--ts-navbar-dropdown-padding);
 }
 html.dark .dropdown-menu > li > a {
   color: var(--ts-text-dim);
   font-family: var(--ts-font-label);
-  letter-spacing: var(--ts-dropdown-menu-li-a-letter-spacing);
-  padding: var(--ts-dropdown-menu-li-a-padding);
-  border-left: var(--ts-dropdown-menu-li-a-border-left);
-  font-weight: var(--ts-dropdown-menu-li-a-font-weight, initial);
-  transition: var(--ts-dropdown-menu-li-a-transition, all 0s ease 0s);
+  letter-spacing: var(--ts-dropdown-item-letter-spacing);
+  padding: var(--ts-dropdown-item-padding);
+  border-left: var(--ts-dropdown-item-border-left);
+  font-weight: var(--ts-dropdown-item-font-weight);
+  transition: var(--ts-dropdown-item-transition);
 }
 html.dark .dropdown-menu > li > a:hover, html.dark .dropdown-menu > li > a:focus {
-  background-color: var(--ts-dropdown-menu-li-a-hover-bg);
+  background-color: var(--ts-dropdown-item-hover-bg);
   color: var(--ts-text-bright);
   border-left-color: var(--ts-highlight);
-  padding-left: var(--ts-dropdown-menu-li-a-hover-padding-left, revert-layer);
+  padding-left: var(--ts-dropdown-item-hover-padding-left);
 }
 html.dark .dropdown-menu .divider {
-  background-color: var(--ts-dropdown-menu-divider-bg, initial);
-  background: var(--ts-dropdown-menu-divider-bg-2, initial);
+  background-color: var(--ts-dropdown-divider-bg);
+  background: var(--ts-dropdown-divider-background);
 }
 html.dark .dropdown-header {
   color: var(--ts-accent);
@@ -144,68 +466,68 @@ html.dark .panel, html.dark .panel-default {
   border: var(--ts-panel-border);
   border-radius: var(--ts-radius-lg);
   box-shadow: var(--ts-panel-shadow);
-  position: var(--ts-panel-position, initial);
-  background-image: var(--ts-panel-bg-image, none);
-  border-left-width: var(--ts-panel-border-left-width, initial);
-  border-bottom-width: var(--ts-panel-border-bottom-width, initial);
+  position: var(--ts-panel-position);
+  background-image: var(--ts-panel-bg-image);
+  border-left-width: var(--ts-panel-border-left-width);
+  border-bottom-width: var(--ts-panel-border-bottom-width);
 }
 html.dark .panel::before, html.dark .panel::after {
-  content: var(--ts-panel-before-content, initial);
-  position: var(--ts-panel-before-position, initial);
-  width: var(--ts-panel-before-width, initial);
-  height: var(--ts-panel-before-height, initial);
-  pointer-events: var(--ts-panel-before-pointer-events, initial);
-  z-index: var(--ts-panel-before-z-index, initial);
+  content: var(--ts-panel-before-content);
+  position: var(--ts-panel-before-position);
+  width: var(--ts-panel-before-width);
+  height: var(--ts-panel-before-height);
+  pointer-events: var(--ts-panel-before-pointer-events);
+  z-index: var(--ts-panel-before-z-index);
 }
 html.dark .panel::before {
-  top: var(--ts-panel-before-top, initial);
-  left: var(--ts-panel-before-left, initial);
-  border-top: var(--ts-panel-before-border-top, initial);
-  border-left: var(--ts-panel-before-border-left, initial);
+  top: var(--ts-panel-before-top);
+  left: var(--ts-panel-before-left);
+  border-top: var(--ts-panel-before-border-top);
+  border-left: var(--ts-panel-before-border-left);
 }
 html.dark .panel::after {
-  bottom: var(--ts-panel-after-bottom, initial);
-  right: var(--ts-panel-after-right, initial);
-  border-bottom: var(--ts-panel-after-border-bottom, initial);
-  border-right: var(--ts-panel-after-border-right, initial);
+  bottom: var(--ts-panel-after-bottom);
+  right: var(--ts-panel-after-right);
+  border-bottom: var(--ts-panel-after-border-bottom);
+  border-right: var(--ts-panel-after-border-right);
 }
 html.dark .panel-default > .panel-heading, html.dark .panel > .panel-heading {
   background-color: var(--ts-surface-raised);
-  background-image: var(--ts-panel-default-panel-heading-bg-image);
-  border-bottom: var(--ts-panel-default-panel-heading-border-bottom);
+  background-image: var(--ts-panel-heading-bg-image);
+  border-bottom: var(--ts-panel-heading-border-bottom);
   border-radius: 0;
   color: var(--ts-panel-title);
   font-family: var(--ts-font-display);
-  font-weight: var(--ts-panel-default-panel-heading-font-weight, initial);
-  letter-spacing: var(--ts-panel-default-panel-heading-letter-spacing);
+  font-weight: var(--ts-panel-heading-font-weight);
+  letter-spacing: var(--ts-panel-heading-letter-spacing);
   text-transform: uppercase;
   position: relative;
-  padding-left: var(--ts-panel-default-panel-heading-padding-left);
-  text-shadow: var(--ts-panel-default-panel-heading-text-shadow, none);
+  padding-left: var(--ts-panel-heading-padding-left);
+  text-shadow: var(--ts-panel-heading-text-shadow);
 }
 html.dark .panel-default > .panel-heading::before, html.dark .panel > .panel-heading::before {
   content: "";
   position: absolute;
   left: 0;
-  top: var(--ts-panel-default-panel-heading-before-top);
-  bottom: var(--ts-panel-default-panel-heading-before-bottom);
-  width: var(--ts-panel-default-panel-heading-before-width);
-  background: var(--ts-panel-default-panel-heading-before-bg);
-  box-shadow: var(--ts-panel-default-panel-heading-before-shadow);
-  border-radius: var(--ts-panel-default-panel-heading-before-border-radius, 0);
+  top: var(--ts-panel-heading-before-top);
+  bottom: var(--ts-panel-heading-before-bottom);
+  width: var(--ts-panel-heading-before-width);
+  background: var(--ts-panel-heading-before-bg);
+  box-shadow: var(--ts-panel-heading-before-shadow);
+  border-radius: var(--ts-panel-heading-before-border-radius);
 }
 html.dark .panel-default > .panel-heading::after, html.dark .panel > .panel-heading::after {
-  content: var(--ts-panel-default-panel-heading-after-content, initial);
-  position: var(--ts-panel-default-panel-heading-after-position, initial);
-  left: var(--ts-panel-default-panel-heading-after-left, initial);
-  right: var(--ts-panel-default-panel-heading-after-right, initial);
-  top: var(--ts-panel-default-panel-heading-after-top, initial);
-  height: var(--ts-panel-default-panel-heading-after-height, initial);
-  background-image: var(--ts-panel-default-panel-heading-after-bg-image, none);
-  background-size: var(--ts-panel-default-panel-heading-after-background-size, initial);
-  background-position: var(--ts-panel-default-panel-heading-after-background-position, initial);
-  background-repeat: var(--ts-panel-default-panel-heading-after-background-repeat, initial);
-  opacity: var(--ts-panel-default-panel-heading-after-opacity, 1);
+  content: var(--ts-panel-heading-after-content);
+  position: var(--ts-panel-heading-after-position);
+  left: var(--ts-panel-heading-after-left);
+  right: var(--ts-panel-heading-after-right);
+  top: var(--ts-panel-heading-after-top);
+  height: var(--ts-panel-heading-after-height);
+  background-image: var(--ts-panel-heading-after-bg-image);
+  background-size: var(--ts-panel-heading-after-background-size);
+  background-position: var(--ts-panel-heading-after-background-position);
+  background-repeat: var(--ts-panel-heading-after-background-repeat);
+  opacity: var(--ts-panel-heading-after-opacity);
 }
 html.dark .panel-title, html.dark .panel-heading .panel-title a, html.dark .panel-default > .panel-heading .icon-theme, html.dark .panel-default > .panel-heading a:link, html.dark .panel-default > .panel-heading a:visited {
   color: var(--ts-panel-title);
@@ -231,31 +553,31 @@ html.dark .table, html.dark .table > tbody > tr > td, html.dark .table > tbody >
   color: var(--ts-text);
 }
 html.dark .table > thead > tr > th {
-  background-color: var(--ts-table-thead-tr-th-bg);
-  border-bottom: var(--ts-table-thead-tr-th-border-bottom);
+  background-color: var(--ts-table-head-bg);
+  border-bottom: var(--ts-table-head-border-bottom);
   color: var(--ts-accent);
   font-family: var(--ts-font-display);
-  font-weight: var(--ts-table-thead-tr-th-font-weight, initial);
-  letter-spacing: var(--ts-table-thead-tr-th-letter-spacing);
+  font-weight: var(--ts-table-head-font-weight);
+  letter-spacing: var(--ts-table-head-letter-spacing);
   text-transform: uppercase;
-  font-size: var(--ts-table-thead-tr-th-font-size);
+  font-size: var(--ts-table-head-font-size);
 }
 html.dark .table > tbody > tr > td {
   font-family: var(--ts-font-mono);
-  font-size: var(--ts-table-tbody-tr-td-font-size);
+  font-size: var(--ts-table-cell-font-size);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
-  font-weight: var(--ts-table-tbody-tr-td-font-weight, initial);
+  font-weight: var(--ts-table-cell-font-weight);
 }
 html.dark .table-striped > tbody > tr:nth-of-type(odd) {
-  background-color: var(--ts-table-striped-tbody-tr-nth-of-type-odd-bg);
+  background-color: var(--ts-table-stripe-odd-bg);
 }
 html.dark .table-striped > tbody > tr:nth-of-type(even) {
-  background-color: var(--ts-table-striped-tbody-tr-nth-of-type-even-bg);
+  background-color: var(--ts-table-stripe-even-bg);
 }
 html.dark .table-hover > tbody > tr:hover, html.dark .table-hover > tbody > tr:hover > td {
-  background-color: var(--ts-table-hover-tbody-tr-hover-bg);
-  box-shadow: var(--ts-table-hover-tbody-tr-hover-shadow);
+  background-color: var(--ts-table-row-hover-bg);
+  box-shadow: var(--ts-table-row-hover-shadow);
 }
 html.dark .bootgrid-header, html.dark .bootgrid-footer {
   background-color: var(--ts-surface-raised);
@@ -273,18 +595,18 @@ html.dark .btn {
   letter-spacing: var(--ts-btn-letter-spacing);
   text-transform: uppercase;
   border-width: 1px;
-  box-shadow: var(--ts-btn-shadow, none);
+  box-shadow: var(--ts-btn-shadow);
   transition: var(--ts-btn-transition);
-  clip-path: var(--ts-btn-clip-path, initial);
-  font-size: var(--ts-btn-font-size, initial);
-  border-left-width: var(--ts-btn-border-left-width, initial);
+  clip-path: var(--ts-btn-clip-path);
+  font-size: var(--ts-btn-font-size);
+  border-left-width: var(--ts-btn-border-left-width);
 }
 html.dark .btn:hover {
   filter: var(--ts-btn-hover-filter);
 }
 html.dark .btn:active {
-  box-shadow: var(--ts-btn-active-shadow, none);
-  filter: var(--ts-btn-active-filter, none);
+  box-shadow: var(--ts-btn-active-shadow);
+  filter: var(--ts-btn-active-filter);
 }
 html.dark .btn-default, html.dark .lnms-btn-default {
   background-color: var(--ts-button-bg) !important;
@@ -293,21 +615,21 @@ html.dark .btn-default, html.dark .lnms-btn-default {
   color: var(--ts-text) !important;
 }
 html.dark .btn-default:hover, html.dark .lnms-btn-default:hover {
-  box-shadow: var(--ts-btn-default-hover-shadow, none) !important;
+  box-shadow: var(--ts-btn-default-hover-shadow) !important;
 }
 html.dark .btn-primary {
   background-color: var(--ts-btn-primary-bg) !important;
   background-image: var(--ts-btn-primary-bg-image) !important;
   border-color: var(--ts-btn-primary-border) !important;
   color: var(--ts-text-bright) !important;
-  box-shadow: var(--ts-btn-primary-shadow, none) !important;
+  box-shadow: var(--ts-btn-primary-shadow) !important;
 }
 html.dark .lnms-btn-primary {
   background-color: var(--ts-lnms-btn-primary-bg) !important;
   background-image: var(--ts-lnms-btn-primary-bg-image) !important;
   border-color: var(--ts-lnms-btn-primary-border) !important;
   color: var(--ts-text-bright) !important;
-  box-shadow: var(--ts-lnms-btn-primary-shadow, none) !important;
+  box-shadow: var(--ts-lnms-btn-primary-shadow) !important;
 }
 html.dark .btn-success, html.dark .lnms-btn-success {
   background-color: var(--ts-btn-success-bg) !important;
@@ -327,30 +649,30 @@ html.dark .btn-warning {
   background-image: var(--ts-btn-warning-bg-image) !important;
   border-color: var(--ts-btn-warning-border) !important;
   color: var(--ts-btn-warning-fg) !important;
-  box-shadow: var(--ts-btn-warning-shadow, none) !important;
+  box-shadow: var(--ts-btn-warning-shadow) !important;
 }
 html.dark .lnms-btn-warning {
   background-color: var(--ts-lnms-btn-warning-bg) !important;
   background-image: var(--ts-lnms-btn-warning-bg-image) !important;
   border-color: var(--ts-lnms-btn-warning-border) !important;
   color: var(--ts-lnms-btn-warning-fg) !important;
-  box-shadow: var(--ts-lnms-btn-warning-shadow, none) !important;
+  box-shadow: var(--ts-lnms-btn-warning-shadow) !important;
 }
 html.dark .form-control, html.dark input[type="text"], html.dark input[type="password"], html.dark input[type="number"], html.dark input[type="search"], html.dark textarea, html.dark select {
-  background-color: var(--ts-form-control-bg);
-  border: var(--ts-form-control-border);
-  border-top-color: var(--ts-form-control-border-top-color, initial);
+  background-color: var(--ts-input-bg);
+  border: var(--ts-input-border);
+  border-top-color: var(--ts-input-border-top-color);
   border-radius: var(--ts-radius-sm);
-  box-shadow: var(--ts-form-control-shadow);
+  box-shadow: var(--ts-input-shadow);
   color: var(--ts-text);
-  font-family: var(--ts-form-control-font-family, initial);
-  font-weight: var(--ts-form-control-font-weight, initial);
-  transition: var(--ts-form-control-transition, all 0s ease 0s);
-  border-top-width: var(--ts-form-control-border-top-width, initial);
+  font-family: var(--ts-input-font-family);
+  font-weight: var(--ts-input-font-weight);
+  transition: var(--ts-input-transition);
+  border-top-width: var(--ts-input-border-top-width);
 }
 html.dark .form-control:focus {
   border-color: var(--ts-highlight);
-  box-shadow: var(--ts-form-control-focus-shadow);
+  box-shadow: var(--ts-input-focus-shadow);
   outline: 0;
 }
 html.dark .form-control::placeholder {
@@ -358,40 +680,40 @@ html.dark .form-control::placeholder {
 }
 html.dark .input-group-addon {
   background-color: var(--ts-surface-raised);
-  border-color: var(--ts-input-group-addon-border);
+  border-color: var(--ts-addon-border);
   color: var(--ts-addon-text);
 }
 html.dark .alert {
   border-radius: var(--ts-radius-md);
   border-width: var(--ts-alert-border-width);
   font-family: var(--ts-font-label);
-  letter-spacing: var(--ts-alert-letter-spacing, initial);
+  letter-spacing: var(--ts-alert-letter-spacing);
   box-shadow: var(--ts-bevel);
-  font-weight: var(--ts-alert-font-weight, initial);
+  font-weight: var(--ts-alert-font-weight);
 }
 html.dark .alert-danger {
   background-color: var(--ts-danger-deep);
   border-color: var(--ts-alert-danger-border);
   color: var(--ts-alert-danger-fg);
-  box-shadow: var(--ts-alert-danger-shadow, none);
+  box-shadow: var(--ts-alert-danger-shadow);
 }
 html.dark .alert-success {
   background-color: var(--ts-success-deep);
   border-color: var(--ts-alert-success-border);
   color: var(--ts-alert-success-fg);
-  box-shadow: var(--ts-alert-success-shadow, none);
+  box-shadow: var(--ts-alert-success-shadow);
 }
 html.dark .alert-warning {
   background-color: var(--ts-warning-deep);
   border-color: var(--ts-alert-warning-border);
   color: var(--ts-alert-warning-fg);
-  box-shadow: var(--ts-alert-warning-shadow, none);
+  box-shadow: var(--ts-alert-warning-shadow);
 }
 html.dark .alert-info {
   background-color: var(--ts-info-deep);
   border-color: var(--ts-alert-info-border);
   color: var(--ts-alert-info-fg);
-  box-shadow: var(--ts-alert-info-shadow, none);
+  box-shadow: var(--ts-alert-info-shadow);
 }
 html.dark .label {
   border-radius: var(--ts-radius-sm);
@@ -401,9 +723,9 @@ html.dark .label {
   letter-spacing: var(--ts-label-letter-spacing);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  box-shadow: var(--ts-label-shadow, none);
-  clip-path: var(--ts-label-clip-path, initial);
-  padding: var(--ts-label-padding, initial);
+  box-shadow: var(--ts-label-shadow);
+  clip-path: var(--ts-label-clip-path);
+  padding: var(--ts-label-padding);
 }
 html.dark .badge {
   border-radius: var(--ts-radius-sm);
@@ -413,20 +735,20 @@ html.dark .badge {
   letter-spacing: var(--ts-badge-letter-spacing);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  box-shadow: var(--ts-badge-shadow, none);
-  clip-path: var(--ts-badge-clip-path, initial);
-  padding: var(--ts-badge-padding, initial);
+  box-shadow: var(--ts-badge-shadow);
+  clip-path: var(--ts-badge-clip-path);
+  padding: var(--ts-badge-padding);
 }
 html.dark .badge-navbar-user {
-  padding: var(--ts-badge-navbar-user-padding);
+  padding: var(--ts-user-badge-padding);
 }
 html.dark .label-danger, html.dark .badge-danger {
   background-color: var(--ts-label-danger-bg);
-  color: var(--ts-label-danger-fg, initial);
+  color: var(--ts-label-danger-fg);
 }
 html.dark .label-success, html.dark .badge-success {
   background-color: var(--ts-label-success-bg);
-  color: var(--ts-label-success-fg, initial);
+  color: var(--ts-label-success-fg);
 }
 html.dark .label-warning, html.dark .badge-warning {
   background-color: var(--ts-label-warning-bg);
@@ -434,18 +756,18 @@ html.dark .label-warning, html.dark .badge-warning {
 }
 html.dark .label-info, html.dark .badge-info {
   background-color: var(--ts-label-info-bg);
-  color: var(--ts-label-info-fg, initial);
+  color: var(--ts-label-info-fg);
 }
 html.dark .label-default, html.dark .badge-default {
   background-color: var(--ts-surface-hover);
-  color: var(--ts-label-default-fg, initial);
+  color: var(--ts-label-default-fg);
 }
 html.dark .badge-navbar-user.badge-danger {
   background-color: var(--ts-badge-alert);
-  box-shadow: var(--ts-badge-navbar-user-badge-danger-shadow);
-  animation: var(--ts-badge-navbar-user-badge-danger-animation);
-  color: var(--ts-badge-navbar-user-badge-danger-fg, initial);
-  border-radius: var(--ts-badge-navbar-user-badge-danger-border-radius, 0);
+  box-shadow: var(--ts-alert-badge-shadow);
+  animation: var(--ts-alert-badge-animation);
+  color: var(--ts-alert-badge-fg);
+  border-radius: var(--ts-alert-badge-border-radius);
 }
 @keyframes zg-swell {
   0%, 100% {
@@ -485,66 +807,66 @@ html.dark .badge-navbar-user.badge-danger {
 }
 html.dark .device-link-up, html.dark .device-link-down, html.dark .device-link-disabled {
   font-family: var(--ts-font-mono);
-  font-size: var(--ts-device-link-up-font-size);
-  letter-spacing: var(--ts-device-link-up-letter-spacing);
-  font-weight: var(--ts-device-link-up-font-weight, initial);
+  font-size: var(--ts-device-up-font-size);
+  letter-spacing: var(--ts-device-up-letter-spacing);
+  font-weight: var(--ts-device-up-font-weight);
 }
 html.dark .device-link-up {
   color: var(--ts-success) !important;
 }
 html.dark .device-link-down {
   color: var(--ts-danger-text) !important;
-  text-shadow: var(--ts-device-link-down-text-shadow);
+  text-shadow: var(--ts-device-down-text-shadow);
 }
 html.dark .device-link-disabled {
   color: var(--ts-text-mute) !important;
 }
 html.dark .pace .pace-progress {
-  background: var(--ts-pace-pace-progress-bg);
+  background: var(--ts-progress-bar-bg);
 }
 html.dark .pace .pace-progress-inner {
-  box-shadow: var(--ts-pace-pace-progress-inner-shadow);
+  box-shadow: var(--ts-progress-glow-shadow);
 }
 html.dark .pace .pace-activity {
   border-top-color: var(--ts-highlight);
   border-left-color: var(--ts-progress);
 }
 html.dark .pagemenu-selected {
-  background-color: var(--ts-pagemenu-selected-bg);
-  box-shadow: var(--ts-pagemenu-selected-shadow);
+  background-color: var(--ts-pagemenu-active-bg);
+  box-shadow: var(--ts-pagemenu-active-shadow);
 }
 html.dark .well {
   background-color: var(--ts-well-bg);
   border: var(--ts-well-border);
   box-shadow: var(--ts-well-shadow);
-  border-radius: var(--ts-well-border-radius, 0);
-  border-left-width: var(--ts-well-border-left-width, initial);
+  border-radius: var(--ts-well-border-radius);
+  border-left-width: var(--ts-well-border-left-width);
 }
 html.dark .nav-tabs {
-  border-bottom-color: var(--ts-nav-tabs-border-bottom-color, initial);
+  border-bottom-color: var(--ts-tabs-border-bottom-color);
 }
 html.dark .nav-tabs > li > a {
   color: var(--ts-text-dim);
-  border-radius: var(--ts-nav-tabs-li-a-border-radius);
-  font-family: var(--ts-nav-tabs-li-a-font-family, initial);
-  letter-spacing: var(--ts-nav-tabs-li-a-letter-spacing, initial);
-  text-transform: var(--ts-nav-tabs-li-a-text-transform, initial);
-  font-size: var(--ts-nav-tabs-li-a-font-size, initial);
+  border-radius: var(--ts-tab-border-radius);
+  font-family: var(--ts-tab-font-family);
+  letter-spacing: var(--ts-tab-letter-spacing);
+  text-transform: var(--ts-tab-text-transform);
+  font-size: var(--ts-tab-font-size);
 }
 html.dark .nav-tabs > li.active > a, html.dark .nav-tabs > li.active > a:hover, html.dark .nav-tabs > li.active > a:focus {
   background-color: var(--ts-surface);
-  border-color: var(--ts-nav-tabs-li-active-a-border);
-  border-top: var(--ts-nav-tabs-li-active-a-border-top);
+  border-color: var(--ts-tab-active-border);
+  border-top: var(--ts-tab-active-border-top);
   color: var(--ts-panel-title);
-  border-bottom-color: var(--ts-nav-tabs-li-active-a-border-bottom-color, initial);
+  border-bottom-color: var(--ts-tab-active-border-bottom-color);
 }
 html.dark .modal-content {
   background-color: var(--ts-surface);
-  border: var(--ts-modal-content-border);
-  border-top: var(--ts-modal-content-border-top);
+  border: var(--ts-modal-border);
+  border-top: var(--ts-modal-border-top);
   border-radius: var(--ts-radius-lg);
-  box-shadow: var(--ts-modal-content-shadow);
-  border-left-width: var(--ts-modal-content-border-left-width, initial);
+  box-shadow: var(--ts-modal-shadow);
+  border-left-width: var(--ts-modal-border-left-width);
 }
 html.dark .modal-header, html.dark .modal-footer {
   border-color: var(--ts-border);
@@ -556,63 +878,63 @@ html.dark pre, html.dark code {
   color: var(--ts-code-text);
   font-family: var(--ts-font-code);
   box-shadow: var(--ts-pre-shadow);
-  border-left: var(--ts-pre-border-left, initial);
+  border-left: var(--ts-pre-border-left);
 }
 html.dark .graph-image, html.dark img.graph-image {
   background-color: var(--ts-surface);
-  border: var(--ts-graph-image-border);
+  border: var(--ts-graph-border);
   border-radius: var(--ts-radius-sm);
   box-shadow: var(--ts-bevel);
 }
 html.dark .gs-w, html.dark .grid-stack .grid-stack-item-content {
   background-color: var(--ts-surface);
-  background-image: var(--ts-gs-w-bg-image);
-  border: var(--ts-gs-w-border);
+  background-image: var(--ts-widget-bg-image);
+  border: var(--ts-widget-border);
   border-radius: var(--ts-radius-md);
-  box-shadow: var(--ts-gs-w-shadow);
+  box-shadow: var(--ts-widget-shadow);
   color: var(--ts-text);
-  border-left-width: var(--ts-gs-w-border-left-width, initial);
+  border-left-width: var(--ts-widget-border-left-width);
 }
 html.dark .dashboard-widget-title, html.dark .grid-stack .grid-stack-item-content .widget-header {
-  background-image: var(--ts-dashboard-widget-title-bg-image);
-  border-bottom: var(--ts-dashboard-widget-title-border-bottom);
+  background-image: var(--ts-widget-title-bg-image);
+  border-bottom: var(--ts-widget-title-border-bottom);
   color: var(--ts-panel-title);
   font-family: var(--ts-font-display);
-  font-weight: var(--ts-dashboard-widget-title-font-weight, initial);
-  letter-spacing: var(--ts-dashboard-widget-title-letter-spacing);
+  font-weight: var(--ts-widget-title-font-weight);
+  letter-spacing: var(--ts-widget-title-letter-spacing);
   text-transform: uppercase;
 }
 html.dark .widget-alert-totals .label, html.dark .widget-availability, html.dark .widget-alert {
   font-family: var(--ts-font-mono);
-  letter-spacing: var(--ts-widget-alert-totals-label-letter-spacing, initial);
-  font-weight: var(--ts-widget-alert-totals-label-font-weight, initial);
+  letter-spacing: var(--ts-widget-alert-label-letter-spacing);
+  font-weight: var(--ts-widget-alert-label-font-weight);
 }
 html.dark .dropdown-submenu > .dropdown-menu {
   border-top-width: 2px;
-  margin-top: var(--ts-dropdown-submenu-dropdown-menu-margin-top);
+  margin-top: var(--ts-dropdown-submenu-margin-top);
 }
 html.dark * {
   scrollbar-width: thin;
-  scrollbar-color: var(--ts-root-scrollbar-color);
+  scrollbar-color: var(--ts-scrollbar-color);
 }
 html.dark ::-webkit-scrollbar {
   width: 11px;
   height: 11px;
 }
 html.dark ::-webkit-scrollbar-track {
-  background: var(--ts-webkit-scrollbar-track-bg);
-  border-left: var(--ts-webkit-scrollbar-track-border-left);
+  background: var(--ts-scrollbar-track-bg);
+  border-left: var(--ts-scrollbar-track-border-left);
 }
 html.dark ::-webkit-scrollbar-thumb {
-  background: var(--ts-webkit-scrollbar-thumb-bg);
-  border: var(--ts-webkit-scrollbar-thumb-border);
+  background: var(--ts-scrollbar-thumb-bg);
+  border: var(--ts-scrollbar-thumb-border);
   border-radius: 6px;
 }
 html.dark ::-webkit-scrollbar-thumb:hover {
-  background: var(--ts-webkit-scrollbar-thumb-hover-bg);
+  background: var(--ts-scrollbar-thumb-hover-bg);
 }
 html.dark ::-webkit-scrollbar-corner {
-  background: var(--ts-webkit-scrollbar-corner-bg);
+  background: var(--ts-scrollbar-corner-bg);
 }
 html.dark .leaflet-container {
   background: var(--ts-surface);
@@ -866,8 +1188,8 @@ html.dark .with-nav-tabs.panel-default .nav-tabs > li.active > a {
   color: var(--ts-accent);
 }
 html.dark .grid-stack-item-content > header {
-  background: var(--ts-grid-stack-item-content-header-bg) !important;
-  border-bottom: var(--ts-grid-stack-item-content-header-border-bottom);
+  background: var(--ts-widget-bar-bg) !important;
+  border-bottom: var(--ts-widget-bar-border-bottom);
   color: var(--ts-text-bright) !important;
   font-family: var(--ts-font-display);
   letter-spacing: .08em;
@@ -885,22 +1207,22 @@ html.dark .grid-stack-item-content > header a:hover {
 html.dark .table > thead > tr.success > td, html.dark .table > tbody > tr.success > td, html.dark .table > thead > tr.success > th, html.dark .table > tbody > tr.success > th, html.dark .table > thead > tr > td.success, html.dark .table > tbody > tr > td.success {
   background-color: var(--ts-success-deep);
   color: var(--ts-text-bright);
-  box-shadow: var(--ts-table-thead-tr-success-td-shadow);
+  box-shadow: var(--ts-table-row-success-shadow);
 }
 html.dark .table > thead > tr.info > td, html.dark .table > tbody > tr.info > td, html.dark .table > thead > tr.info > th, html.dark .table > tbody > tr.info > th, html.dark .table > thead > tr > td.info, html.dark .table > tbody > tr > td.info {
   background-color: var(--ts-info-deep);
   color: var(--ts-text-bright);
-  box-shadow: var(--ts-table-thead-tr-info-td-shadow);
+  box-shadow: var(--ts-table-row-info-shadow);
 }
 html.dark .table > thead > tr.warning > td, html.dark .table > tbody > tr.warning > td, html.dark .table > thead > tr.warning > th, html.dark .table > tbody > tr.warning > th, html.dark .table > thead > tr > td.warning, html.dark .table > tbody > tr > td.warning {
   background-color: var(--ts-warning-deep);
   color: var(--ts-text-bright);
-  box-shadow: var(--ts-table-thead-tr-warning-td-shadow);
+  box-shadow: var(--ts-table-row-warning-shadow);
 }
 html.dark .table > thead > tr.danger > td, html.dark .table > tbody > tr.danger > td, html.dark .table > thead > tr.danger > th, html.dark .table > tbody > tr.danger > th, html.dark .table > thead > tr > td.danger, html.dark .table > tbody > tr > td.danger {
   background-color: var(--ts-danger-deep);
   color: var(--ts-text-bright);
-  box-shadow: var(--ts-table-thead-tr-danger-td-shadow);
+  box-shadow: var(--ts-table-row-danger-shadow);
 }
 html.dark .table-hover > tbody > tr.success:hover > td, html.dark .table-hover > tbody > tr:hover > td.success {
   background-color: var(--ts-success);
@@ -947,10 +1269,10 @@ html.dark .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-defaul
 }
 html.dark .bootstrap-switch.bootstrap-switch-focused {
   border-color: var(--ts-accent);
-  box-shadow: var(--ts-bootstrap-switch-bootstrap-switch-focuse-shadow);
+  box-shadow: var(--ts-switch-focus-shadow);
 }
 html.dark .leaflet-tile {
-  filter: var(--ts-leaflet-tile-filter);
+  filter: var(--ts-map-tile-filter);
 }
 html.dark .leaflet-overlay-pane path {
   stroke: var(--ts-accent);
@@ -969,7 +1291,7 @@ html.dark .device-image, html.dark img.os-icon {
 }
 html.dark .tt-menu, html.dark .tt-open {
   background-color: var(--ts-surface);
-  border: var(--ts-tt-menu-border);
+  border: var(--ts-typeahead-border);
   border-radius: var(--ts-radius-sm);
   color: var(--ts-text);
 }

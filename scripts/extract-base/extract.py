@@ -3,7 +3,7 @@
 Usage: python extract.py <repo>
 Writes <repo>/base/base.css and <repo>/skins/<id>/skin.css from the original
 <repo>/skins/<id>/<id>.css files. Hand decisions live in the JSON files beside
-this script (see README.md). Unresolved gaps are listed in missing.json.
+this script (see README.md). Unresolved gaps go to harness/.missing.json.
 """
 import collections, json, re, sys, os
 
@@ -15,7 +15,7 @@ ORDER = list(SKINS)
 ROLE_NAMES = json.load(open('roles.json')) if os.path.exists('roles.json') else {}
 RESOLVED = json.load(open('resolved.json')) if os.path.exists('resolved.json') else {}
 MISSING = []
-FALLBACKS = json.load(open('fallbacks.json')) if os.path.exists('fallbacks.json') else {}
+FALLBACKS = {}  # phase1b.py replaces these inline fallbacks with base.css defaults
 COMPOSITE_NAMES = json.load(open('composites.json')) if os.path.exists('composites.json') else {}
 
 

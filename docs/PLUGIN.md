@@ -199,6 +199,10 @@ in PROPOSAL.md ("a manifest, not a stylesheet") carries over unchanged:
 Fonts inside the bundle are same-origin, so bundling them does not reintroduce
 the remote-font beacon problem PROPOSAL flagged.
 
+Every token has a default in `base.css`, so a skin sets only what it changes;
+the 20 core roles are enough for a complete skin. The full list, with
+defaults and where each is used, is `docs/TOKENS.md`.
+
 Anything the three current skins do that cannot be expressed as a token belongs
 in the base stylesheet — possibly behind a token that switches it on — not in a
 per-skin raw CSS escape hatch.
@@ -265,7 +269,8 @@ shows one) and surviving a real `daily.sh` run (the Docker image has no git
 checkout to update); both are checked during the production migration.
 
 **1 — Base + tokens. Equivalence done 2026-09-28.** `base/base.css` (47KB,
-shared) plus a `skin.css` of 18-19KB per skin, down from ~70KB standalone.
+shared) plus a `skin.css` of 18-19KB per skin, down from ~70KB standalone
+(sizes before 1b).
 Verified two ways:
 
 - *Rendered:* `harness/compare.html?all=1` loads each harness page with the
@@ -281,14 +286,43 @@ Where a skin never declared a property that another skin did, its token file
 now carries the stock value explicitly (measured from the original in the
 harness, or read from stock CSS for elements the harness doesn't render).
 
-**1b — Token API.** What's left before custom skins are practical: the base
-was extracted mechanically, so it has 38 named roles (`--ts-accent`,
-`--ts-surface`, `--ts-border`...) but also ~250 detail tokens with generated
-names (`--ts-navbar-default-bg-image`) and no fallbacks. A custom skin
-currently has to set all of them. 1b gives every detail token a fallback built
-from the roles, so a minimal skin sets roughly 20 values and the bundled skins
-override the rest; renames the detail tokens; and writes the token reference.
-Equivalence is re-checked after every step.
+**1b — Token API. Done 2026-09-28.** Every one of the 301 tokens now has a
+default, in a block at the top of `base.css`; `skin.css` loads after it, so a
+skin sets only what it changes. Defaults, by source:
+
+- **20 core roles** (`bg`, `surface`, `border`, `text`, `accent`, `success`,
+  `font-display`, `radius-sm`...): stock LibreNMS dark. A skin normally sets
+  these, and they're enough on their own: `examples/minimal/skin.css` is only
+  the core roles, and renders as a complete skin in the harness
+  (`?skin=example`). With no token file at all (`?skin=defaults`), the result
+  is close to stock dark.
+- **18 derived roles** (`success-deep`, `font-code`, `radius-lg`...): mixes of
+  the core roles.
+- **132 component tokens** the three skins all set differently: restrained
+  defaults built from the roles. Flat surfaces, one soft shadow, accent edges
+  only where they carry meaning (active tab, focus, row status), no
+  decoration.
+- **127 component tokens** that are stock in some skins or shared by two: that
+  value.
+
+Tokens were renamed from generated names to `component-part-property`
+(`--ts-navbar-default-navbar-nav-li-a-hover-bg` → `--ts-navbar-link-hover-bg`).
+Every bundled-skin token equal to its default was dropped: Terran 207 tokens
+(12KB), Protoss 246 (15KB), Zerg 239 (16KB); `base.css` is 60KB with the
+defaults. Both equivalence checks still pass with 0 differences.
+
+`docs/TOKENS.md` is the token reference, generated from `base.css` by
+`scripts/gen-token-docs.py`.
+
+**Found during 1b, not yet fixed: the skins break LibreNMS's sticky navbar.**
+Core pins the navbar with `nav.navbar-sticky-top { position: sticky }`
+(`styles.css:1306`, specificity 0,1,1). All three original skins set
+`html.dark .navbar-default { position: relative }` (0,2,1), which wins, so with
+any skin active the navbar should scroll away instead of staying pinned. They
+wanted a positioned box for the navbar's `::before`/`::after` decorations, and
+`sticky` already provides one, so the fix is to drop the declaration. Left out
+of 1b to keep the equivalence result clean. The harness hides it: its markup
+still uses the older `navbar-fixed-top` class.
 
 **2 — v1 plugin, and migrate production.** Bundled skins published to `html/css/custom/theme-selector/`,
 per-user picker page, admin default, composer injection with a cache-buster

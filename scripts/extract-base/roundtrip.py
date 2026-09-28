@@ -12,6 +12,11 @@ SKINS = {'terran': 'tn', 'protoss': 'pr', 'zerg': 'zg'}
 SPLIT = json.load(open('split.json'))
 NORMALIZE = json.load(open('normalize.json'))
 RESOLVED = json.load(open('resolved.json'))
+try:  # after phase1b.py, tokens carry new names
+    _ren = json.load(open('phase1b-map.json'))['renames']
+    RESOLVED = {k: {_ren.get(n, n): v for n, v in d.items()} for k, d in RESOLVED.items()}
+except FileNotFoundError:
+    pass
 EXTRA_SELECTORS = {e['selector'] for e in json.load(open('extra.json'))}
 
 
@@ -53,7 +58,9 @@ def original(skin):
 
 
 def tokens_of(skin):
-    t = {}
+    # base.css defaults first; the skin, loaded after it, overrides them
+    t = {p: v for p, v in parse(open(f'{REPO}/base/base.css', encoding='utf-8').read()).get(('html.dark',), {}).items()
+         if p.startswith('--ts-')}
     for ctx, decls in parse(open(f'{REPO}/skins/{skin}/skin.css', encoding='utf-8').read()).items():
         if ctx == ('html.dark',):
             t.update({p: v for p, v in decls.items() if p.startswith('--ts-')})
@@ -110,7 +117,7 @@ for skin in SKINS:
             continue
         od = orig.get(ctx, {})
         for p, v in decls.items():
-            if p in od:
+            if p in od or p.startswith('--ts-'):
                 continue
             m = VAR.search(v)
             name = m.group(1)[5:] if m else None

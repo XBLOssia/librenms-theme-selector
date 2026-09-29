@@ -34,7 +34,10 @@
   var SKINS = ['terran', 'protoss', 'zerg'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'zerg').toLowerCase();
   if (SKINS.indexOf(skin) === -1) skin = 'zerg';
-  document.write('<link rel="stylesheet" href="../skins/' + skin + '/' + skin + '.css">');
+  var bust = '?t=' + Date.now();
+  document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
+                 '<link rel="stylesheet" href="../skins/' + skin + '/skin.css' + bust + '">');
+  document.documentElement.classList.add('dark');
 </script>
 </head>
 <body>
@@ -43,83 +46,73 @@
   <h1 class="cw-title" id="cw-name"></h1>
   <span class="cw-nav" id="cw-nav"></span>
 </div>
-<p class="cw-sub">Colorway reference — every design token the skin defines, read live from its stylesheet.</p>
+<p class="cw-sub">Colorway reference: the skin's core roles as rendered, its palette and everything else it sets, read live from its stylesheets.</p>
 
 <div id="cw-body"></div>
 
 <div class="cw-group">Graph series ramps</div>
 <p class="cw-note">RRDtool renders graphs server-side, so these are not CSS. They
-live in <code>skins/&lt;skin&gt;/graph.conf</code> and are applied to LibreNMS
-config by the installer. Shown here for reference.</p>
+live in <code>skins/&lt;skin&gt;/graph.conf</code> and are applied by the plugin,
+per request for each user's graphs. Shown here for reference.</p>
 <div class="cw-ramps" id="cw-ramps"></div>
 
 <script>
-const PREFIX = { terran: 'tn', protoss: 'pr', zerg: 'zg' };
-const p = PREFIX[skin];
-
 document.getElementById('cw-name').textContent = skin.toUpperCase();
 document.getElementById('cw-nav').innerHTML = SKINS.map(s =>
   `<a href="?skin=${s}" style="${s === skin ? 'font-weight:700' : 'opacity:.6'}">${s}</a>`).join('');
 
-// Pull every --<prefix>-* custom property straight out of the skin's stylesheet.
-function tokens() {
-  const out = [];
-  for (const sheet of document.styleSheets) {
-    let rules; try { rules = sheet.cssRules; } catch (e) { continue; }
-    if (!rules) continue;
-    for (const r of rules) {
-      if (r.selectorText !== ':root') continue;
-      for (const prop of r.style) {
-        if (prop.startsWith(`--${p}-`)) {
-          out.push([prop, r.style.getPropertyValue(prop).trim()]);
-        }
-      }
-    }
-  }
-  return out;
-}
+const body = document.getElementById('cw-body');
+const root = document.documentElement;
+const probe = document.body.appendChild(document.createElement('span'));
+probe.style.display = 'none';
 
-const GROUPS = [
-  ['Surfaces',   v => /void|hull|plate|panel|flesh|raised|hi$|carapace(?!-lit)/.test(v)],
-  ['Structure',  v => /edge|rivet|bone|gold(?!-)|accent|carapace-lit/.test(v)],
-  ['Text',       v => /text/.test(v)],
-  ['Status',     v => /green|red|led|ichor|ember|blood|psi|violet|crystal|ok|warn|danger|info|console|hazard|amber/.test(v)],
+// A role's effective colour: resolve var() chains and defaults by letting the
+// browser compute it on a probe, instead of reading token text.
+const resolve = name => { probe.style.color = ''; probe.style.color = `var(${name})`; return getComputedStyle(probe).color; };
+
+const ROLES = [
+  ['Surfaces', ['bg', 'surface', 'surface-raised', 'surface-hover', 'border']],
+  ['Text', ['text', 'text-dim', 'text-mute', 'text-bright']],
+  ['Accents', ['accent', 'link', 'highlight']],
+  ['Status', ['success', 'warning', 'danger', 'info', 'danger-text']],
 ];
 
-const body = document.getElementById('cw-body');
-const all = tokens();
-const shown = new Set();
-
 function chip(name, val) {
-  const isColor = /^#|^rgb/.test(val);
   return `<div class="cw-chip">
-    <div class="cw-swatch" style="background:${isColor ? val : val}"></div>
+    <div class="cw-swatch" style="background:${val}"></div>
     <div class="cw-meta"><span class="cw-name">${name}</span><span class="cw-val">${val.length > 30 ? val.slice(0, 30) + '…' : val}</span></div>
   </div>`;
 }
 
-for (const [label, test] of GROUPS) {
-  const items = all.filter(([n, v]) => /^#|^rgb/.test(v) && test(n) && !shown.has(n));
-  if (!items.length) continue;
-  items.forEach(([n]) => shown.add(n));
+for (const [label, names] of ROLES) {
   body.insertAdjacentHTML('beforeend',
-    `<div class="cw-group">${label}</div><div class="cw-grid">${items.map(([n, v]) => chip(n, v)).join('')}</div>`);
+    `<div class="cw-group">${label} <small style="opacity:.6">core roles, as rendered</small></div>` +
+    `<div class="cw-grid">${names.map(n => chip('--ts-' + n, resolve('--ts-' + n))).join('')}</div>`);
 }
 
-// Anything left that is a colour but did not match a group.
-const rest = all.filter(([n, v]) => /^#|^rgb/.test(v) && !shown.has(n));
+// The skin's own palette (--p-*) and everything else it sets, read from its
+// token file. Only rules from the skin's stylesheet, so base defaults don't show.
+const own = [];
+for (const sheet of document.styleSheets) {
+  if (!sheet.href || !sheet.href.includes(`/skins/${skin}/skin.css`)) continue;
+  for (const r of sheet.cssRules) {
+    if (r.selectorText !== 'html.dark') continue;
+    for (const prop of r.style) own.push([prop, r.style.getPropertyValue(prop).trim()]);
+  }
+}
+const isColour = v => /^#|^rgb/.test(v);
+const palette = own.filter(([n, v]) => n.startsWith('--p-') && isColour(v));
+if (palette.length) {
+  body.insertAdjacentHTML('beforeend',
+    `<div class="cw-group">Palette <small style="opacity:.6">${palette.length} private colours</small></div>` +
+    `<div class="cw-grid">${palette.map(([n, v]) => chip(n, v)).join('')}</div>`);
+}
+const rest = own.filter(([n, v]) => !(n.startsWith('--p-') && isColour(v)));
 if (rest.length) {
   body.insertAdjacentHTML('beforeend',
-    `<div class="cw-group">Other</div><div class="cw-grid">${rest.map(([n, v]) => chip(n, v)).join('')}</div>`);
-}
-
-// Non-colour tokens (geometry, shadows, fonts) listed as text.
-const nonColour = all.filter(([n, v]) => !/^#|^rgb/.test(v));
-if (nonColour.length) {
-  body.insertAdjacentHTML('beforeend',
-    `<div class="cw-group">Geometry &amp; type</div>
+    `<div class="cw-group">Everything else the skin sets <small style="opacity:.6">${rest.length}</small></div>
      <div class="cw-meta" style="font-size:11px;line-height:1.9">` +
-    nonColour.map(([n, v]) => `<div><span style="opacity:.95">${n}</span>: <span style="opacity:.6">${v.length > 90 ? v.slice(0, 90) + '…' : v}</span></div>`).join('') +
+    rest.map(([n, v]) => `<div><span style="opacity:.95">${n}</span>: <span style="opacity:.6">${v.length > 90 ? v.slice(0, 90) + '…' : v}</span></div>`).join('') +
     `</div>`);
 }
 

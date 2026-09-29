@@ -4,6 +4,14 @@ Findings from building three skins and deploying one to a production LibreNMS
 instance. Everything here is measured against master @ `63e0394` and is
 reproducible.
 
+> **A note on names.** This is a dated record, written when each skin was one
+> standalone stylesheet (`terran.css`, `protoss.css`, `zerg.css`) with its own
+> variable prefix (`--tn-`, `--pr-`, `--zg-`). Those files were split into the
+> shared `base/base.css` and a `skins/<id>/skin.css` token file, then deleted.
+> The same colours are `--p-<name>` in each `skin.css` now (`--tn-plate` is
+> `--p-plate` in Terran's). The measurements and their conclusions are
+> unchanged; the file and variable names below are historical.
+
 This is not a complaint. The lead maintainer has already identified the same
 root cause and asked for it to be fixed — see [Prior art](#prior-art). The point
 of this document is to supply the numbers.

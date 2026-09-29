@@ -11,9 +11,9 @@ no Google Fonts request, nothing for the end user to do.
 
 | Token | Face | Role | Applied to |
 |---|---|---|---|
-| `--zg-font-chrome` | Metamorphous 400 | Gnarled organic display — bone grown into letterforms | Navbar, panel headers, table **headers**, buttons, tabs |
-| `--zg-font-data` | Chakra Petch 500/700 | Angular carapace-plate sans | Device hostnames, table **body cells**, labels, badges, inputs |
-| `--zg-font-code` | Space Mono 400 | Monospace | `pre` / `code` only |
+| `--p-font-chrome` | Metamorphous 400 | Gnarled organic display — bone grown into letterforms | Navbar, panel headers, table **headers**, buttons, tabs |
+| `--p-font-data` | Chakra Petch 500/700 | Angular carapace-plate sans | Device hostnames, table **body cells**, labels, badges, inputs |
+| `--p-font-code` | Space Mono 400 | Monospace | `pre` / `code` only |
 
 Metamorphous has rough, irregular stroke terminals that read as bone or chitin
 rather than type — exactly the "grown, not drawn" quality the rest of the skin
@@ -66,12 +66,12 @@ uneven border widths, mottled creep, the slow breathe on the navbar vent — and
 the type stays legible. If you disagree and want the drip, it is one variable:
 
 ```css
-:root { --zg-font-chrome: "Eater", cursive; }
+html.dark { --p-font-chrome: "Eater", cursive; }
 ```
 
 Drop the `.woff2` into `fonts/`, point a `@font-face` at it, and nothing below
 section 1b needs to change — no rule in the skin names a font directly. Just
-leave `--zg-font-data` alone.
+leave `--p-font-data` alone.
 
 ---
 

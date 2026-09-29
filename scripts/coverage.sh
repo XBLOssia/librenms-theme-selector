@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Report which colour-bearing components the skins do not style.
+# Report which colour-bearing components base/base.css does not style.
 #
 #   ./scripts/coverage.sh /opt/librenms
-#   ./scripts/coverage.sh /opt/librenms zerg     # single skin
-#   ./scripts/coverage.sh /opt/librenms zerg -v  # list the misses
+#   ./scripts/coverage.sh /opt/librenms -v       # list the misses
+#
+# All skins share base.css, so this is one number, not one per skin. It counts
+# selectors named, not properties answered: harness/leaks.html is the check
+# for whether a stock rule still wins.
 #
 # TWO DENOMINATORS, because the first one alone hid a real gap for a while:
 #
@@ -31,11 +34,11 @@ case "${ONLY}" in -v|--verbose) VERBOSE="-v"; ONLY="" ;; esac
 
 if [ ! -f "$TW" ] || [ ! -f "$ST" ]; then
   echo "error: need $TW and $ST - pass the path to a LibreNMS checkout" >&2
-  echo "usage: $0 /path/to/librenms [skin] [-v]" >&2
+  echo "usage: $0 /path/to/librenms [-v]" >&2
   exit 1
 fi
 
-[ -n "$ONLY" ] && skins="$ONLY" || skins="terran protoss zerg"
+skins="base"
 
 # Group A: components tw_dark.css themes.
 group_a=$(grep -ohE '\.dark [.#][a-zA-Z0-9_-]+' "$TW" | sed 's/^\.dark //' | awk '!s[$0]++')
@@ -80,7 +83,7 @@ printf '     total                                    %4d\n' "$((a_total + b_tot
 echo
 
 for skin in $skins; do
-  css="$ROOT/skins/$skin/$skin.css"
+  css="$ROOT/base/base.css"
   if [ ! -f "$css" ]; then
     echo "$skin: no stylesheet at $css - skipping"; continue
   fi

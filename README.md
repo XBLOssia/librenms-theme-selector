@@ -19,7 +19,7 @@ asset ports.
 | **Zerg** | Asymmetric, grown, uneven | Creep purple + bone, ichor green, ember orange | Metamorphous + Chakra Petch |
 
 All three are installed and verified on a production instance. They cover
-**92 of 92** components LibreNMS's dark theme styles, and **183 of 218** once
+**92 of 92** components LibreNMS's dark theme styles, and **179 of 218** once
 you also count the `styles.css` classes the dark theme never touches — most of
 the remainder being dead Observium-era classes. A full survey of
 `styles.css` finds 127 rules — 671 lines — that nothing in LibreNMS can match
@@ -279,17 +279,15 @@ skins/<name>/skin.json      manifest: name, description, modes
 skins/<name>/graph.conf     graph palette, applied when it's the instance default
 skins/<name>/fonts/         bundled OFL webfonts + licence notices
 skins/<name>/FONTS.md       typography rationale and how to swap faces
-skins/<name>/<name>.css     the original standalone skin; kept until production migrates
 examples/minimal/           a skin that sets only the 20 core roles
 harness/index.html          static preview, real LibreNMS CSS, real DOM
 harness/mockup.html         full dashboard mockup, invented data
-harness/compare.html        original vs base + tokens, computed-style diff
+harness/leaks.html          stock backgrounds still showing through, and contrast
 harness/graphs/             rrdtool graphs rendered from a synthetic RRD
 harness/colorway.html       a skin's tokens and graph ramps, rendered
 harness/audit.js            live-page contrast + stock-colour audit
 dev/                        Docker LibreNMS for developing the plugin
 scripts/gen-token-docs.py   regenerate docs/TOKENS.md from base.css
-scripts/extract-base/       how the skins were split, and the equivalence check
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/make-demo-graphs.sh generate the mockup's graphs (needs rrdtool)

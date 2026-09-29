@@ -248,11 +248,10 @@ routes/web.php
 resources/views/
 database/migrations/       skin registry table
 base/base.css              the interpretation layer's stylesheet
-skins/<id>/                bundled skins: skin.css, fonts/, graph.conf; the
-                           original <id>.css stays until production migrates
-harness/                   preview pages; ?build=tokens and compare.html
+skins/<id>/                bundled skins: skin.css, skin.json, graph.conf, fonts/
+harness/                   preview pages, colorway, leaks.html
 dev/                       Docker test instance (dev/README.md)
-scripts/                   patch-core.sh, coverage, fonts, extract-base
+scripts/                   patch-core.sh, coverage, fonts, token docs
 ```
 
 ---
@@ -267,10 +266,14 @@ Not yet proven: the login page (the dev instance logs in by header, so it never
 shows one) and surviving a real `daily.sh` run (the Docker image has no git
 checkout to update); both are checked during the production migration.
 
-**1 — Base + tokens. Equivalence done 2026-09-28.** `base/base.css` (47KB,
+**1 — Base + tokens. Equivalence done 2026-09-28; the tooling was retired
+2026-09-29.** `base/base.css` (47KB,
 shared) plus a `skin.css` of 18-19KB per skin, down from ~70KB standalone
 (sizes before 1b).
-Verified two ways:
+Verified two ways (both checks compared against the original standalone skins,
+which were deleted on 2026-09-29 once production had migrated and `base.css` had
+legitimately diverged from them; `harness/leaks.html` is the check that
+replaced them, and git history keeps the originals and the tooling):
 
 - *Rendered:* `harness/compare.html?all=1` loads each harness page with the
   original skin and with base + tokens and compares every element's computed

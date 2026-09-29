@@ -14,9 +14,9 @@ needed it](#why-this-one-needed-it).
 
 | Token | Face | Role | Applied to |
 |---|---|---|---|
-| `--pr-font-chrome` | Cinzel 600 | Carved ceremonial capitals — the Khalai-inscription voice | Navbar, panel headers, table **headers**, buttons, tabs |
-| `--pr-font-data` | Rajdhani 500/700 | Futuristic but readable | Device hostnames, table **body cells**, labels, badges, inputs |
-| `--pr-font-code` | Space Mono 400 | Monospace | `pre` / `code` only |
+| `--p-font-chrome` | Cinzel 600 | Carved ceremonial capitals — the Khalai-inscription voice | Navbar, panel headers, table **headers**, buttons, tabs |
+| `--p-font-data` | Rajdhani 500/700 | Futuristic but readable | Device hostnames, table **body cells**, labels, badges, inputs |
+| `--p-font-code` | Space Mono 400 | Monospace | `pre` / `code` only |
 
 The design intent is a deliberate collision: Protoss are simultaneously ancient
 and hyper-advanced, so the frame is carved-stone Roman capitals and the data is
@@ -107,7 +107,7 @@ If you want more esoteric and will trade legibility for it:
 Resist putting a display face in table cells. Scope it to the frame instead:
 
 ```css
-:root { --pr-font-chrome: "Orbitron", sans-serif; }
+html.dark { --p-font-chrome: "Orbitron", sans-serif; }
 ```
 
 Drop the new `.woff2` into `fonts/`, point its `@font-face` at it, and nothing

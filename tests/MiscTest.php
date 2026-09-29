@@ -44,7 +44,7 @@ function test_fonts(): void
     $check('a.woff2', substr(fake_font('wOF2', 300), 0, 250), 'different size');
     $check('a.woff2', fake_font('wOF2', Limits::FONT_BYTES + 1), 'too large');
 
-    foreach (['<?php', '<?PHP', '<?=', '<? ', "<?\n", "<?\t", '<script', '<SCRIPT', '<%'] as $marker) {
+    foreach (['<?php', '<?PHP', '<?=', '<? ', "<?\n", "<?\t", '<script', '<SCRIPT'] as $marker) {
         $body = fake_font('wOF2', 300, "\x01");
         $body = substr($body, 0, 100) . $marker . substr($body, 100 + strlen($marker));
         $check('a.woff2', $body, 'PHP or script', false);
@@ -53,6 +53,9 @@ function test_fonts(): void
     // and must not cause a false rejection.
     $body = fake_font('wOF2', 300, "\x01");
     $check('a.woff2', substr($body, 0, 100) . '<?x' . substr($body, 103), null, true);
+    // Likewise `<%` (an ASP tag, which nothing in this stack executes): two bytes
+    // are enough to turn up by chance in a real font, and did in Montserrat Bold.
+    $check('a.woff2', substr($body, 0, 100) . '<%' . substr($body, 102), null, true);
 
     // header sanity
     $badReserved = fake_font('wOF2');

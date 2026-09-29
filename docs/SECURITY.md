@@ -90,7 +90,7 @@ Run all of it with `sh dev/test.sh all`.
 |---|---|---|
 | A script, SVG or HTML renamed `.woff2` | Signature must match the extension | `MiscTest`, mutation "skip the signature check" |
 | A real font with a payload appended (polyglot) | WOFF and WOFF2 declare their own length; it must equal the file size | `MiscTest`, mutation |
-| PHP or script inside the font bytes | Scanned for `<?php`, `<?=`, `<? `, `<script`, `<%` | `MiscTest`, mutation |
+| PHP or script inside the font bytes | Scanned for `<?php`, `<?=`, `<? `, `<script`. (`<%`, an ASP tag nothing here executes, is not scanned: two bytes occur by chance in real compressed fonts.) | `MiscTest`, mutation |
 | A font file executed through a path-info trick (`.../font.woff2/x.php`) | There are no font files: fonts exist only inside the generated CSS as base64, which contains no `<`. Verified against the running server | `test-upload.sh` ("path-info trick") |
 
 ### Graph settings

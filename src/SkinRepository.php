@@ -2,35 +2,84 @@
 
 namespace Xblossia\ThemeSelector;
 
+use Xblossia\ThemeSelector\Skin\GraphConf;
+use Xblossia\ThemeSelector\Skin\Report;
+
 /**
- * The skins this install can apply: every valid skin directory in the
- * published location, bundled or (from phase 3) uploaded. Served layout,
- * under the webroot:
+ * The skins this install can apply.
+ *
+ * A skin exists only if it is one of:
+ *   - BUNDLED: shipped in this package (skins/<id> in the package), published
+ *     into the web root by SkinPublisher; or
+ *   - UPLOADED: has a row in the registry, put there by the installer after the
+ *     bundle passed validation.
+ * Either way its stylesheet must also be present in the web root. A directory
+ * that merely appears under skins/ (dropped in by hand, left over from a failed
+ * install, or written by anything else) is not a skin: it is not listed, can't
+ * be chosen and is never linked. That keeps the web root's contents from
+ * deciding what gets applied.
+ *
+ * Served layout, under the webroot:
  *
  *   css/custom/theme-selector/base.css
- *   css/custom/theme-selector/skins/<id>/skin.css     token file
- *   css/custom/theme-selector/skins/<id>/skin.json    manifest
- *   css/custom/theme-selector/skins/<id>/graph.conf   optional graph palette
- *   css/custom/theme-selector/skins/<id>/fonts/       optional fonts
+ *   css/custom/theme-selector/skins/<id>/skin.css     always
+ *   css/custom/theme-selector/skins/<id>/skin.json    bundled only
+ *   css/custom/theme-selector/skins/<id>/graph.conf   bundled only
+ *   css/custom/theme-selector/skins/<id>/fonts/       bundled only
+ *
+ * An uploaded skin is a single generated skin.css (its fonts are inside it);
+ * its metadata and graph palette live in the registry, not in files.
  */
 class SkinRepository
 {
     public const PUBLIC_DIR = 'css/custom/theme-selector';
 
-    /** @var array<string, array{id: string, name: string, description: string, modes: string[]}>|null */
+    /** @var array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, modes: string[]}>|null */
     private ?array $skins = null;
 
-    public function __construct(private readonly string $publicDir)
-    {
+    public function __construct(
+        private readonly string $publicDir,
+        private readonly SkinRegistry $registry,
+        private readonly string $packageSkinsDir,
+    ) {
     }
 
     public static function isValidId(string $id): bool
     {
-        return (bool) preg_match('/^[a-z0-9][a-z0-9-]{0,62}$/', $id);
+        return (bool) preg_match('/^[a-z0-9][a-z0-9-]{0,62}\z/D', $id);
     }
 
     /**
-     * @return array<string, array{id: string, name: string, description: string, modes: string[]}> by id, sorted by name
+     * Ids of the skins shipped in this package.
+     *
+     * @return string[]
+     */
+    public function bundledIds(): array
+    {
+        $ids = [];
+        foreach (glob("$this->packageSkinsDir/*", GLOB_ONLYDIR) ?: [] as $dir) {
+            $id = basename($dir);
+            if (self::isValidId($id) && is_file("$dir/skin.css") && is_file("$dir/skin.json")) {
+                $ids[] = $id;
+            }
+        }
+        sort($ids);
+
+        return $ids;
+    }
+
+    public function isBundled(string $id): bool
+    {
+        return in_array($id, $this->bundledIds(), true);
+    }
+
+    public function isUploaded(string $id): bool
+    {
+        return ! $this->isBundled($id) && $this->registry->find($id) !== null;
+    }
+
+    /**
+     * @return array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, modes: string[]}> by id, sorted by name
      */
     public function all(): array
     {
@@ -39,18 +88,36 @@ class SkinRepository
         }
 
         $skins = [];
-        foreach (glob("$this->publicDir/skins/*", GLOB_ONLYDIR) ?: [] as $dir) {
-            $id = basename($dir);
-            if (! self::isValidId($id) || ! is_file("$dir/skin.css")) {
+
+        foreach ($this->bundledIds() as $id) {
+            if (! is_file("$this->publicDir/skins/$id/skin.css")) {
                 continue;
             }
-            $manifest = json_decode((string) @file_get_contents("$dir/skin.json"), true);
+            $manifest = json_decode((string) @file_get_contents("$this->publicDir/skins/$id/skin.json"), true);
             $manifest = is_array($manifest) ? $manifest : [];
             $skins[$id] = [
                 'id' => $id,
                 'name' => is_string($manifest['name'] ?? null) ? $manifest['name'] : ucfirst($id),
                 'description' => is_string($manifest['description'] ?? null) ? $manifest['description'] : '',
+                'author' => is_string($manifest['author'] ?? null) ? $manifest['author'] : '',
+                'version' => is_string($manifest['version'] ?? null) ? $manifest['version'] : '',
+                'source' => 'bundled',
                 'modes' => array_values(array_intersect(['dark', 'light'], (array) ($manifest['modes'] ?? ['dark']))),
+            ];
+        }
+
+        foreach ($this->registry->all() as $id => $row) {
+            if (isset($skins[$id]) || ! self::isValidId($id) || ! is_file("$this->publicDir/skins/$id/skin.css")) {
+                continue;
+            }
+            $skins[$id] = [
+                'id' => $id,
+                'name' => $row['name'],
+                'description' => $row['description'],
+                'author' => $row['author'],
+                'version' => $row['version'],
+                'source' => 'uploaded',
+                'modes' => ['dark'],
             ];
         }
 
@@ -86,7 +153,7 @@ class SkinRepository
         $urls = [];
         foreach (['base.css', "skins/$id/skin.css"] as $file) {
             $path = "$this->publicDir/$file";
-            if (! is_file($path)) {
+            if (! is_file($path) || is_link($path)) {
                 return [];
             }
             $urls[] = self::PUBLIC_DIR . "/$file?v=" . filemtime($path);
@@ -97,7 +164,10 @@ class SkinRepository
 
     /**
      * The skin's graph palette as config key => value, or [] if it has none.
-     * Lines are `key=value`; values starting with `[` are JSON arrays.
+     *
+     * Bundled skins keep theirs in graph.conf; uploaded skins in the registry.
+     * Both go through GraphConf's exact-shape checks here, so what reaches
+     * LibreNMS config is validated no matter how it was stored.
      *
      * @return array<string, string|array<int, string>>
      */
@@ -107,31 +177,12 @@ class SkinRepository
             return [];
         }
 
-        $raw = @file_get_contents("$this->publicDir/skins/$id/graph.conf");
-        if ($raw === false) {
-            return [];
+        if ($this->isBundled($id)) {
+            $raw = @file_get_contents("$this->publicDir/skins/$id/graph.conf");
+
+            return $raw === false ? [] : (GraphConf::parse($raw, new Report()) ?? []);
         }
 
-        $palette = [];
-        foreach (preg_split('/\R/', $raw) as $line) {
-            $line = trim($line);
-            if ($line === '' || $line[0] === '#' || ! str_contains($line, '=')) {
-                continue;
-            }
-            [$key, $value] = array_map('trim', explode('=', $line, 2));
-            if (! preg_match('/^(rrdgraph_def_text(_color)?_dark|graph_colours\.[a-z_]+)$/', $key)) {
-                continue; // only graph colour settings, whatever the file says
-            }
-            if (str_starts_with($value, '[')) {
-                $decoded = json_decode($value, true);
-                if (! is_array($decoded)) {
-                    continue;
-                }
-                $value = array_values(array_filter($decoded, fn ($c) => is_string($c) && preg_match('/^[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/', $c)));
-            }
-            $palette[$key] = $value;
-        }
-
-        return $palette;
+        return GraphConf::fromStored($this->registry->find($id)['graph'] ?? []);
     }
 }

@@ -24,6 +24,15 @@ class SkinInjector
     public function compose(View $view): void
     {
         try {
+            // Escape hatch: a skin that makes a page unusable can't be turned
+            // off from inside that page, so ?theme-selector=off shows any page
+            // with no skin. It changes nothing stored.
+            if (request()->query('theme-selector') === 'off') {
+                $view->getFactory()->startPush('styles', '<meta name="theme-selector" content="off">' . "\n");
+
+                return;
+            }
+
             // The login page has no user: it gets the instance default.
             $skin = $this->resolver->forUser(Auth::user());
             $urls = $skin === null ? [] : $this->skins->stylesheetUrls($skin);

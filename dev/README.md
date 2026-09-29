@@ -5,7 +5,7 @@ Not for production.
 
 - Image `librenms/librenms:26.9.1.1`, the first release containing `63e0394`
   (the production host's commit).
-- The repo is bind-mounted at `/plugin` and installed via a Composer path
+- The repo is bind-mounted **read-only** at `/plugin` and installed via a Composer path
   repository with symlinks, so edits to `src/`, `resources/` and `skins/` show
   on the next request. There's no rebuild; OPcache revalidates on every request.
 - State lives in Docker named volumes. `docker compose -f dev/compose.yml down -v`

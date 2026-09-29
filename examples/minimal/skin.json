@@ -1,0 +1,10 @@
+{
+  "id": "slate-teal",
+  "name": "Slate Teal",
+  "description": "A minimal example: the 20 core roles and nothing else.",
+  "author": "Theme Selector",
+  "version": "1.0.0",
+  "modes": [
+    "dark"
+  ]
+}

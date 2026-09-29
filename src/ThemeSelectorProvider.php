@@ -9,8 +9,11 @@ use LibreNMS\Interfaces\Plugins\Hooks\MenuEntryHook;
 use LibreNMS\Interfaces\Plugins\PluginManagerInterface;
 use Throwable;
 use Xblossia\ThemeSelector\Console\PublishCommand;
+use Xblossia\ThemeSelector\Console\ValidateCommand;
 use Xblossia\ThemeSelector\Hooks\Menu;
 use Xblossia\ThemeSelector\Http\Middleware\GraphColours;
+use Xblossia\ThemeSelector\Skin\SkinCompiler;
+use Xblossia\ThemeSelector\Skin\TokenCatalog;
 
 class ThemeSelectorProvider extends ServiceProvider
 {
@@ -22,8 +25,26 @@ class ThemeSelectorProvider extends ServiceProvider
         $this->app->singleton(Settings::class);
         $this->app->singleton(GraphPalette::class);
         $this->app->singleton(SkinResolver::class);
-        $this->app->singleton(SkinRepository::class, fn () => new SkinRepository(public_path(SkinRepository::PUBLIC_DIR)));
-        $this->app->singleton(SkinPublisher::class, fn () => new SkinPublisher($root, public_path(SkinRepository::PUBLIC_DIR)));
+        $this->app->singleton(SkinRegistry::class);
+        $this->app->singleton(DefaultSkin::class);
+        $this->app->singleton(SkinRepository::class, fn ($app) => new SkinRepository(
+            public_path(SkinRepository::PUBLIC_DIR),
+            $app->make(SkinRegistry::class),
+            $root . '/skins',
+        ));
+        $this->app->singleton(SkinPublisher::class, fn ($app) => new SkinPublisher(
+            $root,
+            public_path(SkinRepository::PUBLIC_DIR),
+            $app->make(SkinRegistry::class),
+        ));
+        $this->app->singleton(SkinInstaller::class, fn ($app) => new SkinInstaller(
+            public_path(SkinRepository::PUBLIC_DIR),
+            $app->make(SkinRepository::class),
+            $app->make(SkinRegistry::class),
+            $app->make(DefaultSkin::class),
+        ));
+        $this->app->singleton(TokenCatalog::class, fn () => TokenCatalog::fromFile($root . '/resources/token-catalog.json'));
+        $this->app->singleton(SkinCompiler::class, fn ($app) => new SkinCompiler($app->make(TokenCatalog::class)));
     }
 
     public function boot(PluginManagerInterface $pluginManager): void
@@ -42,7 +63,7 @@ class ThemeSelectorProvider extends ServiceProvider
         }
 
         if ($this->app->runningInConsole()) {
-            $this->commands([PublishCommand::class]);
+            $this->commands([PublishCommand::class, ValidateCommand::class]);
         } else {
             $this->publishSkins();
         }

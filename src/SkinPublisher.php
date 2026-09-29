@@ -27,6 +27,7 @@ class SkinPublisher
     public function __construct(
         private readonly string $packageRoot,
         private readonly string $publicDir,
+        private readonly SkinRegistry $registry,
     ) {
     }
 
@@ -71,7 +72,15 @@ class SkinPublisher
             }
         }
 
+        // A directory an admin's upload owns is never written to or removed,
+        // even if a later package version ships a skin with the same id.
+        $uploaded = array_keys($this->registry->all());
+        $skip = fn (string $relative): bool => preg_match('#^skins/([^/]+)/#', $relative, $m) === 1 && in_array($m[1], $uploaded, true);
+
         foreach ($files as $relative => $source) {
+            if ($skip($relative)) {
+                continue;
+            }
             $this->copy($source, "$this->publicDir/$relative");
         }
 
@@ -79,7 +88,9 @@ class SkinPublisher
 
         // A skin dropped from the package since the last publish.
         foreach (array_diff($previousSkins, $skins) as $gone) {
-            $this->removeDirectory("$this->publicDir/skins/$gone");
+            if (! in_array($gone, $uploaded, true)) {
+                $this->removeDirectory("$this->publicDir/skins/$gone");
+            }
         }
 
         $this->write("$this->publicDir/" . self::MARKER, json_encode([
@@ -116,10 +127,6 @@ class SkinPublisher
             $dir = "$this->packageRoot/skins/$id";
             foreach (self::SKIN_FILES as $ext) {
                 foreach (glob("$dir/*.$ext") ?: [] as $file) {
-                    // skip the original standalone <id>.css; only skin.css is published
-                    if ($ext === 'css' && basename($file) !== 'skin.css') {
-                        continue;
-                    }
                     $files["skins/$id/" . basename($file)] = $file;
                 }
             }

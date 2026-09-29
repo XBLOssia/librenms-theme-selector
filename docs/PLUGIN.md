@@ -352,6 +352,34 @@ from install.sh"), which needs this repo pushed first. It is also where the two
 checks the dev instance can't make happen: the login page, and surviving a
 real `daily.sh`. After that, delete `install.sh`/`uninstall.sh`.
 
+**Found on production, fixed 2026-09-29: stock table backgrounds showing through
+Protoss and Zerg.** A production screenshot showed gray tables inside navy and
+plum widgets. The gray was exactly `#2e3338`, LibreNMS's own dark surface, which
+appears in no skin palette, so it was a gap and not a design choice: stock's
+`.dark table` (0,1,1) and `.dark .table-responsive > .table` (0,3,0) paint
+tables, and our `.table` rules never set a background. Terran's surfaces are
+near that gray, which hid it.
+
+A property-level sweep (now `harness/leaks.html`) found the same shape of bug
+in stock rules with more classes than ours (`.dark .form-control[disabled]`,
+`.dark .list-group-item.disabled`, `th.success` and its siblings), two of them
+real accessibility failures: read-only and disabled inputs at 1.7-1.9:1 and
+contextual header cells at 2.2:1. All fixed in `base.css` with selectors one
+point above the stock ones, behind five new tokens (`table-bg`,
+`table-nested-bg`, `input-disabled-bg`, `input-disabled-fg`, and the existing
+`table-stripe-odd-bg` for BGP rows). Read-only inputs are now 4.7-5.7:1 in
+every skin; contextual cells 10:1 or better. The checker was confirmed to fail
+on the pre-fix stylesheet (21 leaks, 7 contrast failures for Zerg).
+
+Stock backgrounds that are legible and left alone, with reasons, are listed on
+`leaks.html`: active menu and list items (10-14:1), badges inside buttons and
+headings, validation-state addons.
+
+Not covered, because the harness cannot render them: `:hover`/`:focus` variants
+of stock rules and pages with no harness equivalent. `leaks.html` skips state
+selectors; a live-page pass on the pages a host actually uses is still the
+final check.
+
 **3 — Admin upload and delete.** Zip validation, compile, publish, registry.
 Deleting a skin in use falls those users back to the default.
 

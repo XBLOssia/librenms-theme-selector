@@ -4,6 +4,13 @@ Phase 1 and 1b tooling (docs/PLUGIN.md). It turned the three standalone skins
 (`skins/<id>/<id>.css`) into the shared `base/base.css` plus a token file per
 skin (`skins/<id>/skin.css`), and it checks that the result is equivalent.
 
+> **The equivalence checks below are historical.** `base.css` deliberately
+> diverged from the original `<id>.css` files on 2026-09-29, when the
+> table/input/list-group fixes went in (the original skins had them wrong).
+> `roundtrip.py` and `compare.html` now report exactly those rules as
+> differences and nothing else. The regression check going forward is
+> `harness/leaks.html`.
+
 > **`base/base.css` and the `skin.css` files are now the source.** Edit them
 > directly. Don't re-run `extract.py` or `phase1b.py`: together they
 > regenerate both from the originals and would overwrite any edit. They're

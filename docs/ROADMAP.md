@@ -125,7 +125,7 @@ coverage denominator: `query-builder` (alert rules), `bootstrap-datetimepicker`,
 
 ## Verifying a skin
 
-Two tools, and the order matters.
+Three tools, and the order matters.
 
 **1. `harness/audit.js` — run this first.** Paste into devtools on a logged-in
 page with the skin active. Reports light surfaces that shouldn't exist and any
@@ -158,6 +158,28 @@ and is silently not audited. Verifying `/graphs` this way returned zero
 findings three times while four white 319x29 inputs sat in the closed
 date-range picker. Menus, modals, accordions and pickers all need opening
 first. See FINDINGS 2 for that case and its fix.
+
+**3. `harness/leaks.html` — the property-level check, in the harness.**
+`audit.js` looks for *light* surfaces, so it cannot see a stock *dark* colour
+sitting on a skin that isn't that colour. That is how every skin shipped
+with `#2e3338` behind its tables: LibreNMS's `.dark table` and
+`.dark .table-responsive > .table` (specificity 0,1,1 and 0,3,0) paint it, and
+our rules set borders and text on `.table` but never a background. Terran's
+gunmetal hid it; Protoss's navy and Zerg's plum made it obvious. It was
+reported from a production screenshot, not caught here, on 2026-09-29.
+
+`leaks.html` finds every place a stock rule still decides a background: on the
+elements the harness pages render, on bare probe elements for stock rules
+whose elements the harness doesn't render, and by text contrast for the states
+that go unreadable when a stock background wins. It found the tables, nested
+tables, BGP stripes, and two real contrast failures: read-only and disabled
+inputs at 1.7-1.9:1 (stock `.dark .form-control[disabled]` is 0,3,0; ours was
+0,2,1) and contextual `th` cells at 2.2:1. Stock colours that are legible and
+deliberately left are listed on the page with their reasons; anything else
+fails. Run it after any change to `base.css`; it needs no LibreNMS install.
+
+Coverage by selector (`coverage.sh`) says a selector was answered, not that
+the property that paints the pixels was. That gap is the whole story here.
 
 **Hard reload is not enough after editing a skin.** `webui.custom_css` is
 served without a cache buster, so the browser keeps the old stylesheet —

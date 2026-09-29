@@ -1,0 +1,169 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stock-colour leak check</title>
+<style>
+  body { font: 13px/1.45 system-ui, sans-serif; margin: 16px; background: #fff; color: #111; max-width: 1100px; }
+  h2 { margin: 22px 0 4px; font-size: 15px; }
+  table { border-collapse: collapse; margin: 6px 0 4px; }
+  td, th { border: 1px solid #ddd; padding: 2px 8px; text-align: left; font: 12px/1.35 ui-monospace, monospace; }
+  .ok { color: #176e2f; font-weight: 600; } .bad { color: #a4161a; font-weight: 600; }
+  details { margin: 4px 0; color: #444; } summary { cursor: pointer; }
+  iframe { position: absolute; left: -9999px; width: 1280px; height: 900px; }
+</style>
+</head>
+<body>
+<!--
+  Coverage by selector says a rule was answered, not that the property that
+  paints the pixels was. This page checks the property, in the browser.
+
+  For each skin (built as base + tokens) it finds every place LibreNMS's own
+  dark theme (tw_dark.css) still decides a background colour:
+
+    1. REAL ELEMENTS   on the harness pages, elements whose computed background
+                       is exactly the value a stock rule gave them.
+    2. PROBES          for stock rules whose elements the harness doesn't
+                       render, a bare element built to match the selector.
+    3. CONTRAST        text contrast for the states that produce unreadable
+                       combinations when a stock background wins.
+
+  A leak fails unless it is in ACCEPTED, which lists stock colours that are
+  legible and deliberately left, each with the reason. Everything else means a
+  stock rule outranks ours: give ours one more point of specificity.
+
+    leaks.html?skin=zerg      one skin
+    leaks.html                all three; results on window.leakResults
+-->
+<h1>Stock-colour leak check</h1>
+<div id="out">running...</div>
+<script>
+const SKINS = ['terran', 'protoss', 'zerg'];
+const PAGES = ['index.html', 'mockup.html'];
+
+// Stock backgrounds that remain and are fine. Matched on the stock selector.
+// Probes are bare elements (no real ancestors), so a few "leaks" only exist
+// there; those are marked as probe artefacts.
+const ACCEPTED = [
+  [/\.(btn|panel)-[a-z-]+( > \.panel-heading)? \.badge$|\.btn-default \.badge$|\.panel-default > \.panel-heading \.badge$/, 'badge inside a button or heading: legible (10:1), and a chip on purpose'],
+  [/\.dropdown-menu > \.active > a$|\.nav \.open > a$|\.navbar-default \.navbar-nav > \.active > a$/, 'active menu item: legible (14:1)'],
+  [/\.list-group-item\.active( > \.badge)?$|\.list-group-item-danger\.active$/, 'active list item: legible (10:1)'],
+  [/\.has-(error|success) \.input-group-addon$/, 'validation state addon: legible'],
+  [/\.bootgrid-table th$/, 'probe artefact: real bootgrid headers are .table > thead > tr > th, which we cover'],
+];
+
+// [label, factory(document), minimum contrast]
+const CONTRAST = [
+  ['read-only input', d => { const e = d.createElement('input'); e.className = 'form-control'; e.readOnly = true; e.value = 'x'; return e; }, 4.5],
+  ['disabled input', d => { const e = d.createElement('input'); e.className = 'form-control'; e.disabled = true; e.value = 'x'; return e; }, 3],
+  ['disabled list item', d => { const e = d.createElement('a'); e.className = 'list-group-item disabled'; e.textContent = 'x'; return e; }, 3],
+  ...['success', 'info', 'warning', 'danger', 'active'].map(st => ['th.' + st, d => {
+    const t = d.createElement('table'); t.className = 'table'; const b = d.createElement('tbody'), r = d.createElement('tr'), h = d.createElement('th');
+    h.className = st; h.textContent = 'x'; r.appendChild(h); b.appendChild(r); t.appendChild(b); t.__target = h; return t; }, 4.5]),
+];
+
+const cv = document.createElement('canvas'); cv.width = cv.height = 1;
+const ctx = cv.getContext('2d', { willReadFrequently: true });
+const rgba = c => { ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = '#000'; ctx.fillStyle = c; ctx.fillRect(0, 0, 1, 1); const d = ctx.getImageData(0, 0, 1, 1).data; return [d[0], d[1], d[2], d[3] / 255]; };
+const key = c => { const v = rgba(c); return v[3] === 0 ? 'transparent' : v.slice(0, 3).join(','); };
+const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+const Lm = c => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
+const ratio = (a, b) => { const [x, y] = [Lm(a), Lm(b)]; return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+
+const load = src => new Promise(res => {
+  const f = document.createElement('iframe'); f.src = src;
+  f.onload = async () => { try { await f.contentDocument.fonts.ready; } catch (e) {} res(f); };
+  document.body.appendChild(f);
+});
+
+// Stock rules declaring an opaque background colour: [{stock, selectors}]
+function stockRules(doc) {
+  const sheet = [...doc.styleSheets].find(s => s.href && s.href.includes('tw_dark.css'));
+  const rules = [];
+  for (const rule of sheet.cssRules) {
+    if (!rule.style) continue;
+    const bg = rule.style.getPropertyValue('background-color') ||
+      (rule.style.getPropertyValue('background').match(/^#[0-9a-f]{3,8}$|^rgb/i) || [''])[0];
+    if (!bg || key(bg) === 'transparent') continue;
+    rules.push({ bg, stock: key(bg), selectors: rule.selectorText.split(',').map(s => s.trim()) });
+  }
+  return rules;
+}
+const isState = s => /:(hover|focus|active|focus-within|disabled|checked|not|first|last|nth-of|only)|::|[+~]/.test(s.replace(':nth-child(even)', ''));
+
+function probeElement(d, box, sel) {
+  const toks = sel.replace(/^\.dark\s+/, '').match(/[^\s>]+|>/g).filter(t => t !== '>');
+  let parent = box, el = null;
+  for (const t of toks) {
+    el = d.createElement((t.match(/^[a-z][a-z0-9]*/i) || ['div'])[0]);
+    for (const c of t.matchAll(/\.([\w-]+)/g)) el.classList.add(c[1]);
+    for (const a of t.matchAll(/\[([\w-]+)(?:=([^\]]*))?\]/g)) el.setAttribute(a[1], a[2] ?? '');
+    if (/:nth-child\(even\)/.test(t)) parent.appendChild(d.createElement(el.tagName));
+    parent.appendChild(el); parent = el;
+  }
+  return el;
+}
+
+async function checkSkin(skin) {
+  const real = new Map(), probes = new Set(), contrast = [];
+  let rules;
+  for (const page of PAGES) {
+    const f = await load(`${page}?skin=${skin}&build=tokens&t=${Date.now()}`);
+    const d = f.contentDocument, w = f.contentWindow;
+    rules = rules || stockRules(d);
+    // 1. real elements
+    for (const r of rules) for (const sel of r.selectors) {
+      if (isState(sel)) continue;
+      let els; try { els = d.querySelectorAll(sel.replace(/^\.dark\s+/, 'html.dark ')); } catch (e) { continue; }
+      for (const el of els) if (key(w.getComputedStyle(el).backgroundColor) === r.stock) {
+        const k = sel, rc = el.getBoundingClientRect(), e = real.get(k) || { sel, bg: r.bg, n: 0, area: 0 };
+        e.n++; e.area += rc.width * rc.height; real.set(k, e);
+      }
+    }
+    // 2. probes (once, on the first page)
+    if (page === PAGES[0]) {
+      const box = d.createElement('div'); d.body.appendChild(box);
+      for (const r of rules) for (const sel of r.selectors) {
+        if (!sel.startsWith('.dark ') || isState(sel)) continue;
+        try {
+          const el = probeElement(d, box, sel);
+          if (el && el.matches(sel.replace(/^\.dark\s+/, 'html.dark ')) && key(w.getComputedStyle(el).backgroundColor) === r.stock) probes.add(`${r.bg} :: ${sel}`);
+        } catch (e) {}
+      }
+      // 3. contrast
+      for (const [label, make, min] of CONTRAST) {
+        const holder = d.createElement('div'); holder.className = 'panel panel-default'; d.body.appendChild(holder);
+        const el = make(d); holder.appendChild(el);
+        const t = el.__target || el, cs = w.getComputedStyle(t);
+        const fg = rgba(cs.color), bg = rgba(cs.backgroundColor);
+        contrast.push({ label, min, ratio: ratio(fg, bg), fg: cs.color, bg: cs.backgroundColor });
+      }
+    }
+    f.remove();
+  }
+  const accepted = s => ACCEPTED.find(([re]) => re.test(s));
+  const leaks = [...real.values()].map(e => ({ kind: 'element', text: `${e.n}x ${Math.round(e.area)}px² ${e.bg} :: ${e.sel}`, sel: e.sel }))
+    .concat([...probes].map(p => ({ kind: 'probe', text: p, sel: p.split(' :: ')[1] })));
+  const failing = leaks.filter(l => !accepted(l.sel)), ok = leaks.filter(l => accepted(l.sel));
+  return { skin, failing, accepted: ok.map(l => ({ ...l, why: accepted(l.sel)[1] })), contrast, contrastFailing: contrast.filter(c => c.ratio < c.min) };
+}
+
+(async () => {
+  const only = new URLSearchParams(location.search).get('skin');
+  const results = [];
+  for (const s of (only ? [only] : SKINS)) results.push(await checkSkin(s));
+  window.leakResults = results;
+  let html = '', allOk = true;
+  for (const r of results) {
+    const good = !r.failing.length && !r.contrastFailing.length; allOk = allOk && good;
+    html += `<h2>${r.skin}: <span class="${good ? 'ok' : 'bad'}">${good ? 'clean' : r.failing.length + ' leaks, ' + r.contrastFailing.length + ' contrast failures'}</span></h2>`;
+    if (r.failing.length) html += '<table><tr><th>kind</th><th>stock background still winning</th></tr>' + r.failing.map(l => `<tr><td>${l.kind}</td><td>${l.text}</td></tr>`).join('') + '</table>';
+    html += '<table><tr><th>contrast</th><th>ratio</th><th>needs</th><th>text on background</th></tr>' +
+      r.contrast.map(c => `<tr><td>${c.label}</td><td class="${c.ratio >= c.min ? 'ok' : 'bad'}">${c.ratio.toFixed(2)}:1</td><td>${c.min}:1</td><td>${c.fg} on ${c.bg}</td></tr>`).join('') + '</table>';
+    html += `<details><summary>${r.accepted.length} stock backgrounds accepted</summary>` + r.accepted.map(l => `<div>${l.text} — ${l.why}</div>`).join('') + '</details>';
+  }
+  document.getElementById('out').innerHTML = `<p class="${allOk ? 'ok' : 'bad'}">${allOk ? 'No unexpected stock backgrounds, no contrast failures.' : 'Problems found.'}</p>` + html;
+})();
+</script>
+</body>
+</html>

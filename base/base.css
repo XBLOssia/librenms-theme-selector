@@ -92,6 +92,8 @@ html.dark {
   --ts-widget-header-bg-image: none;
   --ts-widget-header-letter-spacing: normal;
   --ts-table-border: var(--ts-border);
+  --ts-table-bg: transparent;
+  --ts-table-nested-bg: var(--ts-sunken);
   --ts-table-head-bg: var(--ts-surface-raised);
   --ts-table-head-border-bottom: 2px solid var(--ts-border);
   --ts-table-head-letter-spacing: normal;
@@ -129,6 +131,8 @@ html.dark {
   --ts-input-bg: var(--ts-sunken);
   --ts-input-border: 1px solid var(--ts-border);
   --ts-input-shadow: var(--ts-recess);
+  --ts-input-disabled-bg: var(--ts-surface-raised);
+  --ts-input-disabled-fg: var(--ts-text-dim);
   --ts-input-focus-shadow: var(--ts-recess), 0 0 0 1px var(--ts-highlight);
   --ts-addon-border: var(--ts-border);
   --ts-alert-border-width: 1px 1px 1px 4px;
@@ -1203,22 +1207,22 @@ html.dark .grid-stack-item-content > header a, html.dark .grid-stack-item-conten
 html.dark .grid-stack-item-content > header a:hover {
   color: var(--ts-accent);
 }
-html.dark .table > thead > tr.success > td, html.dark .table > tbody > tr.success > td, html.dark .table > thead > tr.success > th, html.dark .table > tbody > tr.success > th, html.dark .table > thead > tr > td.success, html.dark .table > tbody > tr > td.success {
+html.dark .table > thead > tr.success > td, html.dark .table > tbody > tr.success > td, html.dark .table > thead > tr.success > th, html.dark .table > tbody > tr.success > th, html.dark .table > thead > tr > td.success, html.dark .table > tbody > tr > td.success, html.dark .table > thead > tr > th.success, html.dark .table > tbody > tr > th.success {
   background-color: var(--ts-success-deep);
   color: var(--ts-text-bright);
   box-shadow: var(--ts-table-row-success-shadow);
 }
-html.dark .table > thead > tr.info > td, html.dark .table > tbody > tr.info > td, html.dark .table > thead > tr.info > th, html.dark .table > tbody > tr.info > th, html.dark .table > thead > tr > td.info, html.dark .table > tbody > tr > td.info {
+html.dark .table > thead > tr.info > td, html.dark .table > tbody > tr.info > td, html.dark .table > thead > tr.info > th, html.dark .table > tbody > tr.info > th, html.dark .table > thead > tr > td.info, html.dark .table > tbody > tr > td.info, html.dark .table > thead > tr > th.info, html.dark .table > tbody > tr > th.info {
   background-color: var(--ts-info-deep);
   color: var(--ts-text-bright);
   box-shadow: var(--ts-table-row-info-shadow);
 }
-html.dark .table > thead > tr.warning > td, html.dark .table > tbody > tr.warning > td, html.dark .table > thead > tr.warning > th, html.dark .table > tbody > tr.warning > th, html.dark .table > thead > tr > td.warning, html.dark .table > tbody > tr > td.warning {
+html.dark .table > thead > tr.warning > td, html.dark .table > tbody > tr.warning > td, html.dark .table > thead > tr.warning > th, html.dark .table > tbody > tr.warning > th, html.dark .table > thead > tr > td.warning, html.dark .table > tbody > tr > td.warning, html.dark .table > thead > tr > th.warning, html.dark .table > tbody > tr > th.warning {
   background-color: var(--ts-warning-deep);
   color: var(--ts-text-bright);
   box-shadow: var(--ts-table-row-warning-shadow);
 }
-html.dark .table > thead > tr.danger > td, html.dark .table > tbody > tr.danger > td, html.dark .table > thead > tr.danger > th, html.dark .table > tbody > tr.danger > th, html.dark .table > thead > tr > td.danger, html.dark .table > tbody > tr > td.danger {
+html.dark .table > thead > tr.danger > td, html.dark .table > tbody > tr.danger > td, html.dark .table > thead > tr.danger > th, html.dark .table > tbody > tr.danger > th, html.dark .table > thead > tr > td.danger, html.dark .table > tbody > tr > td.danger, html.dark .table > thead > tr > th.danger, html.dark .table > tbody > tr > th.danger {
   background-color: var(--ts-danger-deep);
   color: var(--ts-text-bright);
   box-shadow: var(--ts-table-row-danger-shadow);
@@ -1535,7 +1539,7 @@ html.dark .marker-cluster {
   font-weight: 700;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, .35);
 }
-html.dark .table > thead > tr.active > td, html.dark .table > tbody > tr.active > td, html.dark .table > thead > tr.active > th, html.dark .table > tbody > tr.active > th, html.dark .table > thead > tr > td.active, html.dark .table > tbody > tr > td.active {
+html.dark .table > thead > tr.active > td, html.dark .table > tbody > tr.active > td, html.dark .table > thead > tr.active > th, html.dark .table > tbody > tr.active > th, html.dark .table > thead > tr > td.active, html.dark .table > tbody > tr > td.active, html.dark .table > thead > tr > th.active, html.dark .table > tbody > tr > th.active {
   background-color: var(--ts-surface-hover);
   color: var(--ts-text-bright);
 }
@@ -1603,4 +1607,44 @@ html.dark {
   html.dark .tw\:text-gray-500\!, html.dark .tw\:visited\:text-gray-500\!, html.dark .tw\:visited\:text-gray-500\!:visited {
     color: var(--ts-text-mute) !important;
   }
+}
+
+/* -----------------------------------------------------------------------------
+ * STOCK RULES THAT OUTRANK OURS
+ * Found with harness/leaks.html. Each selector below is written one point of
+ * specificity above the stock rule it answers, because the stock rule has
+ * more classes than the plain element rule we already had:
+ *
+ *   .dark table                          (0,1,1)   painted tables #2e3338
+ *   .dark .table-responsive > .table     (0,3,0)   the same, inside widgets
+ *   .dark .form-control[disabled]        (0,3,0)   painted inputs #999
+ *   .dark .list-group-item.disabled      (0,3,0)   painted items #999
+ * -------------------------------------------------------------------------- */
+html.dark table,
+html.dark .table-responsive > .table {
+  background-color: var(--ts-table-bg);
+}
+html.dark .table .table {
+  background-color: var(--ts-table-nested-bg);
+}
+/* Read-only fields are meant to be read: stock's #999 under our light text is
+ * under 2:1. */
+html.dark .form-control[disabled],
+html.dark .form-control[readonly],
+html.dark fieldset[disabled] .form-control {
+  background-color: var(--ts-input-disabled-bg);
+  color: var(--ts-input-disabled-fg);
+}
+html.dark .list-group-item.disabled,
+html.dark .list-group-item.disabled:hover,
+html.dark .list-group-item.disabled:focus {
+  background-color: var(--ts-surface);
+  color: var(--ts-text-mute);
+}
+html.dark tr.bgp:nth-child(even) {
+  background-color: var(--ts-table-stripe-odd-bg);
+}
+html.dark .bootgrid-table td.loading,
+html.dark .bootgrid-table td.no-results {
+  background-color: var(--ts-surface-raised);
 }

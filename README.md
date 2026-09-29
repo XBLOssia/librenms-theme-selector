@@ -200,6 +200,9 @@ the token work, then built-in colour schemes on top of it.
 ## Test harness
 
 You can preview and verify a skin without a LibreNMS install.
+`harness/leaks.html` checks that no stock LibreNMS background is still showing
+through a skin and that the awkward states (read-only inputs, contextual table
+cells) stay readable; run it after any change to `base/base.css`.
 
 ```bash
 # one-time: vendor the stylesheets from a LibreNMS checkout

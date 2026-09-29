@@ -145,6 +145,25 @@ check "its directory still holds only skin.css" "$(yes_if "[ \"\$(ls -A $PUB/ski
 check "the font is inside the stylesheet as a data: URL" "$(yes_if "grep -q 'url(\"data:font/woff2;base64,' $PUB/skins/with-font/skin.css")"
 check "no font file exists anywhere in its directory" "$(yes_if "[ \"\$(find $PUB/skins/with-font -type f | wc -l)\" = 1 ]")"
 
+echo "== licence notices: stored and shown, never served"
+upload dev-admin "$FIX/good-license.zip"
+check "a bundle with a LICENSE.txt installs" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Installed With License'")"
+check "the notice is offered on the admin page" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Licence notice'")"
+RAW="$(get dev-admin /plugin/theme-selector)"
+check "its text is shown" "$(yes_if "printf '%s' \"\$RAW\" | grep -q 'SIL Open Font License, Version 1.1'")"
+check "markup in it is shown escaped, never as markup" "$(yes_if "printf '%s' \"\$RAW\" | grep -q 'licence-xss' && ! printf '%s' \"\$RAW\" | grep -q \"<script>alert('licence-xss')\"")"
+check "it is stored in the database" "$(yes_if "[ \"\$(q \"select count(*) from theme_selector_skins where id='with-license' and license_text like '%SIL Open Font License%'\")\" = 1 ]")"
+check "and is NOT a file in the web root (the skin directory still holds only skin.css)" "$(yes_if "[ \"\$(find $PUB/skins/with-license -type f | wc -l)\" = 1 ] && [ -f $PUB/skins/with-license/skin.css ]")"
+check "nor is it in the generated stylesheet" "$(yes_if "! grep -qi 'licence-xss\|Open Font License' $PUB/skins/with-license/skin.css")"
+upload dev-admin "$FIX/evil-license-control.zip"
+check "a notice with control and spoofing characters is refused" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'LICENSE.txt' && printf '%s' \"\$PAGE\" | grep -q 'was not installed'")"
+upload dev-admin "$FIX/evil-license-name.zip"
+check "a wrongly named licence file is refused" "$(yes_if "printf '%s' \"\$PAGE\" | grep -qi 'not allowed' && printf '%s' \"\$PAGE\" | grep -q 'was not installed'")"
+check "neither installed anything" "$(yes_if "[ \"\$(q \"select count(*) from theme_selector_skins where id='evil'\")\" = 0 ] && [ ! -e $PUB/skins/evil ]")"
+
+echo "== waiting out the upload rate limit again"
+sleep 62
+
 echo "== the escape hatch"
 post dev-user /plugin/theme-selector "skin=slate-teal"
 check "?theme-selector=off shows a page with no skin" "$(yes_if "[ \"\$(get dev-user '/devices?theme-selector=off' | grep -c 'data-theme-selector')\" = 0 ]")"
@@ -217,7 +236,7 @@ reset_state
 upload_ok=0
 sleep 62
 upload dev-admin "$FIX/good-slate.zip"; upload dev-admin "$FIX/good-font.zip"; upload dev-admin "$FIX/good-graph.zip"
-UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
+UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/with-license/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
 check "only base.css, bundled skins and each uploaded skin's single skin.css exist" "$(yes_if "[ -z '$UNEXPECTED' ]")"
 check "there are no PHP, HTML, script or config files anywhere in it" "$(yes_if "[ \"\$(find $PUB -type f \( -iname '*.php*' -o -iname '*.phtml' -o -iname '*.htm*' -o -iname '*.js' -o -iname '.htaccess' -o -iname '*.svg' -o -iname '*.sh' \) | wc -l)\" = 0 ]")"
 check "no file in it is executable" "$(yes_if "[ \"\$(find $PUB -type f -perm /111 | wc -l)\" = 0 ]")"

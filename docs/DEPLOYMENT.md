@@ -118,6 +118,10 @@ migration (`daily.sh` runs migrations nightly, but not immediately):
 php artisan route:cache
 ```
 
+Licence notices (an optional `LICENSE.txt` in a bundle) add a `license_text`
+column to `theme_selector_skins`. Run `php artisan migrate --force` after
+updating; until it has run, uploads fail.
+
 The upload page shipped this way: it added the `theme_selector_skins` table and
 three routes. Until `route:cache` is re-run, the admin section of the picker
 page can't build its upload and delete links.
@@ -146,8 +150,10 @@ and what is and isn't defended, is in [SECURITY.md](SECURITY.md).
   if it is the default). Up to 50 uploaded skins at once.
 - **What ends up on disk:** for each uploaded skin, one generated `skin.css` in
   `html/css/custom/theme-selector/skins/<id>/`, and a row in
-  `theme_selector_skins` holding its name and graph palette. Nothing you upload
-  is stored or served as-is, and fonts are embedded in that stylesheet.
+  `theme_selector_skins` holding its name, graph palette and licence notice.
+  Nothing you upload is stored or served as-is, and fonts are embedded in that
+  stylesheet. A bundle's `LICENSE.txt` lives only in the database and is shown
+  under "Licence notice" in the skin list.
 - **Requirements:** the web server user must be able to write
   `html/css/custom/theme-selector/` (`lnms theme-selector:publish` shows the
   error if it can't), and PHP's `upload_max_filesize` and `post_max_size` must

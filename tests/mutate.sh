@@ -103,6 +103,15 @@ run_with $I 's#! str_starts_with($real, $root . DIRECTORY_SEPARATOR)#false#' "re
 run_with $I 's#if (is_link($path)) {#if (false) {#' "removal: drop the top-level link check (remove() unlinks first)" redundant
 run_with $I 's#|| ! flock($handle, LOCK_EX)#|| false#' "install: skip taking the lock (needs concurrency to observe)" redundant
 
+L=src/Skin/LicenseText.php
+run_with $L 's#if (preg_match(.*p{L}.*#if (false) {#' "licence: accept control, invisible and spoofing characters"
+run_with $L 's#if (! mb_check_encoding($raw, .UTF-8.)) {#if (false) {#' "licence: accept invalid UTF-8"
+run_with $L 's#if (strlen($raw) > Limits::LICENSE_BYTES) {#if (false) {#' "licence: no size limit"
+run_with $L 's#if (trim($text) === ..) {#if (false) {#' "licence: accept an empty notice"
+run_with src/Skin/ZipBundleReader.php 's#LICENSE..txt|##' "zip: LICENSE.txt is not an allowed entry"
+run_with src/Skin/ZipBundleReader.php "s#\$name === 'LICENSE.txt' => Limits::LICENSE_BYTES,##" "zip: no LICENSE.txt size limit (falls back to the font limit)"
+run_with src/Skin/SkinCompiler.php "s#if (isset(\$files\['LICENSE.txt'\])) {#if (false) {#" "compiler: ignore the LICENSE.txt entry"
+
 echo
 echo "caught $CAUGHT, redundant $REDUNDANT, missed $MISSED, not applied $UNAPPLIED"
 [ "$MISSED" = 0 ] && [ "$UNAPPLIED" = 0 ]

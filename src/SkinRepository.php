@@ -118,6 +118,8 @@ class SkinRepository
                 'version' => $row['version'],
                 'source' => 'uploaded',
                 'modes' => ['dark'],
+                'license' => (string) ($row['license'] ?? ''),
+                'license_text' => (string) ($row['license_text'] ?? ''),
             ];
         }
 

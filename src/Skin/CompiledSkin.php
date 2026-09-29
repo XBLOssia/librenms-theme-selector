@@ -18,6 +18,7 @@ final class CompiledSkin
         public readonly array $graph,
         public readonly string $sha256,
         public readonly int $fontCount,
+        public readonly string $licenseText = '',
     ) {
     }
 

@@ -63,6 +63,12 @@ final class SkinCompiler
             $graph = $parsed ?? [];
         }
 
+        // The licence notice: data to store and show, never a served file.
+        $licenseText = '';
+        if (isset($files['LICENSE.txt'])) {
+            $licenseText = LicenseText::check($files['LICENSE.txt'], $report) ?? '';
+        }
+
         if (! $report->ok() || $manifest === null || $css === null) {
             return null;
         }
@@ -71,8 +77,9 @@ final class SkinCompiler
             $manifest,
             $css,
             $graph,
-            hash('sha256', json_encode([$manifest, $css, $graph])),
+            hash('sha256', json_encode([$manifest, $css, $graph, $licenseText])),
             count($fonts),
+            $licenseText,
         );
     }
 }

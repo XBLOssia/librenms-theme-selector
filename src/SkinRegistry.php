@@ -61,6 +61,7 @@ class SkinRegistry
             'author' => $m['author'],
             'version' => $m['version'],
             'license' => $m['license'],
+            'license_text' => $skin->licenseText === '' ? null : $skin->licenseText,
             'sha256' => $skin->sha256,
             'graph' => json_encode($skin->graph === [] ? new \stdClass() : $skin->graph, JSON_UNESCAPED_SLASHES),
             'installed_by' => $installedBy,

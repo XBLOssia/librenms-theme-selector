@@ -31,7 +31,7 @@ Settled 2026-09-25.
 | Custom skin upload | **Zip bundle** — manifest, token file, optional fonts, optional graph palette. Validated before install. |
 | Names | Package `xblossia/librenms-theme-selector`. Display name **Theme Selector for LibreNMS**; short name **Theme Selector**, `ThemeSelector` where spaces aren't allowed (plugin name, PHP namespace). |
 | Admin permission | **LibreNMS's own `admin` role** (`can:admin`), not `plugin.admin` or a plugin-specific permission. One less knob. |
-| Install paths | **The plugin only.** `install.sh`/`uninstall.sh` are retired once the plugin reaches parity; the one existing install (the production host) is migrated by hand. |
+| Install paths | **The plugin only.** `install.sh`/`uninstall.sh` are deleted (still in git history); the one existing install, the production host, was migrated by hand on 2026-09-28/29. |
 
 ---
 
@@ -252,8 +252,7 @@ skins/<id>/                bundled skins: skin.css, fonts/, graph.conf; the
                            original <id>.css stays until production migrates
 harness/                   preview pages; ?build=tokens and compare.html
 dev/                       Docker test instance (dev/README.md)
-scripts/                   patch-core.sh stays; install.sh/uninstall.sh are
-                           removed once the plugin reaches parity
+scripts/                   patch-core.sh, coverage, fonts, extract-base
 ```
 
 ---
@@ -347,10 +346,15 @@ pending.** On the `dev/` instance:
 - *Every stylesheet link* carries a `?v=<mtime>` cache-buster, which fixes
   the hard-refresh problem the `custom_css` setup had.
 
-Remaining: migrating the production host (`docs/DEPLOYMENT.md`, "Migrating
-from install.sh"), which needs this repo pushed first. It is also where the two
-checks the dev instance can't make happen: the login page, and surviving a
-real `daily.sh`. After that, delete `install.sh`/`uninstall.sh`.
+**Production migrated 2026-09-28/29** (`docs/DEPLOYMENT.md`, "Migration
+record"). Confirmed there: per-user skins, the instance default reaching a
+second account, per-user graph colours, and the pinned navbar with every skin.
+Not verified on production, by choice: the login page (that host sends every
+visitor straight to Microsoft SSO, so it never renders there; the code path is
+the one the picker page already exercises, and the Docker instance covers it)
+and a full `daily.sh` cycle (the plugin is recorded in `composer.plugins.json`,
+which `daily.sh` reinstalls from; check after the first nightly run). The old
+`install.sh`/`uninstall.sh` are deleted.
 
 **Found on production, fixed 2026-09-29: stock table backgrounds showing through
 Protoss and Zerg.** A production screenshot showed gray tables inside navy and

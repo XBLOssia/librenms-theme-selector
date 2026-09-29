@@ -62,7 +62,7 @@ Treat coverage as a floor, and the live audit as the actual test.
 
 Zerg, Protoss and Terran have all run on a live production instance — LibreNMS
 `26.8.1-147-g63e0394bd1`, the exact commit the skins were built against, around
-1,400 devices. Deployment tooling is in `scripts/install.sh` and
+1,400 devices. It now runs as the Theme Selector plugin; see
 [DEPLOYMENT.md](DEPLOYMENT.md).
 
 Walking real pages is what produced everything in the Completed section below,

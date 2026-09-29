@@ -102,8 +102,7 @@ chosen get). Skins apply in dark mode; users on Light see stock LibreNMS.
 Latin-subset woff2, all SIL Open Font License). No system fonts to chase, and
 no request ever leaves the box.
 
-Updates, the migration from the older `install.sh` setup, uninstalling and
-troubleshooting: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
+Updates, uninstalling and troubleshooting: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
 ### Safety
 
@@ -291,8 +290,6 @@ harness/audit.js            live-page contrast + stock-colour audit
 dev/                        Docker LibreNMS for developing the plugin
 scripts/gen-token-docs.py   regenerate docs/TOKENS.md from base.css
 scripts/extract-base/       how the skins were split, and the equivalence check
-scripts/install.sh          the old install path; removed once production migrates
-scripts/uninstall.sh        its uninstaller; ditto
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/make-demo-graphs.sh generate the mockup's graphs (needs rrdtool)

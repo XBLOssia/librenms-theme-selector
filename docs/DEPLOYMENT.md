@@ -1,7 +1,8 @@
 # Deployment
 
-Installing Theme Selector for LibreNMS, keeping it updated, migrating the one
-host that ran the older `install.sh` setup, and removing it again.
+Installing Theme Selector for LibreNMS, keeping it updated, and removing it
+again. The one host that ran the older `install.sh` setup has been migrated;
+what happened is recorded at the end of this page.
 
 Written against LibreNMS master @ `63e0394`; tested on the `dev/` Docker
 instance (LibreNMS 26.9.1.1).
@@ -12,20 +13,15 @@ instance (LibreNMS 26.9.1.1).
 
 | LibreNMS version | Devices | Install | Status |
 |---|---|---|---|
-| `26.8.1-147-g63e0394bd1` | ~1,400 | `install.sh`, `link` mode, Zerg | **To migrate** to the plugin (runbook below) |
+| `26.8.1-147-g63e0394bd1` | ~1,400 | Plugin (`dev-main`) | Migrated 2026-09-28/29 from `install.sh`; SSO login only |
 
 The instance itself is deliberately not named here. It is a production
 monitoring box, and pairing a resolvable hostname with an exact software
 version in a public repository is free reconnaissance for no benefit to
 anyone reading this.
 
-Its current layout:
-
-```
-/opt/librenms-skins                          SFTP copy of the repo, pre-rename
-/opt/librenms/html/css/custom/zerg   ->      /opt/librenms-skins/skins/zerg
-webui.custom_css                     =       ["css/custom/zerg/zerg.css"]
-```
+Because logins there go straight to Microsoft SSO, the login page never
+renders on that host.
 
 ---
 
@@ -118,74 +114,43 @@ every skin deploy look like it hadn't worked.)
 
 ---
 
-## Migrating from install.sh
+## Migration record
 
-For the host above. Every step is reversible, and the old setup keeps working
-until step 3.
+What it took to move the production host off `install.sh` (a symlinked skin in
+`webui.custom_css`, plus graph colour config) onto the plugin. It happened once
+and there is no other install to migrate, so this is history, not a procedure.
+The scripts are deleted; they are in git history before the commit that removed
+them. Where reality differed from the plan:
 
-**0. Before you start: push this repo.** The host installs the plugin from
-GitHub, so `main` must contain it.
+1. **The plugin installed cleanly** with the commands under [Install](#install).
+2. **The Theme Selector page was a 404** even with the plugin enabled.
+   Production caches its routes, Laravel ignores package routes while a cache
+   exists, and `plugin:add` doesn't rebuild it. `php artisan route:cache` fixed
+   it, and is now part of the install.
+3. **The old uninstaller crashed** on `lnms config:clear webui.custom_css`.
+   Current LibreNMS's `config:clear` is Laravel's cache clear and takes no
+   arguments. The three skin symlinks had already been removed by then. The
+   host's copy was also uploaded over SFTP without execute bits, so it had to
+   be run with `bash`.
+4. **Its saved "original" graph colours were wrong.** For `graph_colours.default`
+   and `graph_colours.pinks` the recorded originals were Protoss's own colours:
+   an earlier install had already changed them before the installer began
+   recording per key. Restoring them would have pinned Protoss colours as
+   "stock", so the overrides were erased instead
+   (`lnms config:set <key>`, answering the reset prompt), which returns
+   LibreNMS's real defaults, and `webui.custom_css` was reset the same way.
+5. **The instance default was set afterwards** in the picker (Protoss, the
+   skin the host had actually been running, not the Zerg the plan assumed). The
+   plugin recorded the then-clean originals.
 
-**1. Record the current state**, so there's something to compare against:
+Checked on the host: the skin loads after any `custom_css`, a second account
+gets the instance default, each user's graphs follow their own skin, and the
+navbar stays pinned in all three skins. Not checked: the login page (SSO), and
+a full `daily.sh` cycle, which is covered by `composer.plugins.json`; after the
+first nightly run, `grep theme-selector /opt/librenms/composer.plugins.json`
+and confirm a skin still applies.
 
-```bash
-cd /opt/librenms
-sudo -u librenms ./lnms config:get webui.custom_css
-sudo -u librenms ./lnms config:get graph_colours.greens
-sudo -u librenms ./lnms config:get rrdgraph_def_text_dark
-ls -la html/css/custom/
-```
-
-**2. Install the plugin** ([Install](#install)), still as `librenms`. With no
-default set and no user choices, it changes nothing visible yet: the old
-`custom_css` skin is still loading.
-
-**3. Remove the old setup** with the uninstaller from the host's own copy,
-which restores `webui.custom_css` and the graph keys to their values before
-the first `install.sh`:
-
-```bash
-sudo -u librenms bash /opt/librenms-skins/scripts/uninstall.sh --dry-run
-sudo -u librenms bash /opt/librenms-skins/scripts/uninstall.sh
-```
-
-(`bash` explicitly: the copy was uploaded over SFTP, which can drop the
-execute bit, and then `sudo` reports `command not found`.)
-
-Pages go stock dark at this point.
-
-**4. Set the default** to the skin the host was running: Plugins → Theme
-Selector → Instance default → **Zerg** → Set default. That restores the look
-for everyone and re-applies Zerg's graph palette. The plugin records each
-graph key's original state before overwriting it; because step 3 ran first,
-those originals are LibreNMS's own values, not the old installer's.
-
-**5. Check:**
-
-- [ ] A page shows two `data-theme-selector` links in `<head>` (view source),
-      and no `css/custom/zerg/zerg.css`.
-- [ ] **The login page shows the default skin.** Log out to see it. (The Docker
-      instance logs in by header, so this is the first place it can be seen.)
-- [ ] The navbar stays pinned when scrolling (fixed in `080046e`).
-- [ ] Graphs use Zerg's colours.
-- [ ] A second user can pick a different skin without affecting yours.
-
-**6. Let one `daily.sh` run happen** (or run it: `sudo -u librenms ./daily.sh`),
-then check the plugin is still listed in `composer.plugins.json`, the
-Theme Selector menu entry is still there, and the skin still applies.
-
-**7. Clean up** once satisfied:
-
-```bash
-sudo rm -rf /opt/librenms-skins
-```
-
-Then `scripts/install.sh` and `scripts/uninstall.sh` can be deleted from this
-repo (docs/PLUGIN.md, phase 2).
-
-**If something goes wrong** before step 7, the old setup is one command away:
-`sudo -u librenms bash /opt/librenms-skins/scripts/install.sh zerg`, after
-disabling the plugin (`./lnms plugin:disable ThemeSelector`).
+The old copy at `/opt/librenms-skins` can be deleted if it is still there.
 
 ---
 

@@ -216,6 +216,25 @@ function test_installer(): void
     T::ok('with no leftovers', leftover_count($pub) === 0);
     $reg->failSave = false;
 
+    T::group('installer: the limit on uploaded skins');
+    [$inst2, $reg2, , $pub2, $root2] = installer_fixture();
+    for ($i = 0; $i < SkinInstaller::MAX_UPLOADED; $i++) {
+        $inst2->install(compiled("skin-$i"), 1);
+    }
+    T::ok('the limit\'s worth of skins install', count($reg2->rows) === SkinInstaller::MAX_UPLOADED);
+    $threw = null;
+    try {
+        $inst2->install(compiled('one-too-many'), 1);
+    } catch (InstallException $e) {
+        $threw = $e->getMessage();
+    }
+    T::ok('one more is refused', $threw !== null && stripos($threw, 'limit') !== false, (string) $threw);
+    T::ok('and writes nothing', ! file_exists("$pub2/skins/one-too-many") && leftover_count($pub2) === 0 && ! isset($reg2->rows['one-too-many']));
+    T::ok('replacing an installed skin still works at the limit', $inst2->install(compiled('skin-3', "html.dark {\n  --ts-bg: #123;\n}\n"), 1) === true);
+    $inst2->remove('skin-0');
+    T::ok('removing one makes room for a new one', $inst2->install(compiled('one-too-many'), 1) === false);
+    rmrf($root2);
+
     T::group('installer: stale working directories');
     mkdir("$pub/skins/.stage-stale", 0755);
     file_put_contents("$pub/skins/.stage-stale/skin.css", 'x');

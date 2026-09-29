@@ -6,6 +6,16 @@ A skin is a token file, `skin.css`, that sets `--ts-*` custom properties on `htm
 
 A skin may also define its own palette as `--p-*` properties and refer to them from its token values. Nothing else is allowed in a token file (docs/PLUGIN.md, "The token file").
 
+## Which tokens an uploaded skin may set
+
+All but 36. Those 36 are **structural**: they reach a CSS property that changes layout, stacking, generated text or motion (`position`, sizes and offsets, `z-index`, `pointer-events`, `content`, `clip-path`, `animation`, margins). A stylesheet that can set those can cover part of the page with a fake message or hide a control, so the upload page rejects them and only the skins shipped in this package may set them. Colours, gradients, shadows, borders, radii, type and spacing are all open to uploads, within numeric bounds (`docs/SECURITY.md`). The list is derived from `base/base.css` by `scripts/gen-token-catalog.py`, so a new token can not become settable in a dangerous place by accident.
+
+<details><summary>The structural tokens</summary>
+
+`--ts-alert-badge-animation` `--ts-badge-clip-path` `--ts-btn-clip-path` `--ts-dropdown-submenu-margin-top` `--ts-hr-height` `--ts-label-clip-path` `--ts-navbar-after-animation` `--ts-navbar-after-bottom` `--ts-navbar-after-height` `--ts-navbar-before-background-repeat` `--ts-navbar-before-background-size` `--ts-navbar-before-height` `--ts-navbar-before-top` `--ts-panel-after-bottom` `--ts-panel-after-right` `--ts-panel-before-content` `--ts-panel-before-height` `--ts-panel-before-left` `--ts-panel-before-pointer-events` `--ts-panel-before-position` `--ts-panel-before-top` `--ts-panel-before-width` `--ts-panel-before-z-index` `--ts-panel-heading-after-background-position` `--ts-panel-heading-after-background-repeat` `--ts-panel-heading-after-background-size` `--ts-panel-heading-after-content` `--ts-panel-heading-after-height` `--ts-panel-heading-after-left` `--ts-panel-heading-after-position` `--ts-panel-heading-after-right` `--ts-panel-heading-after-top` `--ts-panel-heading-before-bottom` `--ts-panel-heading-before-top` `--ts-panel-heading-before-width` `--ts-panel-position`
+
+</details>
+
 ## Core roles
 
 A skin normally sets these; the defaults are stock LibreNMS dark.

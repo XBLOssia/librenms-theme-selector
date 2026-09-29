@@ -209,10 +209,13 @@ per-skin raw CSS escape hatch.
 
 ### Zip validation
 
-Extension allow-list (`json`, `css` for `skin.css` only, `woff2`, `woff`,
-`ttf`, `txt`); no SVG (runs script when opened same-origin); reject absolute
-paths and `..` (zip-slip); size cap; `skin.json` and `skin.css` must parse and
-validate before anything is written.
+As built (2026-09-29; the design here originally allowed `.ttf` and `.txt`
+and extracted files, and neither survived a threat model): the reader parses the
+zip itself, extracts nothing, and accepts only `skin.json`, `skin.css`,
+`graph.conf` and `fonts/<slug>.woff2|woff` by exact name. Fonts are embedded in
+the generated stylesheet, so no uploaded file is served as a file. The full
+list of controls, each with the test that would notice it breaking, is
+[SECURITY.md](SECURITY.md); the format is [AUTHORING.md](AUTHORING.md).
 
 ### Light and dark
 
@@ -240,18 +243,24 @@ The repo becomes the plugin package. Skins, harness and docs stay.
 ```
 composer.json              xblossia/librenms-theme-selector, type "package"
 src/
-  ThemeSelectorProvider.php  hooks, composer, routes, views, migrations
-  Hooks/                     MenuEntry (picker link), Settings (admin)
-  Skins/                     registry, compiler, zip validator, publisher
-  Http/Controllers/
+  ThemeSelectorProvider.php  wiring: hooks, composer, middleware, routes
+  Skin/                      the upload validator: zip reader, token-file parser,
+                             value grammar, font/graph/manifest checks, output guard
+  SkinInstaller, SkinRegistry, SkinRepository, SkinPublisher, DefaultSkin
+  GraphPalette, GraphColours (middleware), SkinResolver, SkinInjector
+  Http/Controllers/PickerController.php
+  Console/                   theme-selector:publish, theme-selector:validate
 routes/web.php
-resources/views/
-database/migrations/       skin registry table
-base/base.css              the interpretation layer's stylesheet
-skins/<id>/                bundled skins: skin.css, skin.json, graph.conf, fonts/
-harness/                   preview pages, colorway, leaks.html
-dev/                       Docker test instance (dev/README.md)
-scripts/                   patch-core.sh, coverage, fonts, token docs
+resources/views/             the picker and admin page
+resources/token-catalog.json which tokens exist / which uploads may set (generated)
+database/migrations/         settings and uploaded-skin tables
+base/base.css                the interpretation layer's stylesheet
+skins/<id>/                  bundled skins: skin.css, skin.json, graph.conf, fonts/
+examples/minimal/            the smallest complete skin
+tests/                       php tests/run.php: validator, installer, fuzz; mutate.sh
+harness/                     preview pages, colorway, leaks.html
+dev/                         Docker instance, end-to-end tests, test.sh
+scripts/                     patch-core.sh, coverage, fonts, token docs/catalog, pack-skin.py
 ```
 
 ---
@@ -387,8 +396,42 @@ of stock rules and pages with no harness equivalent. `leaks.html` skips state
 selectors; a live-page pass on the pages a host actually uses is still the
 final check.
 
-**3 — Admin upload and delete.** Zip validation, compile, publish, registry.
-Deleting a skin in use falls those users back to the default.
+**3 — Admin upload and delete. Done 2026-09-29** on the `dev/` instance;
+not yet on the production host. The design decision that shaped it: an upload
+is attacker-controlled input under a web root that runs PHP, so **nothing
+uploaded is ever served**. The bundle is parsed and validated, and the
+stylesheet is regenerated from the parse; fonts become base64 inside it. That
+gave:
+
+- a strict zip reader of our own (no extraction, exact name allowlist, cross-
+  checked headers, bounded inflation);
+- a token-file grammar of one block type (`html.dark { custom properties }`)
+  plus `@font-face`, with every value tokenised against a short allowlist;
+- a catalog of 305 tokens derived from `base.css`, 36 of them *structural*
+  (position, size, generated text, clip-path, animation) and bundled-only, so an
+  upload can't paint a fake message or hide a control;
+- an independent output guard, a registry table (the row is what makes a
+  directory a skin), atomic staged installs with rollback, removal that never
+  follows a link, admin-only CSRF-protected rate-limited routes, a 50-skin cap,
+  and `?theme-selector=off` as an escape hatch;
+- `lnms theme-selector:validate` and `scripts/pack-skin.py` for skin authors.
+
+Verification: 1,085 unit checks (hostile archives, a large CSS injection
+corpus, a mutation fuzzer, installer failure paths), a mutation check that
+breaks each defence and requires a failing test (39 caught, 7 documented as
+redundant layers, 0 missed) and an end-to-end script against the real routes.
+Deleting a skin in use falls its users back to the instance default; deleting
+the default clears it and restores the graph colours. See
+[SECURITY.md](SECURITY.md) for the controls and, as important, what is not
+defended.
+
+**Incident, 2026-09-29.** The mutation check once ran against a container with
+the repository bind-mounted read-write, and a test that planted a symlink to
+`/` let the deliberately broken deleter wipe the project directory. It was
+rebuilt from GitHub and the session transcript and re-verified. The repository is
+now mounted read-only in the dev container, the test links only inside its own
+temp directory, and `dev/test.sh` runs the unit and mutation suites in a sealed
+throwaway container.
 
 **4 — Light variants.** Scoping approach from the harness prototype; a light
 token set for at least one bundled skin.

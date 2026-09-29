@@ -87,6 +87,7 @@ run_with $M "s/if (\$modes !== \['dark'\]) {/if (false) {/" "allow non-dark mode
 run_with $C "s/|| ! in_array(\$m\[1\], self::COLOUR_TAGS, true)//" "accept unknown RRDtool colour tags"
 
 I=src/SkinInstaller.php
+run_with $I 's#count($this->registry->all()) >= self::MAX_UPLOADED#false#' "install: no limit on uploaded skins"
 run_with $I 's#if (is_link($target) || (file_exists($target) \&\& ! is_dir($target))) {#if (false) {#' "install: write through a symlink or over a file"
 run_with $I 's#if (! SkinRepository::isValidId($id) || in_array($id, Manifest::RESERVED_IDS, true)) {#if (false) {#' "install: skip the id re-check"
 run_with $I 's#if ($this->skins->isBundled($id)) {#if (false) {#' "install/remove: allow bundled ids"

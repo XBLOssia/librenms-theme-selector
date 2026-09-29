@@ -98,6 +98,12 @@ Then **Plugins → Theme Selector**: each user picks a skin for themselves, and
 admins set the instance default (what the login page and users who haven't
 chosen get). Skins apply in dark mode; users on Light see stock LibreNMS.
 
+Admins can also add their own skins there as a `.zip`, and remove them again;
+see [docs/AUTHORING.md](docs/AUTHORING.md). Uploads are treated as hostile
+input (nothing uploaded is ever served, only a stylesheet regenerated from a
+strict parse), and [docs/SECURITY.md](docs/SECURITY.md) lists each control, the
+test behind it, and what is *not* defended.
+
 **Nothing else to install.** Each skin bundles its own webfonts (~58–77KB of
 Latin-subset woff2, all SIL Open Font License). No system fonts to chase, and
 no request ever leaves the box.
@@ -270,9 +276,12 @@ redistributed here.
 
 ```
 composer.json               the LibreNMS package plugin (xblossia/librenms-theme-selector)
-src/                        plugin code: provider, picker, publisher, graph palette
+src/                        plugin code: provider, picker, publisher, installer, graph palette
+src/Skin/                   the upload validator: zip reader, token-file parser, value grammar
 routes/, resources/views/   the Theme Selector page
-database/migrations/        the plugin's settings table
+resources/token-catalog.json  which tokens exist, and which uploads may set (generated)
+database/migrations/        the plugin's settings and uploaded-skin tables
+tests/                      php tests/run.php: validator, installer, fuzzing; mutate.sh
 base/base.css               the base stylesheet: token defaults + every rule
 skins/<name>/skin.css       a skin: token values, private palette, @font-face
 skins/<name>/skin.json      manifest: name, description, modes
@@ -288,6 +297,9 @@ harness/colorway.html       a skin's tokens and graph ramps, rendered
 harness/audit.js            live-page contrast + stock-colour audit
 dev/                        Docker LibreNMS for developing the plugin
 scripts/gen-token-docs.py   regenerate docs/TOKENS.md from base.css
+scripts/gen-token-catalog.py  derive the token catalog (settable vs structural) from base.css
+scripts/pack-skin.py        zip a skin folder for upload
+examples/minimal/           the smallest complete skin (20 values)
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/make-demo-graphs.sh generate the mockup's graphs (needs rrdtool)
@@ -297,6 +309,8 @@ patches/                    that patch, as a reviewable unified diff
 docs/img/                   the screenshots above
 docs/PLUGIN.md              plugin design, decisions and phases
 docs/TOKENS.md              token reference (generated)
+docs/AUTHORING.md           writing a skin: files, rules, fonts, graph colours
+docs/SECURITY.md            uploaded skins: threat model, controls, what isn't defended
 docs/DEPLOYMENT.md          install, updates, migration, uninstall, rollback
 docs/FINDINGS.md            what building these surfaced about theming LibreNMS
 docs/PROPOSAL.md            upstream proposal, ready to post

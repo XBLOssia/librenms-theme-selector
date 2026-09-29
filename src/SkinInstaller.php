@@ -30,6 +30,9 @@ use Xblossia\ThemeSelector\Skin\Manifest;
  */
 class SkinInstaller
 {
+    /** Most uploaded skins at once. */
+    public const MAX_UPLOADED = 50;
+
     public function __construct(
         private readonly string $publicDir,
         private readonly SkinRepository $skins,
@@ -51,6 +54,11 @@ class SkinInstaller
         }
         if ($this->skins->isBundled($id)) {
             throw new InstallException('The id "' . $id . '" belongs to a bundled skin. Choose a different id in skin.json.');
+        }
+        // Bounds the disk a run of uploads can use. Replacing a skin that is
+        // already installed is always allowed.
+        if ($this->registry->find($id) === null && count($this->registry->all()) >= self::MAX_UPLOADED) {
+            throw new InstallException('The limit of ' . self::MAX_UPLOADED . ' uploaded skins is reached. Remove one first.');
         }
 
         $skinsDir = $this->publicDir . '/skins';

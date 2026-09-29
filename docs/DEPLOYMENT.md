@@ -107,10 +107,60 @@ it resolves the latest `main`. To update immediately, re-run the same
 (Plain `composer update` is refused: LibreNMS's Composer hooks block it unless
 `FORCE=1` is set.)
 
+**After an update that adds routes or tables, do these as well.** Production
+caches its routes, and Laravel ignores a package's new routes while a cache
+exists (the same reason the install includes `route:cache`), so an update that
+adds a page needs the cache rebuilt, and one that adds a table needs a
+migration (`daily.sh` runs migrations nightly, but not immediately):
+
+```bash
+./lnms migrate --force
+php artisan route:cache
+```
+
+The upload page shipped this way: it added the `theme_selector_skins` table and
+three routes. Until `route:cache` is re-run, the admin section of the picker
+page can't build its upload and delete links.
+
 The next page load republishes changed skins. Every stylesheet link carries a
 `?v=<mtime>` cache-buster, so browsers fetch the new files without a hard
 refresh. (The old `webui.custom_css` setup had no cache-buster, which made
 every skin deploy look like it hadn't worked.)
+
+---
+
+## Custom skins (admins)
+
+**Plugins → Theme Selector → Custom skins** lists every skin (bundled and
+uploaded) and takes a `.zip` to add another. What a bundle contains and the
+rules it must follow are in [AUTHORING.md](AUTHORING.md); why those rules exist,
+and what is and isn't defended, is in [SECURITY.md](SECURITY.md).
+
+- **Installing changes nobody's view.** The skin appears in everyone's "Your
+  skin" list. Try it yourself, then make it the instance default if you want it
+  to be everyone's.
+- **Removing** an uploaded skin puts everyone who chose it back on the instance
+  default. If it *was* the default, the default is cleared first and the graph
+  colours are restored. Bundled skins can't be removed.
+- **Uploading the same `id` again replaces the skin** (its palette is re-applied
+  if it is the default). Up to 50 uploaded skins at once.
+- **What ends up on disk:** for each uploaded skin, one generated `skin.css` in
+  `html/css/custom/theme-selector/skins/<id>/`, and a row in
+  `theme_selector_skins` holding its name and graph palette. Nothing you upload
+  is stored or served as-is, and fonts are embedded in that stylesheet.
+- **Requirements:** the web server user must be able to write
+  `html/css/custom/theme-selector/` (`lnms theme-selector:publish` shows the
+  error if it can't), and PHP's `upload_max_filesize` and `post_max_size` must
+  allow a bundle (the plugin's own cap is 4 MB; PHP's default of 2 MB is
+  usually enough, since bundles are typically tens of KB).
+- **A skin that makes a page unusable:** add `?theme-selector=off` to that
+  page's address to see it with no skin, then pick another or ask an admin to
+  remove it. Nothing stored changes.
+- **Audit trail:** every rejected upload, install, replacement and removal is
+  logged as `ThemeSelector: ...` in `storage/logs/librenms.log`, with the user,
+  their IP and the bundle's SHA-256.
+- **Check a bundle before uploading it:** `./lnms theme-selector:validate
+  my-skin.zip` runs the upload page's checks and installs nothing.
 
 ---
 
@@ -262,11 +312,13 @@ safe to automate:
 rm -rf html/css/custom/theme-selector
 ```
 
-What stays behind, harmlessly: the `theme_selector_settings` table and
-`theme_selector.skin` rows in `users_prefs`. To remove them too:
+What stays behind, harmlessly: the `theme_selector_settings` and
+`theme_selector_skins` tables and `theme_selector.skin` rows in `users_prefs`.
+To remove them too:
 
 ```sql
 DROP TABLE theme_selector_settings;
+DROP TABLE theme_selector_skins;
 DELETE FROM users_prefs WHERE pref = 'theme_selector.skin';
 ```
 

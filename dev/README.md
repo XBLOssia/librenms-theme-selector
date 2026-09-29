@@ -5,7 +5,7 @@ Not for production.
 
 - Image `librenms/librenms:26.9.1.1`, the first release containing `63e0394`
   (the production host's commit).
-- The repo is bind-mounted at `/plugin` and installed via a Composer path
+- The repo is bind-mounted **read-only** at `/plugin` and installed via a Composer path
   repository with symlinks, so edits to `src/`, `resources/` and `skins/` show
   on the next request. There's no rebuild; OPcache revalidates on every request.
 - State lives in Docker named volumes. `docker compose -f dev/compose.yml down -v`
@@ -61,6 +61,26 @@ docker exec theme-selector-dev-librenms-1 sh /plugin/dev/test-graphs.sh
 Builds a dummy device, port and synthetic RRD, then checks that users with
 different skins get different graphs, that an explicit "stock" choice stays
 stock under any default, and that nothing leaks into the persistent config.
+
+## Tests
+
+```bash
+sh dev/test.sh            # PHP lint, unit tests (1,085 checks), token catalog check
+sh dev/test.sh mutate     # break each defence in turn; every one must be caught
+sh dev/test.sh live       # end to end against this instance: graphs, then uploads
+sh dev/test.sh all
+```
+
+Run from WSL/Linux with Docker. **The unit and mutation runs are sealed**: a
+throwaway container with the repository mounted read-only, a read-only root
+filesystem and a RAM-only `/tmp`. They include hostile archives and code that
+is deliberately broken, so they must never be able to reach the repository. (A
+mutation run once followed a symlink to `/` in the old, writable setup and
+deleted a bind-mounted copy of this repository, so don't loosen this.) The live
+tests need this stack up; its container mounts the repository read-only as well.
+
+`test-upload.sh` takes about three minutes because the upload route is rate
+limited to 12 a minute and the script waits out the window.
 
 ## Resetting the plugin install
 

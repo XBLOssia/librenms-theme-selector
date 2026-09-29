@@ -16,6 +16,8 @@
     },
     "require": {
         "php": "^8.2",
+        "ext-json": "*",
+        "ext-zlib": "*",
         "librenms/plugin-interfaces": "^1.0"
     },
     "extra": {

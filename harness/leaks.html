@@ -18,7 +18,7 @@
   Coverage by selector says a rule was answered, not that the property that
   paints the pixels was. This page checks the property, in the browser.
 
-  For each skin (built as base + tokens) it finds every place LibreNMS's own
+  For each skin (base.css + its token file) it finds every place LibreNMS's own
   dark theme (tw_dark.css) still decides a background colour:
 
     1. REAL ELEMENTS   on the harness pages, elements whose computed background
@@ -108,7 +108,7 @@ async function checkSkin(skin) {
   const real = new Map(), probes = new Set(), contrast = [];
   let rules;
   for (const page of PAGES) {
-    const f = await load(`${page}?skin=${skin}&build=tokens&t=${Date.now()}`);
+    const f = await load(`${page}?skin=${skin}&t=${Date.now()}`);
     const d = f.contentDocument, w = f.contentWindow;
     rules = rules || stockRules(d);
     // 1. real elements

@@ -3,6 +3,4 @@
 harness/css/
 harness/webfonts/
 
-# extract-base: unresolved gaps from the last run, read by the harness resolver.
-harness/.missing.json
 __pycache__/

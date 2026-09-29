@@ -14,11 +14,13 @@ tabs, modals. It does not mean every component.
 
 Run `./scripts/coverage.sh /opt/librenms` for the current number. As of today:
 
-| Skin | Coverage |
+| Stylesheet | Coverage |
 |---|---|
-| Terran | 183 / 218 (83%) |
-| Protoss | 183 / 218 (83%) |
-| Zerg | 183 / 218 (83%) |
+| `base/base.css` (shared by every skin) | 179 / 218 (82%) |
+
+(Was 183 / 218 for each of the three standalone skins. Four selectors were
+named only in those files' comments, which the split into `base.css` did not
+carry over. The number is now one, not three, because the skins share it.)
 
 That number went *down* from a previously reported 85%, twice, because the
 measurement was wrong both times — see below. Group A is 92/92; the remainder

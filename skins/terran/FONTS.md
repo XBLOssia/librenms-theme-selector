@@ -11,8 +11,8 @@ chase, no Google Fonts request, nothing for the end user to do.
 
 | Token | Face | Role | Applied to |
 |---|---|---|---|
-| `--tn-font-chrome` | Saira Condensed 600/700 | Condensed caps — "stencilled on the hull" | Navbar, panel headers, table **headers**, buttons, tabs |
-| `--tn-font-data` | JetBrains Mono 400/700 | Monospace — "CRT terminal readout" | Device hostnames, table **body cells**, labels, badges, `pre`/`code` |
+| `--p-font-chrome` | Saira Condensed 600/700 | Condensed caps — "stencilled on the hull" | Navbar, panel headers, table **headers**, buttons, tabs |
+| `--p-font-data` | JetBrains Mono 400/700 | Monospace — "CRT terminal readout" | Device hostnames, table **body cells**, labels, badges, `pre`/`code` |
 
 Table body cells and status bugs also get `font-variant-numeric: tabular-nums`,
 so uptimes, counters and port numbers align into columns instead of drifting.
@@ -79,7 +79,7 @@ skin directory can live anywhere under the webroot and the fonts still load.
 
 ## Changing the faces
 
-Everything is two variables at the top of `terran.css`. To swap a face, drop a
+Everything is two variables at the top of `skins/terran/skin.css`, in the `html.dark` block. To swap a face, drop a
 `.woff2` in `fonts/`, point the matching `@font-face` at it, and you are done —
 no rule below section 1b mentions a font by name.
 
@@ -90,5 +90,5 @@ at for eight hours — consider scoping the novelty face to chrome only and
 leaving table cells on a workhorse mono:
 
 ```css
-:root { --tn-font-chrome: "Share Tech Mono", ui-monospace, monospace; }
+html.dark { --p-font-chrome: "Share Tech Mono", ui-monospace, monospace; }
 ```

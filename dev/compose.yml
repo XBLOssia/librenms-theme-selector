@@ -44,7 +44,10 @@ services:
       - "127.0.0.1:8000:8000"
     volumes:
       - "librenms:/data"
-      - "..:/plugin"
+      # Read-only, deliberately. Nothing in the container has any reason to
+      # write to the repository, and a test once deleted a bind-mounted copy of
+      # it. Edit on the host; the container sees changes immediately.
+      - "..:/plugin:ro"
     environment:
       - "TZ=UTC"
       - "PUID=1000"

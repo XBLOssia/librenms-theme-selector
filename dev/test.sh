@@ -1,0 +1,60 @@
+#!/bin/sh
+# Run the tests, safely.
+#
+#   sh dev/test.sh            unit tests, PHP lint, token catalog check   (default)
+#   sh dev/test.sh mutate     break each defence in turn; each must be caught
+#   sh dev/test.sh live       end-to-end against the running dev instance
+#   sh dev/test.sh all
+#
+# Run from WSL or Linux with Docker. The unit and mutation runs execute in a
+# throwaway container that is SEALED: the repository is mounted read-only, the
+# root filesystem is read-only, and the only writable place is a RAM-backed
+# /tmp. Those suites include deliberately hostile inputs, and the mutation run
+# executes deliberately broken code, so they must never be able to reach the
+# repository or anything else. (One once did, through a symlink to "/", and
+# deleted a bind-mounted copy of this repository. Hence the seal.)
+#
+# `live` needs the dev stack up (docker compose -f dev/compose.yml up -d). Its
+# container mounts the repository read-only too.
+set -eu
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+IMAGE="${TS_IMAGE:-theme-selector-dev-librenms}"
+APP="${TS_CONTAINER:-theme-selector-dev-librenms-1}"
+
+sealed() {
+  docker run --rm --read-only --tmpfs /tmp:rw,size=1g --entrypoint sh \
+    -v "$ROOT:/plugin:ro" "$IMAGE" -c "$1"
+}
+
+unit() {
+  echo "== PHP lint, unit tests, token catalog"
+  sealed '
+    bad=0
+    for f in $(find /plugin/src /plugin/routes /plugin/database /plugin/tests /plugin/dev -name "*.php"); do
+      php -l "$f" | grep -v "^No syntax errors" && bad=1
+    done
+    [ $bad = 0 ] && echo "lint: clean"
+    php /plugin/tests/run.php
+    python3 /plugin/scripts/gen-token-catalog.py --check
+  '
+}
+
+mutate() {
+  echo "== mutation check (sealed)"
+  sealed 'sh /plugin/tests/mutate.sh'
+}
+
+live() {
+  echo "== end to end, against $APP"
+  docker exec "$APP" sh /plugin/dev/test-graphs.sh
+  docker exec "$APP" sh /plugin/dev/test-upload.sh
+}
+
+case "${1:-unit}" in
+  unit) unit ;;
+  mutate) mutate ;;
+  live) live ;;
+  all) unit && mutate && live ;;
+  *) echo "usage: sh dev/test.sh [unit|mutate|live|all]" >&2; exit 2 ;;
+esac

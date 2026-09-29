@@ -129,6 +129,32 @@ out = [
     'Nothing else is allowed in a token file (docs/PLUGIN.md, "The token file").',
     '',
 ]
+
+# Structural tokens: an uploaded skin may not set them (see docs/SECURITY.md).
+_catalog_path = os.path.join(ROOT, 'resources', 'token-catalog.json')
+if os.path.exists(_catalog_path):
+    import json
+    _tokens = json.load(open(_catalog_path, encoding='utf-8'))['tokens']
+    _structural = sorted(t for t, e in _tokens.items() if e['structural'])
+    out += [
+        '## Which tokens an uploaded skin may set',
+        '',
+        f'All but {len(_structural)}. Those {len(_structural)} are **structural**: they reach a CSS property that '
+        'changes layout, stacking, generated text or motion (`position`, sizes and offsets, `z-index`, '
+        '`pointer-events`, `content`, `clip-path`, `animation`, margins). A stylesheet that can set those can cover '
+        'part of the page with a fake message or hide a control, so the upload page rejects them and only the '
+        'skins shipped in this package may set them. Colours, gradients, shadows, borders, radii, type and '
+        'spacing are all open to uploads, within numeric bounds (`docs/SECURITY.md`). The list is derived from '
+        '`base/base.css` by `scripts/gen-token-catalog.py`, so a new token can not become settable in a '
+        'dangerous place by accident.',
+        '',
+        '<details><summary>The structural tokens</summary>',
+        '',
+        ' '.join(f'`{t}`' for t in _structural),
+        '',
+        '</details>',
+        '',
+    ]
 for g, items in groups.items():
     # "Core roles. A skin normally sets..." -> heading, then the sentence
     head, _, rest = g.partition(': ')

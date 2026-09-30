@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 1,227 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (52 flaws caught, 7 documented as
+`php tests/run.php` runs 1,272 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (57 flaws caught, 7 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 Run all of it with `sh dev/test.sh all`.
 
@@ -77,7 +77,7 @@ Run all of it with `sh dev/test.sh all`.
 | Backslash escapes (`u\72l(`) | `\` is not in the allowed character set | `CssTest` (`test_values`) |
 | Styling arbitrary elements | Only `html.dark { ... }` and `@font-face` blocks are accepted, and inside them only custom properties. No other selector, no other property | `CssTest`, mutation "accept any selector" |
 | Overwriting core's variables | Only known `--ts-*` tokens and the skin's own `--p-*` palette; `--tw-*` and everything else is refused | `CssTest`, mutation "accept unknown tokens" |
-| Fake UI: overlay text, invisible click targets, oversized boxes | The 36 **structural** tokens (position, sizes, offsets, `z-index`, `pointer-events`, `content`, `clip-path`, animation, margin) can't be set by an upload. The list is derived from how `base.css` uses each token, and anything unrecognised is structural (deny by default) | `CssTest`, `MiscTest` (catalog vs `base.css`), mutation "let uploads set structural tokens" |
+| Fake UI: overlay text, invisible click targets, oversized boxes | The 31 **structural** tokens (position, sizes, offsets, `z-index`, `pointer-events`, `content`, `clip-path`, animation, margin) can't be set by an upload. The list is derived from how `base.css` uses each token, and anything unrecognised is structural (deny by default) | `CssTest`, `MiscTest` (catalog vs `base.css`), mutation "let uploads set structural tokens" |
 | Huge values to cover the page (giant shadow blur, enormous padding) | Numeric bounds per token kind (shadows 100 px, borders 24 px, lengths 64 px, everything else 800 px; filters, durations and percentages bounded) | `CssTest` (`test_values`), mutations |
 | Getting round a token's cap through the palette | A palette entry used by a token is checked against that token's cap, transitively | `CssTest`, mutation "let the palette bypass a token's cap" |
 | Filters that hide controls (`blur`, `opacity`, `drop-shadow`) | Only `brightness contrast saturate sepia hue-rotate invert grayscale`, each with one bounded argument | `CssTest` |
@@ -95,7 +95,7 @@ Run all of it with `sh dev/test.sh all`.
 
 ### Ornaments
 
-The 36 structural tokens stay closed to uploads. Installed skins decorate panels
+The 31 structural tokens stay closed to uploads. Installed skins decorate panels
 through a fixed layer whose mechanics live in `base.css` and whose only inputs
 are paint (gradients), so the attacks the structural rule exists for (a fake
 message over the page, an invisible box over a control) have no input to use.
@@ -110,6 +110,7 @@ Full description and roadmap: [ORNAMENTS.md](ORNAMENTS.md).
 | A large overhang over neighbours | `inset: -8px`, fixed | `OrnamentTest`, mutation "overhang by 80px" |
 | A skin reading a structural token through the layer | The layer may read only the eight paint slots; any other `var()` fails the test | `OrnamentTest`, mutation "read a structural token in the layer" |
 | Loading an image through a slot | Slots are image-kind tokens: gradients only, no `url()`, `image-set()` or escapes (same validator as every other value) | `OrnamentTest`, `evil-frames-url` |
+| The same attacks through the heading, navbar and widget layers | Same fixed mechanics, same pinning: negative z-index in an isolated context, `pointer-events: none`, empty `content`, constant bands (8px / 12px, 8px overhang at the navbar's bottom). Widget frames are the widget's own background layers, so they can't leave it | `OrnamentTest`, five more mutations (heading marker raised, heading strip clickable, navbar strip with text, navbar bottom strip hanging 80px, a 300px widget slot) |
 | The layer leaking into bundled skins | Rules are keyed on `data-ts-orn`, which only uploaded skins' links carry | `test-upload.sh` ("a bundled skin's links are not"), `OrnamentTest` |
 
 ### Licence notices

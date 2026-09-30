@@ -121,6 +121,17 @@ run_with $B "$R s/content: \"\";/content: \"Session expired\";/" "ornaments: giv
 run_with $B "$R{/clip-path:/d}" "ornaments: drop the safe-zone ring"
 run_with $B "$R s/background-image: var(--ts-frame-tl)/background-image: var(--ts-panel-before-width), var(--ts-frame-tl)/" "ornaments: read a structural token in the layer"
 
+RH='/data-ts-orn\]) \.panel > \.panel-heading::before {/,/^}/'
+RA='/data-ts-orn\]) \.panel > \.panel-heading::after {/,/^}/'
+RN='/data-ts-orn\]) \.navbar-default::before {/,/^}/'
+RB='/data-ts-orn\]) \.navbar-default::after {/,/^}/'
+RW='/data-ts-orn\]) \.grid-stack \.grid-stack-item-content {/,/^}/'
+run_with $B "$RH s/z-index: -1;/z-index: 2;/" "ornaments: raise the heading marker above the heading text"
+run_with $B "$RA s/pointer-events: none;/pointer-events: auto;/" "ornaments: let the heading strip take clicks"
+run_with $B "$RN s/content: \"\";/content: \"Session expired\";/" "ornaments: give the navbar top strip text"
+run_with $B "$RB s/bottom: -8px;/bottom: -80px;/" "ornaments: let the navbar bottom strip hang 80px"
+run_with $B "$RW s/background-size: 32px 32px,/background-size: 300px 300px,/" "ornaments: make a widget corner slot 300px"
+
 echo
 echo "caught $CAUGHT, redundant $REDUNDANT, missed $MISSED, not applied $UNAPPLIED"
 [ "$MISSED" = 0 ] && [ "$UNAPPLIED" = 0 ]

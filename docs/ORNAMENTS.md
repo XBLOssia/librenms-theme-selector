@@ -2,7 +2,7 @@
 
 The three bundled skins decorate the page with things an upload is not allowed
 to do: corner brackets, accent bars, rivet rows, glowing strips under the navbar,
-cut corners, animation. They do it through the 36 *structural* tokens (position,
+cut corners, animation. They do it through the *structural* tokens (position,
 size, offsets, `z-index`, `content`, `pointer-events`, `clip-path`, `animation`),
 and those are closed to uploads because a stylesheet that can set them can put a
 fake "session expired, sign in" message over the page or an invisible box over a
@@ -62,6 +62,28 @@ Layered gradients in one slot (comma-separated) make L-shapes and stacked stripe
 `--ts-radius-lg`, at most 64px) let each corner of a panel be square or round on
 its own.
 
+## Phase B (built): headings, navbar, widgets
+
+| Layer | Fixed mechanics | Skin paints with |
+|---|---|---|
+| Heading marker | a 12px band on the heading's left edge, full height, under the heading's text | `--ts-heading-marker`, `-size`, `-position` |
+| Heading strip | covers the heading, under its text | `--ts-heading-strip`, `-size`, `-position`, `-repeat`, `-opacity` |
+| Navbar top strip | 8px band along the top edge, under the links | `--ts-navbar-strip-top`, `-size`, `-repeat`, `-opacity` |
+| Navbar bottom strip | 12px band along the bottom edge, 8px of it below the navbar, under the links | `--ts-navbar-strip-bottom`, `-size`, `-repeat`, `-opacity` |
+| Widget frames | the widget's own background layers: eight fixed slots inside its edge, above its colour and under its content | `--ts-widget-frame-*`, `--ts-widget-radius-*` |
+
+Two details worth knowing:
+
+* The size, position and repeat of a *background* can't move, resize or raise
+  anything, so the token classifier now treats `background-size`,
+  `background-position` and `background-repeat` as paint. That reclassified five
+  older tokens (the ones only the bundled skins' pseudo-elements read) from
+  structural to settable; they have no effect for an upload, whose pseudo-elements
+  don't read them.
+* Bootstrap gives `.navbar::before` and `::after` `display: table`, which shrinks
+  an absolutely positioned strip to zero width, so the navbar layers set
+  `display: block`.
+
 ## Roadmap to parity with the bundled skins
 
 | Bundled skin does this | With | Status |
@@ -69,10 +91,10 @@ its own.
 | Corner brackets on panels (Protoss) | frame corner slots | Phase A. Behind the content, so a bracket over the heading is hidden by it; brackets drawn outside the frame or on the border show |
 | Bars that jut past a frame | frame corner and edge slots | Phase A |
 | Different radius per corner | `--ts-panel-radius-*` | Phase A |
-| Accent bar on a panel heading (all three) | a heading marker slot: fixed 8px band on the heading's left edge, paint only | Phase B |
-| Rivet / sheen row in a heading (Terran) | a heading strip slot inside the heading, behind its text | Phase B |
-| Glow or rivet strips on the navbar's top and bottom edge (all three) | navbar strip slots: fixed 8px bands, top and bottom | Phase B |
-| Frames on dashboard widgets | the same slots, inside the widget's own edge (no overhang: LibreNMS gives widgets uneven gutters and scrolls their contents) | Phase B |
+| Accent bar on a panel heading (all three) | the heading marker | Phase B, built |
+| Rivet / sheen row in a heading (Terran) | the heading strip | Phase B, built |
+| Glow or rivet strips on the navbar's top and bottom edge (all three) | the navbar strips (a *glow*, which is a blur around a shape, comes with Phase D's effects) | Phase B, built |
+| Frames on dashboard widgets | widget frame slots inside the widget's own edge (no overhang: LibreNMS gives widgets uneven gutters and scrolls their contents) | Phase B, built |
 | Cut (chamfered) corners on buttons, labels, badges (Protoss) | one length per element, `--ts-btn-chamfer` and so on, bounded to ~10px, used in a fixed `clip-path` polygon that base.css writes. A cut is a triangle at most 10px across: too small to hide text | Phase C |
 | Animation: a breathing glow, pulse, LED blink (Zerg, Protoss, Terran) | a short list of animations written in base.css, selectable by name, running only on ornament layers, never shorter than 2s, off under `prefers-reduced-motion` | Phase D |
 | Page background (facets, glow) | already possible: `--ts-body-bg-image` takes gradients | done |

@@ -58,7 +58,7 @@ final class FontFile
         }
 
         if (stripos($bytes, '<?php') !== false || stripos($bytes, '<script') !== false
-            || str_contains($bytes, '<?=') || str_contains($bytes, '<%')
+            || str_contains($bytes, '<?=')
             || preg_match('/<\?[ \t\r\n]/', $bytes)) {
             $report->error($label, 'contains what looks like PHP or script code');
 

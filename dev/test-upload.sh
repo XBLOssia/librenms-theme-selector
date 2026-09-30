@@ -161,6 +161,18 @@ upload dev-admin "$FIX/evil-license-name.zip"
 check "a wrongly named licence file is refused" "$(yes_if "printf '%s' \"\$PAGE\" | grep -qi 'not allowed' && printf '%s' \"\$PAGE\" | grep -q 'was not installed'")"
 check "neither installed anything" "$(yes_if "[ \"\$(q \"select count(*) from theme_selector_skins where id='evil'\")\" = 0 ] && [ ! -e $PUB/skins/evil ]")"
 
+echo "== ornaments: only uploaded skins get the ornament layer"
+upload dev-admin "$FIX/good-frames.zip"
+check "a skin painting frame slots installs" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Installed With Frames'")"
+check "its generated stylesheet carries the slot" "$(yes_if "grep -q -e '--ts-frame-tl: linear-gradient' $PUB/skins/with-frames/skin.css")"
+upload dev-admin "$FIX/evil-frames-url.zip"
+check "a frame slot with a url() is refused" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'was not installed'")"
+post dev-user /plugin/theme-selector "skin=with-frames"
+check "an uploaded skin's links are marked data-ts-orn (base.css and skin.css)" "$(yes_if "[ \"\$(get dev-user /devices | grep -c 'data-ts-orn')\" = 2 ]")"
+post dev-user /plugin/theme-selector "skin=terran"
+check "a bundled skin's links are not" "$(yes_if "[ \"\$(get dev-user /devices | grep -c 'data-theme-selector')\" = 2 ] && [ \"\$(get dev-user /devices | grep -c 'data-ts-orn')\" = 0 ]")"
+check "and base.css carries the gated layer" "$(yes_if "grep -q 'link\[data-ts-orn\]' $PUB/base.css")"
+
 echo "== waiting out the upload rate limit again"
 sleep 62
 
@@ -236,7 +248,7 @@ reset_state
 upload_ok=0
 sleep 62
 upload dev-admin "$FIX/good-slate.zip"; upload dev-admin "$FIX/good-font.zip"; upload dev-admin "$FIX/good-graph.zip"
-UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/with-license/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
+UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/with-license/skin.css" ! -path "$PUB/skins/with-frames/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
 check "only base.css, bundled skins and each uploaded skin's single skin.css exist" "$(yes_if "[ -z '$UNEXPECTED' ]")"
 check "there are no PHP, HTML, script or config files anywhere in it" "$(yes_if "[ \"\$(find $PUB -type f \( -iname '*.php*' -o -iname '*.phtml' -o -iname '*.htm*' -o -iname '*.js' -o -iname '.htaccess' -o -iname '*.svg' -o -iname '*.sh' \) | wc -l)\" = 0 ]")"
 check "no file in it is executable" "$(yes_if "[ \"\$(find $PUB -type f -perm /111 | wc -l)\" = 0 ]")"

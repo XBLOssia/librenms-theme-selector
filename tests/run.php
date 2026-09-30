@@ -27,12 +27,12 @@ set_error_handler(function (int $no, string $str, string $file, int $line): bool
 });
 
 require __DIR__ . '/bootstrap.php';
-foreach (['ZipTest', 'CssTest', 'MiscTest', 'LicenseTest', 'InstallerTest', 'FuzzTest'] as $f) {
+foreach (['ZipTest', 'CssTest', 'MiscTest', 'LicenseTest', 'OrnamentTest', 'InstallerTest', 'FuzzTest'] as $f) {
     require __DIR__ . "/$f.php";
 }
 
 $started = microtime(true);
-foreach (['test_zip', 'test_css', 'test_values', 'test_fonts_in_css', 'test_fonts', 'test_graph', 'test_manifest', 'test_catalog', 'test_bundled', 'test_license', 'test_installer', 'test_fuzz'] as $fn) {
+foreach (['test_zip', 'test_css', 'test_values', 'test_fonts_in_css', 'test_fonts', 'test_graph', 'test_manifest', 'test_catalog', 'test_bundled', 'test_license', 'test_ornaments', 'test_installer', 'test_fuzz'] as $fn) {
     try {
         $fn();
     } catch (Throwable $e) {

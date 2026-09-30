@@ -79,6 +79,18 @@ html.dark {
   --ts-dropdown-header-letter-spacing: .06em;
   --ts-panel-border: 1px solid var(--ts-border);
   --ts-panel-shadow: var(--ts-shadow);
+  --ts-panel-radius-tl: var(--ts-radius-lg);
+  --ts-panel-radius-tr: var(--ts-radius-lg);
+  --ts-panel-radius-br: var(--ts-radius-lg);
+  --ts-panel-radius-bl: var(--ts-radius-lg);
+  --ts-frame-tl: none;
+  --ts-frame-tr: none;
+  --ts-frame-bl: none;
+  --ts-frame-br: none;
+  --ts-frame-top: none;
+  --ts-frame-right: none;
+  --ts-frame-bottom: none;
+  --ts-frame-left: none;
   --ts-panel-heading-bg-image: none;
   --ts-panel-heading-border-bottom: 1px solid var(--ts-border);
   --ts-panel-heading-padding-left: 15px;
@@ -473,6 +485,10 @@ html.dark .panel, html.dark .panel-default {
   background-image: var(--ts-panel-bg-image);
   border-left-width: var(--ts-panel-border-left-width);
   border-bottom-width: var(--ts-panel-border-bottom-width);
+  border-top-left-radius: var(--ts-panel-radius-tl);
+  border-top-right-radius: var(--ts-panel-radius-tr);
+  border-bottom-right-radius: var(--ts-panel-radius-br);
+  border-bottom-left-radius: var(--ts-panel-radius-bl);
 }
 html.dark .panel::before, html.dark .panel::after {
   content: var(--ts-panel-before-content);
@@ -493,6 +509,36 @@ html.dark .panel::after {
   right: var(--ts-panel-after-right);
   border-bottom: var(--ts-panel-after-border-bottom);
   border-right: var(--ts-panel-after-border-right);
+}
+/* ---------------------------------------------------------------------------
+ * FRAME ORNAMENTS (skins installed by upload; see docs/ORNAMENTS.md)
+ *
+ * A fixed decorative layer behind a panel, that a skin paints with eight
+ * gradients and nothing else. Every property below is written out here, never
+ * taken from a token, so a skin cannot move, resize, raise or make it clickable:
+ *   - it sits at z-index -1 inside the panel (isolation: isolate), so it is
+ *     painted under the panel's content and can never cover text or a control;
+ *   - it is clipped to a ring: 24px inside the panel edge, 8px outside it;
+ *   - pointer-events none, content "" (no text), no animation, no filter.
+ * tests/MiscTest.php pins this block declaration by declaration.
+ * Only skins installed by upload switch it on (the plugin marks their
+ * stylesheet links data-ts-orn); the bundled skins do their own thing.
+ * ------------------------------------------------------------------------- */
+html.dark:has(link[data-ts-orn]) .panel {
+  position: relative;
+  isolation: isolate;
+}
+html.dark:has(link[data-ts-orn]) .panel::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--ts-frame-tl), var(--ts-frame-tr), var(--ts-frame-bl), var(--ts-frame-br), var(--ts-frame-top), var(--ts-frame-right), var(--ts-frame-bottom), var(--ts-frame-left);
+  background-size: 32px 32px, 32px 32px, 32px 32px, 32px 32px, 100% 12px, 12px 100%, 100% 12px, 12px 100%;
+  background-position: left top, right top, left bottom, right bottom, left top, right top, left bottom, left top;
+  background-repeat: no-repeat;
+  clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 32px 32px, 32px calc(100% - 32px), calc(100% - 32px) calc(100% - 32px), calc(100% - 32px) 32px, 32px 32px);
 }
 html.dark .panel-default > .panel-heading, html.dark .panel > .panel-heading {
   background-color: var(--ts-surface-raised);

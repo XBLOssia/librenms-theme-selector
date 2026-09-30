@@ -47,6 +47,8 @@ for p in ['font-family']:
     KINDS[p] = 'font'
 for p in ['border', 'border-width']:
     KINDS[p] = 'border'
+for p in ['border-top-left-radius', 'border-top-right-radius', 'border-bottom-right-radius', 'border-bottom-left-radius']:
+    KINDS[p] = 'length'
 for p in ['border-radius', 'padding', 'letter-spacing', 'font-size', 'line-height', 'word-spacing']:
     KINDS[p] = 'length'
 for p in ['font-weight', 'font-style', 'text-transform', 'text-decoration', 'font-variant-numeric',

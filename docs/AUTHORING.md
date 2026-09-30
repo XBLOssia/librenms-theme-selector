@@ -78,8 +78,8 @@ html.dark {
   `>`, `@`, `:` inside a value.
 - **Some tokens can't be set by an upload**: the 36 *structural* ones that
   move or size things or generate text (`docs/TOKENS.md` lists them, and why).
-  If you need decoration, use gradients and shadows on the tokens that allow
-  them.
+  For decoration, use gradients and shadows on the tokens that allow them, and
+  the frame slots below.
 - **Sizes are bounded**: shadows up to 100 px, borders 24 px, radii and spacing
   64 px, everything else 800 px; durations up to 5 s; filter arguments within
   sensible ranges. Out-of-range values are rejected, not clamped.
@@ -125,6 +125,34 @@ newlines. Control characters, invisible or direction-changing characters
 errors, so a notice can't hide or disguise anything. Angle brackets and
 ampersands are fine (they are displayed as text, never interpreted). Replacing
 a skin replaces its notice; a bundle with no `LICENSE.txt` has none.
+
+## Ornaments
+
+Skins installed by upload can decorate the edges and corners of panels. Each
+panel has a fixed decorative layer, behind its content, that reaches 8px outside
+the panel and 24px inside its edge. You paint it with eight gradients:
+
+```css
+html.dark {
+  /* a red-over-orange bar that juts 8px out of the top-left corner and
+     another at the bottom-right */
+  --ts-frame-tl: linear-gradient(180deg, transparent 2px, #e50832 2px, #e50832 6px, #f37c2f 6px, #f37c2f 9px, transparent 9px);
+  --ts-frame-br: linear-gradient(0deg,   transparent 2px, #e50832 2px, #e50832 6px, #f37c2f 6px, #f37c2f 9px, transparent 9px);
+  /* each corner of a panel can have its own radius (up to 64px) */
+  --ts-panel-radius-tl: 0;
+  --ts-panel-radius-br: 12px;
+}
+```
+
+The corner slots (`--ts-frame-tl`, `-tr`, `-bl`, `-br`) are 32 x 32px boxes at
+the corners of the layer; the edge slots (`--ts-frame-top`, `-right`, `-bottom`,
+`-left`) are 12px strips along the edges. A gradient changes along one direction,
+and the box gives you the other, so a corner slot is how you make a short bar.
+Put several gradients in one slot, separated by commas, for L-shapes and stripes.
+You can't move, resize or raise the layer, and it can't hold text or take clicks.
+The part of a slot that lies under the panel's heading or body is hidden by them.
+`docs/ORNAMENTS.md` has the rules and what is planned next (heading markers,
+navbar strips, cut corners, animation).
 
 ## graph.conf
 

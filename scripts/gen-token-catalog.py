@@ -95,19 +95,21 @@ def chamfer_template(e):
             f'calc(100% - {c("br")}) 100%, {c("bl")} 100%, 0 calc(100% - {v("bl")}), 0 {v("tl")})')
 
 
-def widget_polygon(prefix='widget', m='10000px'):
+def widget_polygon(prefix='widget', m='10000px', e='2px'):
     def c(k):
         return f'var(--ts-{prefix}-chamfer-{k}, var(--ts-{prefix}-chamfer))'
 
+    r = f'var(--ts-{prefix}-chamfer-rise, 1)'
+
     def v(k):
-        return f'calc({c(k)} * var(--ts-{prefix}-chamfer-rise, 1))'
-    mm, pm = f'-{m}', f'calc(100% + {m})'
+        return f'calc({c(k)} * {r})'
+    mm, pm, ne, pe = f'-{m}', f'calc(100% + {m})', f'-{e}', f'calc(100% + {e})'
     pts = [(mm, mm), (pm, mm),
-           (pm, '0'), (f'calc(100% - {c("tr")})', '0'), ('100%', v('tr')), ('100%', '0'), (pm, '0'),
-           (pm, '100%'), ('100%', '100%'), ('100%', f'calc(100% - {v("br")})'), (f'calc(100% - {c("br")})', '100%'), (pm, '100%'),
+           (pm, ne), (f'calc(100% - {c("tr")} - {e} / {r})', ne), (pe, f'calc({v("tr")} + {e} * {r})'), (pe, ne), (pm, ne),
+           (pm, pe), (pe, pe), (pe, f'calc(100% - {v("br")} - {e} * {r})'), (f'calc(100% - {c("br")} - {e} / {r})', pe), (pm, pe),
            (pm, pm), (mm, pm),
-           (mm, '100%'), (c('bl'), '100%'), ('0', f'calc(100% - {v("bl")})'), ('0', '100%'), (mm, '100%'),
-           (mm, '0'), ('0', '0'), ('0', v('tl')), (c('tl'), '0'), (mm, '0')]
+           (mm, pe), (f'calc({c("bl")} + {e} / {r})', pe), (ne, f'calc(100% - {v("bl")} - {e} * {r})'), (ne, pe), (mm, pe),
+           (mm, ne), (ne, ne), (ne, f'calc({v("tl")} + {e} * {r})'), (f'calc({c("tl")} + {e} / {r})', ne), (mm, ne)]
     return 'polygon(' + ', '.join(f'{x} {y}' for x, y in pts) + ')'
 
 

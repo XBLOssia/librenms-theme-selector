@@ -18,27 +18,48 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 export FUZZ_ROUNDS=600
 
-run_with() { # file, sed expression, description [redundant]
-  rm -rf "$WORK/t"; mkdir -p "$WORK/t"
-  cp -r "$ROOT/src" "$ROOT/tests" "$ROOT/resources" "$ROOT/examples" "$ROOT/skins" "$ROOT/base" "$WORK/t/"
-  before="$(md5sum "$WORK/t/$1" | cut -d' ' -f1)"
-  sed -i "$2" "$WORK/t/$1"
-  after="$(md5sum "$WORK/t/$1" | cut -d' ' -f1)"
+# Each mutation is independent (its own scratch copy, its own PHP process), so they run
+# a few at a time: MUTATE_JOBS (default 8) at once, in batches. The results are collected
+# and printed in the order the mutations are listed below, whatever order they finish in.
+JOBS="${MUTATE_JOBS:-8}"
+IDX=0
+RUNNING=0
+mkdir -p "$WORK/res"
+
+one_mutation() { # index, file, sed expression, description [redundant]; writes $WORK/res/<index>
+  idx="$1"; file="$2"; expr="$3"; desc="$4"; flag="${5:-}"
+  dir="$WORK/t$idx"
+  rm -rf "$dir"; mkdir -p "$dir"
+  cp -r "$ROOT/src" "$ROOT/tests" "$ROOT/resources" "$ROOT/examples" "$ROOT/skins" "$ROOT/base" "$dir/"
+  before="$(md5sum "$dir/$file" | cut -d' ' -f1)"
+  sed -i "$expr" "$dir/$file"
+  after="$(md5sum "$dir/$file" | cut -d' ' -f1)"
   if [ "$before" = "$after" ]; then
-    printf '  ??    %-62s (mutation did not apply)\n' "$3"; UNAPPLIED=$((UNAPPLIED + 1)); return
-  fi
-  out="$(php "$WORK/t/tests/run.php" 2>&1)"
-  failed="$(printf '%s' "$out" | sed -n 's/^[0-9]* passed, \([0-9]*\) failed$/\1/p')"
-  if [ -z "$failed" ]; then failed="crash"; fi
-  if [ "$failed" = "0" ] && [ "${4:-}" = "redundant" ]; then
-    printf '  redundant %-58s (another layer stops it)\n' "$3"; REDUNDANT=$((REDUNDANT + 1))
-  elif [ "$failed" = "0" ]; then
-    printf '  MISSED %-61s\n' "$3"; MISSED=$((MISSED + 1))
-  elif [ "${4:-}" = "redundant" ]; then
-    printf '  MISLABELLED %-56s (%s failing: not redundant after all)\n' "$3" "$failed"; MISSED=$((MISSED + 1))
+    verdict=UNAPPLIED
+    line="$(printf '  ??    %-62s (mutation did not apply)' "$desc")"
   else
-    printf '  caught %-61s (%s failing)\n' "$3" "$failed"; CAUGHT=$((CAUGHT + 1))
+    out="$(php "$dir/tests/run.php" 2>&1)"
+    failed="$(printf '%s' "$out" | sed -n 's/^[0-9]* passed, \([0-9]*\) failed$/\1/p')"
+    if [ -z "$failed" ]; then failed="crash"; fi
+    if [ "$failed" = "0" ] && [ "$flag" = "redundant" ]; then
+      verdict=REDUNDANT; line="$(printf '  redundant %-58s (another layer stops it)' "$desc")"
+    elif [ "$failed" = "0" ]; then
+      verdict=MISSED; line="$(printf '  MISSED %-61s' "$desc")"
+    elif [ "$flag" = "redundant" ]; then
+      verdict=MISSED; line="$(printf '  MISLABELLED %-56s (%s failing: not redundant after all)' "$desc" "$failed")"
+    else
+      verdict=CAUGHT; line="$(printf '  caught %-61s (%s failing)' "$desc" "$failed")"
+    fi
   fi
+  printf '%s\n%s\n' "$verdict" "$line" > "$WORK/res/$idx"
+  rm -rf "$dir"
+}
+
+run_with() { # file, sed expression, description [redundant]
+  IDX=$((IDX + 1))
+  one_mutation "$IDX" "$@" &
+  RUNNING=$((RUNNING + 1))
+  if [ "$RUNNING" -ge "$JOBS" ]; then wait; RUNNING=0; fi
 }
 
 CAUGHT=0; MISSED=0; UNAPPLIED=0; REDUNDANT=0
@@ -154,6 +175,7 @@ run_with $B "$RP s/--ts-panel-chamfer, 0px))/--ts-panel, 0px))/" "cuts: drop the
 run_with $B "$RG s/calc(100% + 10000px) -10000px/calc(100% + 10000px) -8px/" "cuts: a widget clip that cuts off what hangs out of it"
 RC='/data-ts-orn\]) \.panel {/,/^}/'
 run_with $B "$RC s/calc(100% + 10000px) -10000px/calc(100% + 10px) -10px/" "cuts: a panel clip that cuts off a dropdown hanging out of it"
+run_with $B "$RC s/calc(100% + 2px) calc(100% + 2px)/100% 100%/" "cuts: a clip notch whose edge lies exactly on the box edge (hairlines at fractional zoom)"
 run_with resources/token-catalog.json '/"--ts-panel-chamfer-bl": {/,/}/ s/"maxPx": 12/"maxPx": 800/' "cuts: no cap on panel cuts"
 run_with $B 's/html.dark .panel\[class\*="tw:rounded"\] {/html.dark .panel[class*="tw:roundedx"] {/' "cuts: radius tokens no longer reach tw:rounded panels"
 
@@ -174,6 +196,26 @@ run_with src/Skin/TokenFile.php 's# || \$um\[2\] !== \$slug##' "texture: allow a
 run_with src/Skin/OutputGuard.php "s#|| PngTexture::check('texture', \$png, new Report(), true) === null#|| false#" "guard: do not re-check the embedded PNG"
 run_with src/Skin/ZipBundleReader.php 's#|textures/\[a-z0-9\]\[a-z0-9-\]{0,40}\\.png##' "zip: textures/*.png is not an allowed entry"
 run_with src/Skin/Limits.php 's#TEXTURE_BYTES = 65_536#TEXTURE_BYTES = 6_553_600#' "texture: no limit on a cleaned texture's size"
+
+wait
+n=1
+while [ "$n" -le "$IDX" ]; do
+  f="$WORK/res/$n"
+  if [ -f "$f" ]; then
+    verdict="$(sed -n 1p "$f")"
+    sed -n 2p "$f"
+  else
+    verdict=MISSED
+    echo "  MISSED (mutation $n produced no result: its process died)"
+  fi
+  case "$verdict" in
+    CAUGHT) CAUGHT=$((CAUGHT + 1)) ;;
+    REDUNDANT) REDUNDANT=$((REDUNDANT + 1)) ;;
+    UNAPPLIED) UNAPPLIED=$((UNAPPLIED + 1)) ;;
+    *) MISSED=$((MISSED + 1)) ;;
+  esac
+  n=$((n + 1))
+done
 
 echo
 echo "caught $CAUGHT, redundant $REDUNDANT, missed $MISSED, not applied $UNAPPLIED"

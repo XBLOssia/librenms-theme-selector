@@ -79,8 +79,16 @@ mutation run once followed a symlink to `/` in the old, writable setup and
 deleted a bind-mounted copy of this repository, so don't loosen this.) The live
 tests need this stack up; its container mounts the repository read-only as well.
 
-`test-upload.sh` takes about three minutes because the upload route is rate
-limited to 12 a minute and the script waits out the window.
+**Speed.** `all` takes about two and a half minutes: unit first, then the mutation
+check and the live suites at the same time (the mutation check is sealed and never
+touches this stack, so they don't interfere; its output is held and printed after the
+live output). The mutation check runs its mutations eight at a time
+(`MUTATE_JOBS=12 sh dev/test.sh mutate` for more). The upload route is rate limited
+per user to 12 a minute; `test-upload.sh` spreads its uploads over seven extra admins
+it creates (`dev-up1` to `dev-up7`), each with a bucket of its own, instead of sleeping
+out the window, and only the test of the limit itself bursts one admin. The two live
+suites can't run side by side: they share the database, the default skin, the graph
+colours and the skins directory.
 
 ## Resetting the plugin install
 

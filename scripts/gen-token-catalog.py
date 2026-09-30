@@ -63,15 +63,29 @@ KINDS['background-repeat'] = 'text'
 # base.css writes for buttons, labels and badges. The tokens it reads are sizes
 # in px; TOKEN_CAPS holds their (small) limits.
 KINDS['chamfer-clip'] = 'chamfer'
+KINDS['ratio-clip'] = 'ratio'
+# Motion and glow for the ornament layers: `animation` is structural except in
+# the one shape base.css writes (a fixed keyframe name and easing with the
+# period as the only token), and `filter` except in the one fixed drop-shadow
+# whose colour is the only token. A skin supplies a period or a plain colour.
+ANIMATION_SHAPE = re.compile(r'^ts-(breathe|glow) var\((--ts-[\w-]+)\) ease-in-out infinite$')
+GLOW_SHAPE = re.compile(r'^drop-shadow\(0 0 8px var\((--ts-[\w-]+)\)\)$')
+KINDS['motion-layer'] = 'period'
+KINDS['glow-filter'] = 'glowcolor'
+# Tokens the keyframes read, which need a stricter grammar than their property's.
+TOKEN_KINDS = [(re.compile(r'^--ts-breathe-(low|high)$'), 'level'),
+               (re.compile(r'^--ts-alert-glow-(low|high)$'), 'glowcolor')]
 TOKEN_CAPS = [(re.compile(r'^--ts-btn-chamfer'), 10), (re.compile(r'^--ts-(label|badge)-chamfer'), 6)]
 
 
 def chamfer_template(e):
     def c(corner):
         return f'var(--ts-{e}-chamfer-{corner}, var(--ts-{e}-chamfer))'
-    tl, tr, br, bl = c('tl'), c('tr'), c('br'), c('bl')
-    return (f'polygon({tl} 0, calc(100% - {tr}) 0, 100% {tr}, 100% calc(100% - {br}), '
-            f'calc(100% - {br}) 100%, {bl} 100%, 0 calc(100% - {bl}), 0 {tl})')
+
+    def v(corner):
+        return f'calc({c(corner)} * var(--ts-{e}-chamfer-rise, 1))'
+    return (f'polygon({c("tl")} 0, calc(100% - {c("tr")}) 0, 100% {v("tr")}, 100% calc(100% - {v("br")}), '
+            f'calc(100% - {c("br")}) 100%, {c("bl")} 100%, 0 calc(100% - {v("bl")}), 0 {v("tl")})')
 
 
 CHAMFER_TEMPLATES = {chamfer_template(e) for e in ('btn', 'label', 'badge')}
@@ -81,7 +95,7 @@ KINDS['filter'] = 'filter'
 TAILWIND_COLOUR = re.compile(r'^--tw-color-')
 
 # how large a px length may be in a token of each kind
-MAX_PX = {'chamfer': 10, 'shadow': 100, 'border': 24, 'length': 64, 'motion': 800, 'filter': 800,
+MAX_PX = {'period': 800, 'level': 800, 'glowcolor': 800, 'ratio': 800, 'chamfer': 10, 'shadow': 100, 'border': 24, 'length': 64, 'motion': 800, 'filter': 800,
           'color': 800, 'image': 800, 'font': 800, 'text': 800}
 
 
@@ -114,10 +128,15 @@ def build():
         if ctx == ('html.dark',) and prop.startswith('--ts-') and val is not None and prop not in defaults:
             defaults[prop] = val
             continue
-        if prop == 'clip-path' and ' '.join(val.split()) in CHAMFER_TEMPLATES:
+        flat = ' '.join(val.split())
+        if prop == 'clip-path' and flat in CHAMFER_TEMPLATES:
             prop = 'chamfer-clip'
+        elif prop == 'animation' and ANIMATION_SHAPE.match(flat):
+            prop = 'motion-layer'
+        elif prop == 'filter' and GLOW_SHAPE.match(flat):
+            prop = 'glow-filter'
         for name in re.findall(r'var\((--ts-[\w-]+)', val):
-            direct.setdefault(name, set()).add(prop)
+            direct.setdefault(name, set()).add('ratio-clip' if prop == 'chamfer-clip' and name.endswith('-rise') else prop)
 
     # A token used by another token's value shares that token's destinations.
     feeds = {t: set(re.findall(r'var\((--ts-[\w-]+)', v)) for t, v in defaults.items()}
@@ -143,6 +162,7 @@ def build():
             else:
                 structural = True
                 why.append(p)
+        kinds |= {k for pat, k in TOKEN_KINDS if pat.match(t)}
         caps = [MAX_PX[k] for k in kinds] + [cap for pat, cap in TOKEN_CAPS if pat.match(t)]
         entry = {'structural': structural,
                  'maxPx': min(caps or [800]),

@@ -58,6 +58,8 @@ function test_ornaments(): void
             'background-position: left top, right top, left bottom, right bottom, left top, right top, left bottom, left top',
             'background-repeat: no-repeat',
             'clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 32px 32px, 32px calc(100% - 32px), calc(100% - 32px) calc(100% - 32px), calc(100% - 32px) 32px, 32px 32px)',
+            'filter: drop-shadow(0 0 8px var(--ts-frame-glow))',
+            'animation: ts-breathe var(--ts-frame-breathe) ease-in-out infinite',
         ],
         "$gate .panel > .panel-heading" => [
             'isolation: isolate',
@@ -78,6 +80,8 @@ function test_ornaments(): void
             'background-repeat: no-repeat',
             'box-shadow: none',
             'border-radius: 0',
+            'filter: drop-shadow(0 0 8px var(--ts-heading-marker-glow))',
+            'animation: ts-breathe var(--ts-heading-marker-breathe) ease-in-out infinite',
         ],
         "$gate .panel > .panel-heading::after" => [
             'content: ""',
@@ -94,6 +98,8 @@ function test_ornaments(): void
             'background-position: var(--ts-heading-strip-position)',
             'background-repeat: var(--ts-heading-strip-repeat)',
             'opacity: var(--ts-heading-strip-opacity)',
+            'filter: drop-shadow(0 0 8px var(--ts-heading-strip-glow))',
+            'animation: ts-breathe var(--ts-heading-strip-breathe) ease-in-out infinite',
         ],
         "$gate .navbar-default" => [
             'isolation: isolate',
@@ -114,6 +120,8 @@ function test_ornaments(): void
             'background-position: left top',
             'background-repeat: var(--ts-navbar-strip-top-repeat)',
             'opacity: var(--ts-navbar-strip-top-opacity)',
+            'filter: drop-shadow(0 0 8px var(--ts-navbar-strip-top-glow))',
+            'animation: ts-breathe var(--ts-navbar-strip-top-breathe) ease-in-out infinite',
         ],
         "$gate .navbar-default::after" => [
             'content: ""',
@@ -132,7 +140,8 @@ function test_ornaments(): void
             'background-repeat: var(--ts-navbar-strip-bottom-repeat)',
             'opacity: var(--ts-navbar-strip-bottom-opacity)',
             'box-shadow: none',
-            'animation: none',
+            'filter: drop-shadow(0 0 8px var(--ts-navbar-strip-bottom-glow))',
+            'animation: ts-breathe var(--ts-navbar-strip-bottom-breathe) ease-in-out infinite',
         ],
         "$gate .grid-stack .grid-stack-item-content" => [
             'background-image: var(--ts-widget-frame-tl), var(--ts-widget-frame-tr), var(--ts-widget-frame-bl), var(--ts-widget-frame-br), var(--ts-widget-frame-top), var(--ts-widget-frame-right), var(--ts-widget-frame-bottom), var(--ts-widget-frame-left), var(--ts-widget-bg-image)',
@@ -141,13 +150,19 @@ function test_ornaments(): void
             'background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat',
         ],
         "$gate .btn" => [
-            'clip-path: polygon(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) 0, calc(100% - var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer))) 0, 100% var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer)), 100% calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))), calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))) 100%, var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) 100%, 0 calc(100% - var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer))), 0 var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)))',
+            'clip-path: polygon(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) 0, calc(100% - var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer))) 0, 100% calc(var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-btn-chamfer-br, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1))), calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))) 100%, var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) 100%, 0 calc(100% - calc(var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1))), 0 calc(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1)))',
         ],
         "$gate .label" => [
-            'clip-path: polygon(var(--ts-label-chamfer-tl, var(--ts-label-chamfer)) 0, calc(100% - var(--ts-label-chamfer-tr, var(--ts-label-chamfer))) 0, 100% var(--ts-label-chamfer-tr, var(--ts-label-chamfer)), 100% calc(100% - var(--ts-label-chamfer-br, var(--ts-label-chamfer))), calc(100% - var(--ts-label-chamfer-br, var(--ts-label-chamfer))) 100%, var(--ts-label-chamfer-bl, var(--ts-label-chamfer)) 100%, 0 calc(100% - var(--ts-label-chamfer-bl, var(--ts-label-chamfer))), 0 var(--ts-label-chamfer-tl, var(--ts-label-chamfer)))',
+            'clip-path: polygon(var(--ts-label-chamfer-tl, var(--ts-label-chamfer)) 0, calc(100% - var(--ts-label-chamfer-tr, var(--ts-label-chamfer))) 0, 100% calc(var(--ts-label-chamfer-tr, var(--ts-label-chamfer)) * var(--ts-label-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-label-chamfer-br, var(--ts-label-chamfer)) * var(--ts-label-chamfer-rise, 1))), calc(100% - var(--ts-label-chamfer-br, var(--ts-label-chamfer))) 100%, var(--ts-label-chamfer-bl, var(--ts-label-chamfer)) 100%, 0 calc(100% - calc(var(--ts-label-chamfer-bl, var(--ts-label-chamfer)) * var(--ts-label-chamfer-rise, 1))), 0 calc(var(--ts-label-chamfer-tl, var(--ts-label-chamfer)) * var(--ts-label-chamfer-rise, 1)))',
         ],
         "$gate .badge" => [
-            'clip-path: polygon(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) 0, calc(100% - var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer))) 0, 100% var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer)), 100% calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))), calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))) 100%, var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) 100%, 0 calc(100% - var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer))), 0 var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)))',
+            'clip-path: polygon(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) 0, calc(100% - var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer))) 0, 100% calc(var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-badge-chamfer-br, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1))), calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))) 100%, var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) 100%, 0 calc(100% - calc(var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1))), 0 calc(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1)))',
+        ],
+        "$gate .badge-navbar-user.badge-danger" => [
+            'animation: ts-glow var(--ts-alert-glow-period) ease-in-out infinite',
+        ],
+        "$gate .panel::before, html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before, html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after, html.dark:has(link[data-ts-orn]) .navbar-default::before, html.dark:has(link[data-ts-orn]) .navbar-default::after, html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger" => [
+            'animation: none',
         ],
     ];
     T::ok('no rule carries the gate that has not been reviewed', array_keys($rules) === array_keys($expected), implode(' | ', array_diff(array_keys($rules), array_keys($expected))));
@@ -176,14 +191,21 @@ function test_ornaments(): void
     }
     $chamferTokens = [];
     foreach (['btn', 'label', 'badge'] as $e) {
-        foreach (['', '-tl', '-tr', '-br', '-bl'] as $k) {
+        foreach (['', '-tl', '-tr', '-br', '-bl', '-rise'] as $k) {
             $chamferTokens[] = "--ts-$e-chamfer$k";
         }
     }
-    $paint = array_merge($slotTokens, $headingTokens, $navTokens, $widgetSlots, $chamferTokens, ['--ts-widget-bg-image']);
+    $motionTokens = ['--ts-breathe-low', '--ts-breathe-high', '--ts-alert-glow-period', '--ts-alert-glow-low', '--ts-alert-glow-high'];
+    $layerNames = ['frame', 'heading-marker', 'heading-strip', 'navbar-strip-top', 'navbar-strip-bottom'];
+    foreach ($layerNames as $n) {
+        $motionTokens[] = "--ts-$n-breathe";
+        $motionTokens[] = "--ts-$n-glow";
+    }
+    $paint = array_merge($slotTokens, $headingTokens, $navTokens, $widgetSlots, $chamferTokens, $motionTokens, ['--ts-widget-bg-image']);
     $read = array_keys($tokenUses);
     sort($read);
-    $want = $paint;
+    // The four the keyframes read (not a gated rule) are checked in the motion group below.
+    $want = array_values(array_diff($paint, ['--ts-breathe-low', '--ts-breathe-high', '--ts-alert-glow-low', '--ts-alert-glow-high']));
     sort($want);
     T::ok('the only tokens the layers read are paint tokens', $read === $want, implode(',', array_diff($read, $want)) . ' / ' . implode(',', array_diff($want, $read)));
     T::ok('the layer is painted behind content (negative z-index)', in_array('z-index: -1', $rules["$gate .panel::before"] ?? [], true));
@@ -242,13 +264,16 @@ function test_ornaments(): void
     T::group('ornaments: cut corners (phase C)');
     foreach ([['btn', '.btn', 10], ['label', '.label', 6], ['badge', '.badge', 6]] as [$e, $sel, $cap]) {
         $c = fn (string $corner) => "var(--ts-$e-chamfer-$corner, var(--ts-$e-chamfer))";
-        $polygon = "polygon({$c('tl')} 0, calc(100% - {$c('tr')}) 0, 100% {$c('tr')}, 100% calc(100% - {$c('br')}), "
-            . "calc(100% - {$c('br')}) 100%, {$c('bl')} 100%, 0 calc(100% - {$c('bl')}), 0 {$c('tl')})";
+        $v = fn (string $corner) => "calc({$c($corner)} * var(--ts-$e-chamfer-rise, 1))";
+        $polygon = "polygon({$c('tl')} 0, calc(100% - {$c('tr')}) 0, 100% {$v('tr')}, 100% calc(100% - {$v('br')}), "
+            . "calc(100% - {$c('br')}) 100%, {$c('bl')} 100%, 0 calc(100% - {$v('bl')}), 0 {$v('tl')})";
         T::ok("the $sel polygon is the fixed template, written out independently", ($rules["$gate $sel"] ?? null) === ["clip-path: $polygon"], json_encode($rules["$gate $sel"] ?? null));
         foreach (['', '-tl', '-tr', '-br', '-bl'] as $k) {
             $t = "--ts-$e-chamfer$k";
             T::ok("$t is settable by upload, in px, capped at {$cap}px", $cat->has($t) && ! $cat->isStructural($t) && $cat->kinds($t) === ['chamfer'] && $cat->maxPx($t) === $cap, json_encode([$cat->kinds($t), $cat->maxPx($t)]));
         }
+        T::ok("--ts-$e-chamfer-rise is settable by upload and is a ratio", $cat->has("--ts-$e-chamfer-rise") && ! $cat->isStructural("--ts-$e-chamfer-rise") && $cat->kinds("--ts-$e-chamfer-rise") === ['ratio']);
+        T::ok("--ts-$e-chamfer-rise defaults to 1 (a 45 degree cut)", str_contains((string) file_get_contents(__DIR__ . '/../base/base.css'), "  --ts-$e-chamfer-rise: 1;\n"));
         T::ok("--ts-$e-clip-path (the raw one the bundled skins use) is still structural", $cat->isStructural("--ts-$e-clip-path"));
     }
     $base = (string) file_get_contents(__DIR__ . '/../base/base.css');
@@ -259,6 +284,15 @@ function test_ornaments(): void
     }
     css_good('Protoss-style cuts: top-left and bottom-right', dark('--ts-bg: #000;', '--ts-btn-chamfer: 0px;', '--ts-btn-chamfer-tl: 8px;', '--ts-btn-chamfer-br: 8px;', '--ts-label-chamfer: 5px;', '--ts-badge-chamfer: 5px;'));
     css_good('every corner of a button at the cap', dark('--ts-bg: #000;', '--ts-btn-chamfer-tl: 10px;', '--ts-btn-chamfer-tr: 10px;', '--ts-btn-chamfer-br: 10px;', '--ts-btn-chamfer-bl: 10px;'));
+    css_good('a 60 degree cut on the bottom-left of buttons, labels and badges', dark('--ts-bg: #000;',
+        '--ts-btn-chamfer: 0px;', '--ts-btn-chamfer-bl: 8px;', '--ts-btn-chamfer-rise: 1.732;',
+        '--ts-label-chamfer: 0px;', '--ts-label-chamfer-bl: 5px;', '--ts-label-chamfer-rise: 1.732;',
+        '--ts-badge-chamfer: 0px;', '--ts-badge-chamfer-bl: 5px;', '--ts-badge-chamfer-rise: 1.732;'));
+    css_good('the ends of the ratio range', dark('--ts-bg: #000;', '--ts-btn-chamfer-rise: 0.5;', '--ts-label-chamfer-rise: 2;', '--ts-badge-chamfer-rise: .577;'));
+    foreach (['0.49', '2.01', '3', '10', '0', '-1', '50%', '1.7321', '1.7px', 'calc(1 + 1)', 'inherit', '1e1'] as $bad) {
+        css_bad("a cut steepness of $bad", dark('--ts-bg: #000;', "--ts-btn-chamfer-rise: $bad;"), 'plain number');
+    }
+    css_bad('a steepness through var()', dark('--ts-bg: #000;', '--p-r: 1.5;', '--ts-btn-chamfer-rise: var(--p-r);'), 'plain number');
     css_bad('a button cut over its cap', dark('--ts-bg: #000;', '--ts-btn-chamfer: 11px;'), 'out of range');
     css_bad('a label cut over its cap', dark('--ts-bg: #000;', '--ts-label-chamfer-tl: 7px;'), 'out of range');
     css_bad('a badge cut over its cap', dark('--ts-bg: #000;', '--ts-badge-chamfer: 12px;'), 'out of range');
@@ -271,6 +305,59 @@ function test_ornaments(): void
     css_bad('a negative cut', dark('--ts-bg: #000;', '--ts-btn-chamfer: -5px;'), 'px');
     css_bad('a keyword cut', dark('--ts-bg: #000;', '--ts-btn-chamfer: inherit;'), 'px');
     css_bad('a raw clip-path token is still closed to uploads', dark('--ts-bg: #000;', '--ts-btn-clip-path: polygon(0 0, 100% 0, 0 100%);'), 'structural');
+
+    T::group('ornaments: motion and glow (phase D)');
+    $css = (string) file_get_contents(__DIR__ . '/../base/base.css');
+    // Every animation in a gated rule is one of two fixed shapes; every filter the fixed drop-shadow.
+    $animated = [];
+    foreach ($rules as $sel => $decls) {
+        foreach ($decls as $d) {
+            if (str_starts_with($d, 'animation:') && $d !== 'animation: none') {
+                T::ok("$sel: the animation is a fixed keyframe and easing with the period as its only token", (bool) preg_match('/^animation: ts-(breathe|glow) var\(--ts-[a-z-]+\) ease-in-out infinite$/', $d), $d);
+                $animated[] = $sel;
+            }
+            if (str_starts_with($d, 'filter:')) {
+                T::ok("$sel: the filter is the fixed 8px drop-shadow with the colour as its only token", (bool) preg_match('/^filter: drop-shadow\(0 0 8px var\(--ts-[a-z-]+-glow\)\)$/', $d), $d);
+            }
+        }
+    }
+    T::ok('five layers breathe and the alert badge pulses', count($animated) === 6, json_encode($animated));
+    $reduced = [];
+    if (preg_match('/@media \(prefers-reduced-motion: reduce\) \{\s*(html\.dark:has\(link\[data-ts-orn\]\)[^{}]*)\{\s*animation: none;\s*\}\s*\}/', $css, $mm)) {
+        foreach (explode(',', $mm[1]) as $one) {
+            $reduced[] = trim(preg_replace('/\s+/', ' ', $one));
+        }
+    }
+    T::ok('a reduced-motion rule turns the animation off, inside @media, for every animated selector', $reduced !== [] && array_diff($animated, $reduced) === [], json_encode([$animated, $reduced]));
+    T::ok('the fade keyframes move opacity and nothing else', (bool) preg_match('/@keyframes ts-breathe \{\s*0%, 100% \{\s*opacity: var\(--ts-breathe-low\);\s*\}\s*50% \{\s*opacity: var\(--ts-breathe-high\);\s*\}\s*\}/', $css));
+    T::ok('the pulse keyframes move box-shadow and nothing else', (bool) preg_match('/@keyframes ts-glow \{\s*0%, 100% \{\s*box-shadow: 0 0 7px var\(--ts-alert-glow-low\);\s*\}\s*50% \{\s*box-shadow: 0 0 16px var\(--ts-alert-glow-high\);\s*\}\s*\}/', $css));
+    foreach ($layerNames as $n) {
+        T::ok("--ts-$n-breathe is a period, settable by upload", $cat->has("--ts-$n-breathe") && ! $cat->isStructural("--ts-$n-breathe") && $cat->kinds("--ts-$n-breathe") === ['period']);
+        T::ok("--ts-$n-glow is a colour, settable by upload", $cat->has("--ts-$n-glow") && ! $cat->isStructural("--ts-$n-glow") && $cat->kinds("--ts-$n-glow") === ['glowcolor']);
+        T::ok("--ts-$n-breathe and -glow default to initial (off)", str_contains($css, "  --ts-$n-breathe: initial;\n") && str_contains($css, "  --ts-$n-glow: initial;\n"));
+    }
+    foreach (['--ts-navbar-after-animation', '--ts-alert-badge-animation', '--ts-btn-clip-path'] as $t) {
+        T::ok("$t (what the bundled skins use) is still structural", $cat->isStructural($t));
+    }
+    css_good('slow fades on the navbar and heading layers', dark('--ts-bg: #000;', '--ts-navbar-strip-bottom-breathe: 6s;', '--ts-heading-marker-breathe: 2s;', '--ts-frame-breathe: 59.5s;', '--ts-heading-strip-breathe: 60s;', '--ts-navbar-strip-top-breathe: 3.25s;', '--ts-breathe-low: .45;', '--ts-breathe-high: 1;'));
+    css_good('the ends of the fade depth', dark('--ts-bg: #000;', '--ts-breathe-low: 0.3;', '--ts-breathe-high: 1.0;'));
+    css_good('glow colours', dark('--ts-bg: #000;', '--ts-frame-glow: #f37c2f;', '--ts-heading-marker-glow: rgba(255, 92, 122, .6);', '--ts-navbar-strip-top-glow: hsl(20 90% 55%);', '--ts-heading-strip-glow: #f37c2f80;', '--ts-navbar-strip-bottom-glow: rgb(1 2 3 / 50%);'));
+    css_good('an alert badge pulse', dark('--ts-bg: #000;', '--ts-alert-glow-period: 3s;', '--ts-alert-glow-low: rgba(255, 92, 122, .5);', '--ts-alert-glow-high: rgba(255, 92, 122, .95);'));
+    foreach (['1.9s', '1s', '0.5s', '100ms', '0s', '61s', '60.5s', '6', '6 s', '6s, 1s', '6s 1s', 'infinite', 'var(--p-t)', 'calc(3s)', '-3s', '6S', '1e1s'] as $bad) {
+        css_bad("a breathe period of $bad", dark('--ts-bg: #000;', '--p-t: 6s;', "--ts-frame-breathe: $bad;"), 'period of 2s to 60s');
+    }
+    css_bad('an alert pulse faster than 2s', dark('--ts-bg: #000;', '--ts-alert-glow-period: 1s;'), 'period of 2s to 60s');
+    foreach (['.29', '0.1', '1.1', '2', '0', '-.5', '50%', 'var(--p-l)', '1e-1'] as $bad) {
+        css_bad("a fade depth of $bad", dark('--ts-bg: #000;', '--p-l: .5;', "--ts-breathe-low: $bad;"), 'from .3 to 1');
+    }
+    foreach (['red', 'currentColor', 'transparent', 'var(--p-c)', '#ff0000, 0 0 90px #00f', 'rgba(255, 0, 0, .5), 0 0 90px blue', '#ff0000 0 0 90px', 'url(a.png)', 'color-mix(in srgb, red, blue)', '#12345', 'rgb(var(--p-c))'] as $bad) {
+        css_bad("a glow colour of $bad", dark('--ts-bg: #000;', '--p-c: #f00, 0 0 90px blue;', "--ts-frame-glow: $bad;"), 'plain colour');
+    }
+    css_bad('a glow colour that closes the function early', dark('--ts-bg: #000;', '--ts-frame-glow: rgb(1, 2, 3)) blur(50px;'));
+    css_bad('an alert glow colour carrying a second shadow', dark('--ts-bg: #000;', '--ts-alert-glow-high: #f00, 0 0 100px 60px #00f;'), 'plain colour');
+    css_bad('an alert glow colour through the palette', dark('--ts-bg: #000;', '--p-c: #f00, 0 0 100px 60px #00f;', '--ts-alert-glow-low: var(--p-c);'), 'plain colour');
+    css_bad('the raw animation token is still closed to uploads', dark('--ts-bg: #000;', '--ts-navbar-after-animation: zg-breathe 1s linear infinite;'), 'structural');
+    css_bad('the raw alert animation token is still closed to uploads', dark('--ts-bg: #000;', '--ts-alert-badge-animation: zg-swell .1s infinite;'), 'structural');
 
     T::group('ornaments: the bundled skins are untouched');
     foreach (glob(__DIR__ . '/../skins/*/skin.css') ?: [] as $file) {

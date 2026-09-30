@@ -136,7 +136,15 @@ RC='/data-ts-orn\]) \.btn {/,/^}/'
 run_with src/Skin/TokenFile.php "s#&& ! preg_match('/^\[0-9\]{1,2}#\&\& false \&\& ! preg_match('/^[0-9]{1,2}#" "chamfer: accept % and em sizes"
 run_with resources/token-catalog.json '/"--ts-btn-chamfer": {/,/}/ s/"maxPx": 10/"maxPx": 800/' "chamfer: no cap on button cuts"
 run_with $B "$RC s/calc(100% - var(--ts-btn-chamfer-tr/calc(50% - var(--ts-btn-chamfer-tr/" "chamfer: a button cut that scales with its width"
+run_with src/Skin/TokenFile.php 's#&& ! preg_match(./^(0?#\&\& false \&\& ! preg_match(\x27/^(0?#' "chamfer: accept any steepness"
 run_with $B 's/--ts-btn-chamfer-tl: initial;/--ts-btn-chamfer-tl: 0px;/' "chamfer: clip every button by default"
+
+RM='/\.panel::before,$/,/^}/'
+run_with src/Skin/TokenFile.php "s#\[2-9\]|\[1-5\]\[0-9\]#[0-9]|[1-5][0-9]#" "motion: allow a period under 2s"
+run_with src/Skin/TokenFile.php "s#\[0-9.%, \\\\/\]{3,40}#[0-9a-z.%, \\\\/()-]{3,200}#" "motion: allow a glow colour to carry a second shadow"
+run_with $B "$RM s/animation: none;/animation: ts-breathe 1s infinite;/" "motion: no reduced-motion rule for the ornament layers"
+run_with $B 's/box-shadow: 0 0 16px var(--ts-alert-glow-high);/box-shadow: 0 0 160px var(--ts-alert-glow-high);/' "motion: a 160px alert glow"
+run_with $B 's/filter: drop-shadow(0 0 8px var(--ts-frame-glow));/filter: drop-shadow(0 0 80px var(--ts-frame-glow));/' "motion: an 80px frame glow"
 
 echo
 echo "caught $CAUGHT, redundant $REDUNDANT, missed $MISSED, not applied $UNAPPLIED"

@@ -101,6 +101,12 @@ corners of buttons, labels and badges. Each has per-corner forms (`-tl`, `-tr`,
   the one polygon that `base.css` writes for these three elements. The
   classifier (`scripts/gen-token-catalog.py`) recognises only that exact
   template; a skin gives sizes, never points.
+* **The angle.** Each cut is a right triangle: `--ts-btn-chamfer-*` is how far
+  it runs along the edge, and `--ts-btn-chamfer-rise` (a plain number from 0.5
+  to 2, default 1) is how far it rises for each unit it runs. 1 is a 45 degree
+  cut; 1.732 makes the hypotenuse 60 degrees from the edge it runs along; 0.577
+  makes it 30. The rise scales the vertical legs, so a button's cut is at most
+  10px across and 20px up, a label's 6px and 12px.
 * **Sizes are small and in px.** At most 10px for buttons and 6px for labels and
   badges, so a cut is a little triangle at a corner and can't reach the text
   (a label's text starts about 8px in from its corner). A size must be written
@@ -114,6 +120,40 @@ corners of buttons, labels and badges. Each has per-corner forms (`-tl`, `-tr`,
   button, so it survives, but a skin that chamfers buttons should keep a
   visible focus style.
 
+## Phase D (built): motion and glow
+
+Three effects, each with its mechanics fixed in `base.css`:
+
+| Effect | Skin gives | Fixed in base.css |
+|---|---|---|
+| **Breathe**: a slow fade in and out of an ornament layer | a period per layer: `--ts-frame-breathe`, `--ts-heading-marker-breathe`, `--ts-heading-strip-breathe`, `--ts-navbar-strip-top-breathe`, `--ts-navbar-strip-bottom-breathe` (2s to 60s); and how deep: `--ts-breathe-low`, `--ts-breathe-high` (.3 to 1) | the keyframes (`opacity` only), the easing, `infinite` |
+| **Glow**: a soft light behind a layer's shape | a plain colour per layer: `--ts-frame-glow`, `--ts-heading-marker-glow`, `--ts-heading-strip-glow`, `--ts-navbar-strip-top-glow`, `--ts-navbar-strip-bottom-glow` | `filter: drop-shadow(0 0 8px colour)` |
+| **Alert pulse**: the navbar's alert badge swelling a glow | `--ts-alert-glow-period` (2s to 60s) and two plain colours, `--ts-alert-glow-low`, `--ts-alert-glow-high` | the keyframes (`box-shadow` only, 7px to 16px) |
+
+The same thinking as the other layers, plus three rules for motion:
+
+* **Never faster than one cycle in two seconds**, and only opacity or a shadow
+  changes, so nothing flashes (WCAG 2.3.1) and nothing moves.
+* **Off under `prefers-reduced-motion`**: one rule in `base.css` turns every one
+  of these animations off, and a test checks that it names every animated
+  selector and sits inside the media query.
+* **Off until set.** Periods and glow colours default to `initial`, which makes
+  the declaration that reads them invalid, so a skin that doesn't use them has no
+  animation and no filter at all.
+
+Why the values are so strict. A glow colour lands inside a `box-shadow` (the
+alert pulse) or a `drop-shadow()`, so a colour that could carry a comma would
+carry a second, enormous shadow: `#f00, 0 0 100px 60px #00f` in a keyframe would
+paint a 100px blot over the navbar's neighbours. So these tokens take exactly one
+literal colour (`#hex`, `rgb()`, `rgba()`, `hsl()`, `hsla()`), never a `var()`
+(a palette value could hold the comma), and the period and fade depth take only
+their own number formats. The generic bounds (a time of at most 5s for uploads)
+don't apply to a period; its own pattern decides.
+
+The classifier treats `animation` and `filter` as structural except in these
+exact shapes, so `--ts-navbar-after-animation`, `--ts-alert-badge-animation` and
+the other tokens the bundled skins use stay closed to uploads.
+
 ## Roadmap to parity with the bundled skins
 
 | Bundled skin does this | With | Status |
@@ -123,10 +163,10 @@ corners of buttons, labels and badges. Each has per-corner forms (`-tl`, `-tr`,
 | Different radius per corner | `--ts-panel-radius-*` | Phase A |
 | Accent bar on a panel heading (all three) | the heading marker | Phase B, built |
 | Rivet / sheen row in a heading (Terran) | the heading strip | Phase B, built |
-| Glow or rivet strips on the navbar's top and bottom edge (all three) | the navbar strips (a *glow*, which is a blur around a shape, comes with Phase D's effects) | Phase B, built |
+| Glow or rivet strips on the navbar's top and bottom edge (all three) | the navbar strips (a glow is Phase D) | Phase B, built |
 | Frames on dashboard widgets | widget frame slots inside the widget's own edge (no overhang: LibreNMS gives widgets uneven gutters and scrolls their contents) | Phase B, built |
 | Cut (chamfered) corners on buttons, labels, badges (Protoss) | `--ts-btn-chamfer` and so on: sizes in px, used in a fixed `clip-path` polygon that base.css writes | Phase C, built. Panels and widgets are not cut: a clip would also trim the frame layers |
-| Animation: a breathing glow, pulse, LED blink (Zerg, Protoss, Terran) | a short list of animations written in base.css, selectable by name, running only on ornament layers, never shorter than 2s, off under `prefers-reduced-motion` | Phase D |
+| Animation: a breathing strip (Zerg), the alert badge pulse (all three) | breathe and alert pulse | Phase D, built. Zerg's badge also scales up 9%; an upload's pulse changes only the glow |
 | Page background (facets, glow) | already possible: `--ts-body-bg-image` takes gradients | done |
 | `hr` height, dropdown submenu offset | not ornaments | stay bundled-only |
 

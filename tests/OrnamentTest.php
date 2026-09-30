@@ -141,13 +141,13 @@ function test_ornaments(): void
             'background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat',
         ],
         "$gate .btn" => [
-            'clip-path: polygon(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) 0, calc(100% - var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer))) 0, 100% var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer)), 100% calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))), calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))) 100%, var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) 100%, 0 calc(100% - var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer))), 0 var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)))',
+            'clip-path: polygon(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) 0, calc(100% - var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer))) 0, 100% calc(var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-btn-chamfer-br, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1))), calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))) 100%, var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) 100%, 0 calc(100% - calc(var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1))), 0 calc(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1)))',
         ],
         "$gate .label" => [
-            'clip-path: polygon(var(--ts-label-chamfer-tl, var(--ts-label-chamfer)) 0, calc(100% - var(--ts-label-chamfer-tr, var(--ts-label-chamfer))) 0, 100% var(--ts-label-chamfer-tr, var(--ts-label-chamfer)), 100% calc(100% - var(--ts-label-chamfer-br, var(--ts-label-chamfer))), calc(100% - var(--ts-label-chamfer-br, var(--ts-label-chamfer))) 100%, var(--ts-label-chamfer-bl, var(--ts-label-chamfer)) 100%, 0 calc(100% - var(--ts-label-chamfer-bl, var(--ts-label-chamfer))), 0 var(--ts-label-chamfer-tl, var(--ts-label-chamfer)))',
+            'clip-path: polygon(var(--ts-label-chamfer-tl, var(--ts-label-chamfer)) 0, calc(100% - var(--ts-label-chamfer-tr, var(--ts-label-chamfer))) 0, 100% calc(var(--ts-label-chamfer-tr, var(--ts-label-chamfer)) * var(--ts-label-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-label-chamfer-br, var(--ts-label-chamfer)) * var(--ts-label-chamfer-rise, 1))), calc(100% - var(--ts-label-chamfer-br, var(--ts-label-chamfer))) 100%, var(--ts-label-chamfer-bl, var(--ts-label-chamfer)) 100%, 0 calc(100% - calc(var(--ts-label-chamfer-bl, var(--ts-label-chamfer)) * var(--ts-label-chamfer-rise, 1))), 0 calc(var(--ts-label-chamfer-tl, var(--ts-label-chamfer)) * var(--ts-label-chamfer-rise, 1)))',
         ],
         "$gate .badge" => [
-            'clip-path: polygon(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) 0, calc(100% - var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer))) 0, 100% var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer)), 100% calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))), calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))) 100%, var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) 100%, 0 calc(100% - var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer))), 0 var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)))',
+            'clip-path: polygon(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) 0, calc(100% - var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer))) 0, 100% calc(var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-badge-chamfer-br, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1))), calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))) 100%, var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) 100%, 0 calc(100% - calc(var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1))), 0 calc(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1)))',
         ],
     ];
     T::ok('no rule carries the gate that has not been reviewed', array_keys($rules) === array_keys($expected), implode(' | ', array_diff(array_keys($rules), array_keys($expected))));
@@ -176,7 +176,7 @@ function test_ornaments(): void
     }
     $chamferTokens = [];
     foreach (['btn', 'label', 'badge'] as $e) {
-        foreach (['', '-tl', '-tr', '-br', '-bl'] as $k) {
+        foreach (['', '-tl', '-tr', '-br', '-bl', '-rise'] as $k) {
             $chamferTokens[] = "--ts-$e-chamfer$k";
         }
     }
@@ -242,13 +242,16 @@ function test_ornaments(): void
     T::group('ornaments: cut corners (phase C)');
     foreach ([['btn', '.btn', 10], ['label', '.label', 6], ['badge', '.badge', 6]] as [$e, $sel, $cap]) {
         $c = fn (string $corner) => "var(--ts-$e-chamfer-$corner, var(--ts-$e-chamfer))";
-        $polygon = "polygon({$c('tl')} 0, calc(100% - {$c('tr')}) 0, 100% {$c('tr')}, 100% calc(100% - {$c('br')}), "
-            . "calc(100% - {$c('br')}) 100%, {$c('bl')} 100%, 0 calc(100% - {$c('bl')}), 0 {$c('tl')})";
+        $v = fn (string $corner) => "calc({$c($corner)} * var(--ts-$e-chamfer-rise, 1))";
+        $polygon = "polygon({$c('tl')} 0, calc(100% - {$c('tr')}) 0, 100% {$v('tr')}, 100% calc(100% - {$v('br')}), "
+            . "calc(100% - {$c('br')}) 100%, {$c('bl')} 100%, 0 calc(100% - {$v('bl')}), 0 {$v('tl')})";
         T::ok("the $sel polygon is the fixed template, written out independently", ($rules["$gate $sel"] ?? null) === ["clip-path: $polygon"], json_encode($rules["$gate $sel"] ?? null));
         foreach (['', '-tl', '-tr', '-br', '-bl'] as $k) {
             $t = "--ts-$e-chamfer$k";
             T::ok("$t is settable by upload, in px, capped at {$cap}px", $cat->has($t) && ! $cat->isStructural($t) && $cat->kinds($t) === ['chamfer'] && $cat->maxPx($t) === $cap, json_encode([$cat->kinds($t), $cat->maxPx($t)]));
         }
+        T::ok("--ts-$e-chamfer-rise is settable by upload and is a ratio", $cat->has("--ts-$e-chamfer-rise") && ! $cat->isStructural("--ts-$e-chamfer-rise") && $cat->kinds("--ts-$e-chamfer-rise") === ['ratio']);
+        T::ok("--ts-$e-chamfer-rise defaults to 1 (a 45 degree cut)", str_contains((string) file_get_contents(__DIR__ . '/../base/base.css'), "  --ts-$e-chamfer-rise: 1;\n"));
         T::ok("--ts-$e-clip-path (the raw one the bundled skins use) is still structural", $cat->isStructural("--ts-$e-clip-path"));
     }
     $base = (string) file_get_contents(__DIR__ . '/../base/base.css');
@@ -259,6 +262,15 @@ function test_ornaments(): void
     }
     css_good('Protoss-style cuts: top-left and bottom-right', dark('--ts-bg: #000;', '--ts-btn-chamfer: 0px;', '--ts-btn-chamfer-tl: 8px;', '--ts-btn-chamfer-br: 8px;', '--ts-label-chamfer: 5px;', '--ts-badge-chamfer: 5px;'));
     css_good('every corner of a button at the cap', dark('--ts-bg: #000;', '--ts-btn-chamfer-tl: 10px;', '--ts-btn-chamfer-tr: 10px;', '--ts-btn-chamfer-br: 10px;', '--ts-btn-chamfer-bl: 10px;'));
+    css_good('a 60 degree cut on the bottom-left of buttons, labels and badges', dark('--ts-bg: #000;',
+        '--ts-btn-chamfer: 0px;', '--ts-btn-chamfer-bl: 8px;', '--ts-btn-chamfer-rise: 1.732;',
+        '--ts-label-chamfer: 0px;', '--ts-label-chamfer-bl: 5px;', '--ts-label-chamfer-rise: 1.732;',
+        '--ts-badge-chamfer: 0px;', '--ts-badge-chamfer-bl: 5px;', '--ts-badge-chamfer-rise: 1.732;'));
+    css_good('the ends of the ratio range', dark('--ts-bg: #000;', '--ts-btn-chamfer-rise: 0.5;', '--ts-label-chamfer-rise: 2;', '--ts-badge-chamfer-rise: .577;'));
+    foreach (['0.49', '2.01', '3', '10', '0', '-1', '50%', '1.7321', '1.7px', 'calc(1 + 1)', 'inherit', '1e1'] as $bad) {
+        css_bad("a cut steepness of $bad", dark('--ts-bg: #000;', "--ts-btn-chamfer-rise: $bad;"), 'plain number');
+    }
+    css_bad('a steepness through var()', dark('--ts-bg: #000;', '--p-r: 1.5;', '--ts-btn-chamfer-rise: var(--p-r);'), 'plain number');
     css_bad('a button cut over its cap', dark('--ts-bg: #000;', '--ts-btn-chamfer: 11px;'), 'out of range');
     css_bad('a label cut over its cap', dark('--ts-bg: #000;', '--ts-label-chamfer-tl: 7px;'), 'out of range');
     css_bad('a badge cut over its cap', dark('--ts-bg: #000;', '--ts-badge-chamfer: 12px;'), 'out of range');

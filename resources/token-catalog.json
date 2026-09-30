@@ -187,6 +187,13 @@
    "maxPx": 6,
    "structural": false
   },
+  "--ts-badge-chamfer-rise": {
+   "kinds": [
+    "ratio"
+   ],
+   "maxPx": 6,
+   "structural": false
+  },
   "--ts-badge-chamfer-tl": {
    "kinds": [
     "chamfer"
@@ -321,6 +328,13 @@
   "--ts-btn-chamfer-br": {
    "kinds": [
     "chamfer"
+   ],
+   "maxPx": 10,
+   "structural": false
+  },
+  "--ts-btn-chamfer-rise": {
+   "kinds": [
+    "ratio"
    ],
    "maxPx": 10,
    "structural": false
@@ -968,6 +982,13 @@
   "--ts-label-chamfer-br": {
    "kinds": [
     "chamfer"
+   ],
+   "maxPx": 6,
+   "structural": false
+  },
+  "--ts-label-chamfer-rise": {
+   "kinds": [
+    "ratio"
    ],
    "maxPx": 6,
    "structural": false

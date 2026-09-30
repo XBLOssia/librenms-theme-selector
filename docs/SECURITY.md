@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 1,337 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (61 flaws caught, 7 documented as
+`php tests/run.php` runs 1,371 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (62 flaws caught, 7 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 Run all of it with `sh dev/test.sh all`.
 
@@ -111,7 +111,7 @@ Full description and roadmap: [ORNAMENTS.md](ORNAMENTS.md).
 | A skin reading a structural token through the layer | The layer may read only the eight paint slots; any other `var()` fails the test | `OrnamentTest`, mutation "read a structural token in the layer" |
 | Loading an image through a slot | Slots are image-kind tokens: gradients only, no `url()`, `image-set()` or escapes (same validator as every other value) | `OrnamentTest`, `evil-frames-url` |
 | The same attacks through the heading, navbar and widget layers | Same fixed mechanics, same pinning: negative z-index in an isolated context, `pointer-events: none`, empty `content`, constant bands (8px / 12px, 8px overhang at the navbar's bottom). Widget frames are the widget's own background layers, so they can't leave it | `OrnamentTest`, five more mutations (heading marker raised, heading strip clickable, navbar strip with text, navbar bottom strip hanging 80px, a 300px widget slot) |
-| Hiding content with a cut corner (`clip-path`) | `clip-path` stays structural except in one polygon written in `base.css`; the classifier recognises only that exact template. A skin supplies sizes: px only (no `%`, `em`, `calc()`, `var()`, bare `0`), at most 10px (buttons) or 6px (labels, badges), so each cut is a small triangle that can't reach the text. Unset, the declaration is invalid and there is no clip | `OrnamentTest` (polygon written out independently; a dozen refused sizes), four mutations (accept `%`/`em`, no button cap, a cut that scales with width, clip by default) |
+| Hiding content with a cut corner (`clip-path`) | `clip-path` stays structural except in one polygon written in `base.css`; the classifier recognises only that exact template. A skin supplies sizes: px only (no `%`, `em`, `calc()`, `var()`, bare `0`), at most 10px (buttons) or 6px (labels, badges), so each cut is a small triangle that can't reach the text. The steepness is a plain number from 0.5 to 2 (vertical legs at most twice the cap). Unset, the declaration is invalid and there is no clip | `OrnamentTest` (polygon written out independently; a dozen refused sizes), four mutations (accept `%`/`em`, no button cap, a cut that scales with width, clip by default) |
 | The layer leaking into bundled skins | Rules are keyed on `data-ts-orn`, which only uploaded skins' links carry | `test-upload.sh` ("a bundled skin's links are not"), `OrnamentTest` |
 
 ### Licence notices

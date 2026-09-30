@@ -351,6 +351,13 @@ final class TokenFile
                     $failed = true;
                     continue;
                 }
+                // The steepness of a cut: a plain number from 0.5 to 2 (1.732 is 60 degrees).
+                if (in_array('ratio', $this->catalog->kinds($name), true)
+                    && ! preg_match('/^(0?\.[5-9][0-9]{0,2}|1(\.[0-9]{1,3})?|2(\.0{1,3})?)$/D', trim($raw))) {
+                    $report->error($where, 'must be a plain number from 0.5 to 2 (1.732 makes a 60 degree cut)');
+                    $failed = true;
+                    continue;
+                }
                 $res = $this->values->validate(
                     $raw,
                     $where,

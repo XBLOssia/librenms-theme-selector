@@ -101,6 +101,12 @@ corners of buttons, labels and badges. Each has per-corner forms (`-tl`, `-tr`,
   the one polygon that `base.css` writes for these three elements. The
   classifier (`scripts/gen-token-catalog.py`) recognises only that exact
   template; a skin gives sizes, never points.
+* **The angle.** Each cut is a right triangle: `--ts-btn-chamfer-*` is how far
+  it runs along the edge, and `--ts-btn-chamfer-rise` (a plain number from 0.5
+  to 2, default 1) is how far it rises for each unit it runs. 1 is a 45 degree
+  cut; 1.732 makes the hypotenuse 60 degrees from the edge it runs along; 0.577
+  makes it 30. The rise scales the vertical legs, so a button's cut is at most
+  10px across and 20px up, a label's 6px and 12px.
 * **Sizes are small and in px.** At most 10px for buttons and 6px for labels and
   badges, so a cut is a little triangle at a corner and can't reach the text
   (a label's text starts about 8px in from its corner). A size must be written

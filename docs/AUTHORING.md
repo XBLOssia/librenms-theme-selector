@@ -185,6 +185,9 @@ navbar's links.
 --ts-badge-chamfer: 5px;
 ```
 
+`--ts-btn-chamfer-rise` sets the angle: 1 (the default) is a 45 degree cut,
+1.732 a 60 degree one, for example `--ts-btn-chamfer-rise: 1.732;` (labels and
+badges have their own `--ts-label-chamfer-rise` and `--ts-badge-chamfer-rise`).
 A size is written in `px` (`0px` for a square corner), at most 10px for buttons
 and 6px for labels and badges. If you set `--ts-btn-chamfer-tl` alone, set
 `--ts-btn-chamfer: 0px` too, or no corner is cut (an unset corner uses the

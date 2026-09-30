@@ -149,7 +149,7 @@ run_with $B 's/filter: drop-shadow(0 0 8px var(--ts-frame-glow));/filter: drop-s
 RP='/data-ts-orn\]) \.panel::after {/,/^}/'
 RG='/data-ts-orn\]) \.grid-stack \.grid-stack-item-content {/,/^}/'
 run_with $B "$RP s/pointer-events: none;/pointer-events: auto;/" "cuts: let the panel corner overlay take clicks"
-run_with $B "$RP s/inset: 0;/inset: -40px;/" "cuts: let the panel corner overlay extend 40px out"
+run_with $B "$RP s/inset: -2px;/inset: -40px;/" "cuts: let the panel corner overlay extend 40px out"
 run_with $B "$RP s/--ts-panel-chamfer, 0px))/--ts-panel, 0px))/" "cuts: drop the panel size fallback chain"
 run_with $B "$RG s/calc(100% + 8px) -8px/calc(100% + 80px) -8px/" "cuts: a widget clip region 80px wider than the widget"
 run_with resources/token-catalog.json '/"--ts-panel-chamfer-bl": {/,/}/ s/"maxPx": 12/"maxPx": 800/' "cuts: no cap on panel cuts"

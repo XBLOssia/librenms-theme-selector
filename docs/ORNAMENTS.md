@@ -170,11 +170,19 @@ the other tokens the bundled skins use stay closed to uploads.
 A panel's cut is four small triangles painted *over* the corners (the panel's
 `::after`, above its content, `pointer-events: none`), not a `clip-path`: a clip
 would also cut off the dropdowns and menus that open past a panel's edge. Each
-triangle is at most 12px by 24px, so it can't reach text (table text starts 8px
+triangle is at most about 14px by 28px, so it can't reach text (table text starts 8px
 in). The sizes fall back to `0px`, never to `auto`, so a missing size can't make
 a triangle cover the panel, and nothing is painted unless the skin sets both a
 size and a colour. The fill is what makes it look cut, so use the page colour; on
 a page with a gradient background the corner will show the flat colour.
+
+**Clean edges (a little slop).** The overlay reaches 2px past the panel's padding
+box, so the triangles also cover the panel's own 1px border (an earlier version
+left a thin line of border running through the cut), and each cut is drawn 2px
+larger than asked for so its edge is clean. That slop is `min(cut * 1000, 2px)`:
+a corner with no cut gets none, and a cut of 12px at rise 1.732 is really about
+14px by 28px. It only covers a border up to 2px wide; a skin with a thicker panel
+border will see the rest of it.
 
 **Widgets** are clipped for real (a widget already hides what overflows it),
 through one polygon written in `base.css`: the widget's box with an 8px margin

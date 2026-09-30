@@ -4,7 +4,7 @@
 #   sh dev/test.sh            unit tests, PHP lint, token catalog check   (default)
 #   sh dev/test.sh mutate     break each defence in turn; each must be caught
 #   sh dev/test.sh live       end-to-end against the running dev instance
-#   sh dev/test.sh all
+#   sh dev/test.sh all        unit, then mutation and live at the same time
 #
 # Run from WSL or Linux with Docker. The unit and mutation runs execute in a
 # throwaway container that is SEALED: the repository is mounted read-only, the
@@ -51,10 +51,28 @@ live() {
   docker exec "$APP" sh /plugin/dev/test-upload.sh
 }
 
+# Unit first (it is fast, and there is no point going on if it fails). Then the mutation check
+# (sealed, in its own container, never touching the dev stack) and the live suites (which use
+# the dev stack) are independent, so they run at the same time; the mutation output is held and
+# printed after the live output so the two don't interleave.
+all() {
+  unit || return 1
+  mfile="$(mktemp)"
+  ( mutate > "$mfile" 2>&1 ) &
+  mpid=$!
+  lrc=0
+  live || lrc=$?
+  mrc=0
+  wait "$mpid" || mrc=$?
+  cat "$mfile"
+  rm -f "$mfile"
+  [ "$lrc" = 0 ] && [ "$mrc" = 0 ]
+}
+
 case "${1:-unit}" in
   unit) unit ;;
   mutate) mutate ;;
   live) live ;;
-  all) unit && mutate && live ;;
+  all) all ;;
   *) echo "usage: sh dev/test.sh [unit|mutate|live|all]" >&2; exit 2 ;;
 esac

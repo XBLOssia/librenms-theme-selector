@@ -8,8 +8,12 @@
 # that the admin gate and CSRF check are in front of the endpoints, that a
 # rejected bundle leaves nothing behind, that what lands in the web root is
 # exactly and only the generated stylesheet, and that removal can't be steered
-# outside the skins directory. It takes about three minutes because the upload
-# route is rate limited (12 a minute) and the test waits out the window.
+# outside the skins directory.
+#
+# The upload route is rate limited per user (12 a minute). Rather than sleep out
+# the window, the uploads are spread over seven extra admins (dev-up1 to dev-up7,
+# created below), each with a bucket of its own; only the test of the limit itself
+# bursts one admin. So the suite takes about a minute and a half, not nine.
 set -u
 
 B=http://127.0.0.1:8000
@@ -30,12 +34,16 @@ get() { curl -s -b "$(jar "$1")" -c "$(jar "$1")" -H "X-Dev-User: $1" "$B$2"; }
 token() { get "$1" /plugin/theme-selector | grep -o 'name="_token" value="[^"]*"' | head -1 | cut -d'"' -f4; }
 text() { sed -e 's/<script[^>]*>[^<]*<\/script>//g' -e 's/<[^>]*>/ /g' | tr -s ' \n' ' '; }
 
-# upload <user> <file> [filename] [content-type]: sets CODE (of the POST) and PAGE (the page after it)
+# upload <user> <file> [filename] [content-type]: sets CODE (of the POST) and PAGE (the page after it).
+# "dev-admin" uploads are spread over dev-up1..7 (see the header) unless PIN_ADMIN is set.
+ROT=0
 upload() {
-  tok="$(token "$1")"
-  CODE="$(curl -s -o /dev/null -w '%{http_code}' -b "$(jar "$1")" -c "$(jar "$1")" -H "X-Dev-User: $1" \
+  who="$1"
+  if [ "$1" = dev-admin ] && [ -z "${PIN_ADMIN:-}" ]; then ROT=$((ROT + 1)); who="dev-up$((ROT % 7 + 1))"; fi
+  tok="$(token "$who")"
+  CODE="$(curl -s -o /dev/null -w '%{http_code}' -b "$(jar "$who")" -c "$(jar "$who")" -H "X-Dev-User: $who" \
     -F "_token=$tok" -F "bundle=@$2;filename=${3:-bundle.zip};type=${4:-application/zip}" $B/plugin/theme-selector/skins)"
-  PAGE="$(get "$1" /plugin/theme-selector | text)"
+  PAGE="$(get "$who" /plugin/theme-selector | text)"
 }
 post() { # user path data -> HTTP code, page in PAGE
   tok="$(token "$1")"
@@ -60,6 +68,14 @@ echo "== setup"
 rm -rf "$FIX"; php /plugin/dev/make-fixtures.php "$FIX" || exit 1
 reset_state
 login dev-admin; login dev-user
+for i in 1 2 3 4 5 6 7; do
+  n="dev-up$i"
+  if [ "$(q "select count(*) from users where username='$n'")" = 0 ]; then
+    (cd /opt/librenms && gosu librenms php lnms user:add --no-interaction -r admin -p "$(head -c 24 /dev/urandom | base64)" "$n" >/dev/null 2>&1)
+    q "update users set auth_type='http-auth' where username='$n'" >/dev/null
+  fi
+  login "$n"
+done
 ADMIN_ID="$(q "select user_id from users where username='dev-admin'")"
 STOCK_GREENS="$(cfg graph_colours.greens)"; STOCK_FONT="$(cfg rrdgraph_def_text_color_dark)"
 TERRAN_SUM="$(sha256sum "$PUB/skins/terran/skin.css" | cut -c1-16)"
@@ -101,16 +117,15 @@ check "none of them installed anything" "$(yes_if "[ \"\$(skin_dirs)\" = \"$BASE
 check "and left no staging directories" "$(yes_if "[ \"\$(leftovers)\" = 0 ]")"
 check "the hostile text is never echoed back as markup" "$(yes_if "! get dev-admin /plugin/theme-selector | grep -q '<script>alert'")"
 
-echo "== waiting out the upload rate limit"
-sleep 62
-
 echo "== a valid bundle"
+PIN_ADMIN=1
 upload dev-admin "$FIX/good-slate.zip" "evil.php" "image/png"
 check "it installs (whatever the client called the file)" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Installed Slate Teal'")"
 check "and shows in the list as an uploaded skin" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Slate Teal' && printf '%s' \"\$PAGE\" | grep -q 'Uploaded'")"
 check "its directory holds exactly one file: skin.css" "$(yes_if "[ \"\$(ls -A $PUB/skins/slate-teal)\" = skin.css ]")"
 check "files are 644 and the directory 755" "$(yes_if "[ \"\$(stat -c %a $PUB/skins/slate-teal/skin.css)\" = 644 ] && [ \"\$(stat -c %a $PUB/skins/slate-teal)\" = 755 ]")"
 check "the registry row records who installed it" "$(yes_if "[ \"\$(q \"select installed_by from theme_selector_skins where id='slate-teal'\")\" = '$ADMIN_ID' ]")"
+PIN_ADMIN=
 CSS="$(curl -s -D /tmp/tsh -H 'X-Dev-User: dev-admin' $B/css/custom/theme-selector/skins/slate-teal/skin.css)"
 check "nginx serves it as text/css" "$(yes_if "grep -qi '^content-type: text/css' /tmp/tsh")"
 check "it is the generated stylesheet (has the header, no url())" "$(yes_if "printf '%s' \"\$CSS\" | head -1 | grep -q 'Theme Selector skin: generated' && ! printf '%s' \"\$CSS\" | grep -qi 'url('")"
@@ -161,9 +176,6 @@ upload dev-admin "$FIX/evil-license-name.zip"
 check "a wrongly named licence file is refused" "$(yes_if "printf '%s' \"\$PAGE\" | grep -qi 'not allowed' && printf '%s' \"\$PAGE\" | grep -q 'was not installed'")"
 check "neither installed anything" "$(yes_if "[ \"\$(q \"select count(*) from theme_selector_skins where id='evil'\")\" = 0 ] && [ ! -e $PUB/skins/evil ]")"
 
-echo "== waiting out the upload rate limit (again)"
-sleep 62
-
 echo "== ornaments: only uploaded skins get the ornament layer"
 upload dev-admin "$FIX/good-frames.zip"
 check "a skin painting frame slots installs" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Installed With Frames'")"
@@ -187,12 +199,6 @@ check "and it keeps its motion tokens in the generated stylesheet" "$(yes_if "gr
 check "a bundled skin's links are not" "$(yes_if "[ \"\$(get dev-user /devices | grep -c 'data-theme-selector')\" = 2 ] && [ \"\$(get dev-user /devices | grep -c 'data-ts-orn')\" = 0 ]")"
 check "and base.css carries the gated layer" "$(yes_if "grep -q 'link\[data-ts-orn\]' $PUB/base.css")"
 
-echo "== waiting out the upload rate limit again"
-sleep 62
-
-echo "== waiting out the upload rate limit (textures)"
-sleep 62
-
 echo "== textures are cleaned, embedded, never served as files"
 upload dev-admin "$FIX/good-texture.zip"
 check "a bundle with a texture installs" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Installed With Texture'")"
@@ -207,9 +213,6 @@ for spec in "evil-texture-php:after its IEND" "evil-texture-svg:not a PNG" "evil
 done
 check "none of them left anything behind" "$(yes_if "[ ! -e $PUB/skins/evil ] && [ \"\$(leftovers)\" = 0 ]")"
 check "the PHP-in-a-PNG text is never echoed back as markup" "$(yes_if "! get dev-admin /plugin/theme-selector | grep -q '<?php'")"
-
-echo "== waiting out the upload rate limit (after textures)"
-sleep 62
 
 echo "== the escape hatch"
 post dev-user /plugin/theme-selector "skin=slate-teal"
@@ -280,8 +283,6 @@ check "a burst of uploads is rate limited (429)" "$(yes_if "[ $n429 -ge 1 ]")"
 
 echo "== what is in the web root, at the end"
 reset_state
-upload_ok=0
-sleep 62
 upload dev-admin "$FIX/good-slate.zip"; upload dev-admin "$FIX/good-font.zip"; upload dev-admin "$FIX/good-graph.zip"
 UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/with-license/skin.css" ! -path "$PUB/skins/with-frames/skin.css" ! -path "$PUB/skins/with-texture/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
 check "only base.css, bundled skins and each uploaded skin's single skin.css exist" "$(yes_if "[ -z '$UNEXPECTED' ]")"

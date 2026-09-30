@@ -3,6 +3,8 @@
 namespace Xblossia\ThemeSelector;
 
 use RuntimeException;
+use Xblossia\ThemeSelector\Skin\PngTexture;
+use Xblossia\ThemeSelector\Skin\Report;
 
 /**
  * Copies the package's base stylesheet and bundled skins into the webroot.
@@ -23,6 +25,7 @@ class SkinPublisher
     /** Files a skin directory may publish, by extension. */
     private const SKIN_FILES = ['css', 'json', 'conf'];
     private const FONT_FILES = ['woff2', 'woff', 'ttf', 'txt'];
+    private const TEXTURE_FILES = ['png'];
 
     public function __construct(
         private readonly string $packageRoot,
@@ -78,7 +81,7 @@ class SkinPublisher
         $skip = fn (string $relative): bool => preg_match('#^skins/([^/]+)/#', $relative, $m) === 1 && in_array($m[1], $uploaded, true);
 
         foreach ($files as $relative => $source) {
-            if ($skip($relative)) {
+            if ($skip($relative) || str_contains($relative, '/textures/')) {
                 continue;
             }
             $this->copy($source, "$this->publicDir/$relative");
@@ -135,6 +138,13 @@ class SkinPublisher
                     $files["skins/$id/fonts/" . basename($file)] = $file;
                 }
             }
+            // Textures are not published as files: they are embedded into skin.css (see copy()). They
+            // are listed here so that changing one changes the fingerprint and republishes the skin.
+            foreach (self::TEXTURE_FILES as $ext) {
+                foreach (glob("$dir/textures/*.$ext") ?: [] as $file) {
+                    $files["skins/$id/textures/" . basename($file)] = $file;
+                }
+            }
         }
 
         ksort($files);
@@ -172,7 +182,30 @@ class SkinPublisher
         if ($contents === false) {
             throw new RuntimeException("cannot read $source");
         }
+        if (basename($source) === 'skin.css') {
+            $contents = $this->embedTextures($contents, dirname($source));
+        }
         $this->write($target, $contents);
+    }
+
+    /**
+     * A bundled skin declares a texture as `--tx-<name>: url("textures/<name>.png");` next to its
+     * skin.css. A url() inside a custom property is resolved against the stylesheet that USES the
+     * variable (base.css), not the one that declares it, so a relative path would point at the wrong
+     * place. So, as for uploaded skins, the published file carries the image itself, as a data: URL,
+     * and the PNG is checked (strictly: a bundled texture must already be clean) on the way.
+     */
+    private function embedTextures(string $css, string $dir): string
+    {
+        return (string) preg_replace_callback('#^  --tx-([a-z0-9][a-z0-9-]{0,40}): url\(\"textures/\1\.png\"\);$#m', function (array $m) use ($dir): string {
+            $bytes = @file_get_contents("$dir/textures/$m[1].png");
+            $checked = $bytes === false ? null : PngTexture::check("textures/$m[1].png", $bytes, new Report(), true);
+            if ($checked === null) {
+                throw new RuntimeException("texture textures/$m[1].png in $dir is missing or not a clean PNG");
+            }
+
+            return "  --tx-$m[1]: url(\"data:image/png;base64," . base64_encode($checked['png']) . '");';
+        }, $css);
     }
 
     /**

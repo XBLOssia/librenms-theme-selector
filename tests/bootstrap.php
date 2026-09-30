@@ -167,3 +167,71 @@ function fake_font(string $magic = 'wOF2', int $size = 200, string $fill = "\x01
 
     return $header . str_repeat($fill, $size - 48);
 }
+
+
+/** One PNG chunk. $badCrc corrupts the checksum. */
+function png_chunk(string $type, string $data, bool $badCrc = false): string
+{
+    $crc = crc32($type . $data) & 0xFFFFFFFF;
+
+    return pack('N', strlen($data)) . $type . $data . pack('N', $badCrc ? $crc ^ 0x1 : $crc);
+}
+
+/**
+ * Filtered scanlines for a $w x $h image: every row starts with filter byte 0, and
+ * the pixels are a cheap repeating pattern (so it compresses) unless $noise.
+ */
+function png_raw(int $w, int $h, int $type = 6, int $depth = 8, bool $noise = false): string
+{
+    $channels = [0 => 1, 2 => 3, 3 => 1, 4 => 2, 6 => 4][$type];
+    $rowBytes = intdiv($w * $channels * $depth + 7, 8);
+    $raw = '';
+    for ($y = 0; $y < $h; $y++) {
+        $row = '';
+        for ($x = 0; $x < $rowBytes; $x++) {
+            $row .= $noise ? chr(mt_rand(0, 255)) : chr((($x * 7 + $y * 3) >> 2) & ($type === 3 ? (1 << $depth) - 1 : 255));
+        }
+        $raw .= "\0" . $row;
+    }
+
+    return $raw;
+}
+
+/**
+ * A PNG, built to order. Options: w, h, type, depth, interlace, compression, filter,
+ * palette (bytes), trns (bytes), raw (override the scanlines), idat (override the
+ * compressed stream), before / between / after (extra chunks, as [type, data, badCrc?]),
+ * skipIend, tail (bytes after the end), noise.
+ */
+function png_build(array $o = []): string
+{
+    $w = $o['w'] ?? 64;
+    $h = $o['h'] ?? 64;
+    $type = $o['type'] ?? 6;
+    $depth = $o['depth'] ?? 8;
+    $ihdr = pack('NNCCCCC', $w, $h, $depth, $type, $o['compression'] ?? 0, $o['filter'] ?? 0, $o['interlace'] ?? 0);
+    $palette = array_key_exists('palette', $o) ? $o['palette'] : ($type === 3 ? implode('', array_map(fn ($i) => chr($i * 16 % 256) . chr($i * 8 % 256) . chr($i * 4 % 256), range(0, (1 << $depth) - 1 > 15 ? 15 : (1 << $depth) - 1))) : null);
+    $raw = $o['raw'] ?? png_raw($w, $h, $type, $depth, $o['noise'] ?? false);
+    $idat = $o['idat'] ?? gzcompress($raw, 9);
+    $extra = fn (string $k) => implode('', array_map(fn ($c) => png_chunk($c[0], $c[1], $c[2] ?? false), $o[$k] ?? []));
+
+    $out = "\x89PNG\r\n\x1a\n" . png_chunk('IHDR', $ihdr, $o['badIhdrCrc'] ?? false) . $extra('before');
+    if ($palette !== null) {
+        $out .= png_chunk('PLTE', $palette);
+    }
+    if (isset($o['trns'])) {
+        $out .= png_chunk('tRNS', $o['trns']);
+    }
+    if (isset($o['between'])) {
+        $half = intdiv(strlen($idat), 2);
+        $out .= png_chunk('IDAT', substr($idat, 0, $half)) . $extra('between') . png_chunk('IDAT', substr($idat, $half));
+    } else {
+        $out .= png_chunk('IDAT', $idat);
+    }
+    $out .= $extra('after');
+    if (empty($o['skipIend'])) {
+        $out .= png_chunk('IEND', $o['iendData'] ?? '');
+    }
+
+    return $out . ($o['tail'] ?? '');
+}

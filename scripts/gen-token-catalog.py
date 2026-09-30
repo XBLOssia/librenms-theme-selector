@@ -73,6 +73,9 @@ GLOW_SHAPE = re.compile(r'^drop-shadow\(0 0 8px var\((--ts-[\w-]+)\)\)$')
 KINDS['motion-layer'] = 'period'
 KINDS['glow-filter'] = 'glowcolor'
 # Tokens the keyframes read, which need a stricter grammar than their property's.
+# A page background is drawn at the size of the texture it tiles (up to 256px, or 2x that to show
+# a 2x image at half size), so its size and position may exceed the general 64px cap.
+TOKEN_MAX = [(re.compile(r'^--ts-body-bg-(size|position)$'), 512)]
 TOKEN_KINDS = [(re.compile(r'^--ts-(panel|widget)-chamfer(-tl|-tr|-br|-bl)?$'), 'chamfer'),
                (re.compile(r'^--ts-(panel|widget)-chamfer-rise$'), 'ratio'),
                (re.compile(r'^--ts-(panel-cut-(fill|stroke)|widget-cut-stroke)$'), 'glowcolor'),
@@ -184,8 +187,12 @@ def build():
                 why.append(p)
         kinds |= {k for pat, k in TOKEN_KINDS if pat.match(t)}
         caps = [MAX_PX[k] for k in kinds] + [cap for pat, cap in TOKEN_CAPS if pat.match(t)]
+        max_px = min(caps or [800])
+        for pat, px in TOKEN_MAX:
+            if pat.match(t):
+                max_px = px
         entry = {'structural': structural,
-                 'maxPx': min(caps or [800]),
+                 'maxPx': max_px,
                  'kinds': sorted(kinds)}
         if structural:
             entry['why'] = why

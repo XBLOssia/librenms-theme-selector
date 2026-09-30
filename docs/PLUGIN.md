@@ -170,6 +170,7 @@ host's nginx config has not been checked.
   skin.css         the token file (below)
   fonts/           optional .woff2 files
   LICENSE.txt      optional licence notice (stored, shown to admins, never served)
+  textures/        optional .png tiles (cleaned and embedded; never served as files)
   graph.json       optional graph palette (instance-wide in v1)
 ```
 
@@ -213,7 +214,7 @@ per-skin raw CSS escape hatch.
 As built (2026-09-29; the design here originally allowed `.ttf` and `.txt`
 and extracted files, and neither survived a threat model): the reader parses the
 zip itself, extracts nothing, and accepts only `skin.json`, `skin.css`,
-`graph.conf`, `LICENSE.txt` and `fonts/<slug>.woff2|woff` by exact name. Fonts are embedded in
+`graph.conf`, `LICENSE.txt`, `fonts/<slug>.woff2|woff` and `textures/<slug>.png` by exact name. Fonts are embedded in
 the generated stylesheet, so no uploaded file is served as a file. The full
 list of controls, each with the test that would notice it breaking, is
 [SECURITY.md](SECURITY.md); the format is [AUTHORING.md](AUTHORING.md).

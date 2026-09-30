@@ -245,6 +245,9 @@ function skin_files(string $id): array
     foreach (glob("$dir/fonts/*.woff2") ?: [] as $f) {
         $files['fonts/' . basename($f)] = file_get_contents($f);
     }
+    foreach (glob("$dir/textures/*.png") ?: [] as $f) {
+        $files['textures/' . basename($f)] = file_get_contents($f);
+    }
 
     return $files;
 }

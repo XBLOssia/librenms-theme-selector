@@ -120,7 +120,9 @@ php artisan route:cache
 
 Licence notices (an optional `LICENSE.txt` in a bundle) add a `license_text`
 column to `theme_selector_skins`. Run `php artisan migrate --force` after
-updating; until it has run, uploads fail.
+updating; until it has run, uploads fail. Textures add a `textures` column the
+same way; an upload still installs before that migration has run, and only the
+texture list on the admin page is missing.
 
 The upload page shipped this way: it added the `theme_selector_skins` table and
 three routes. Until `route:cache` is re-run, the admin section of the picker

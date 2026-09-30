@@ -11,6 +11,7 @@ my-skin/
   graph.conf       optional: graph colours
   fonts/           optional: .woff2 or .woff files skin.css refers to
   LICENSE.txt      optional: a licence notice, shown to admins
+  textures/        optional: repeating .png tiles skin.css declares
 ```
 
 Pack, check, upload:
@@ -110,6 +111,54 @@ stylesheet, so your files are not served as files.
 (the bundled skins use SIL Open Font License faces), say so in `license`, and
 include the licence text as `LICENSE.txt` (below), which most font licences
 (the OFL among them) require you to keep with the font.
+
+### Textures
+
+A texture is a small PNG that repeats across a background: cellular tissue, brushed
+metal, a fine weave. Put it in `textures/`, declare it in `skin.css` the way a font
+is declared, and use it as a value in an image token:
+
+```css
+html.dark {
+  --tx-creep: url("textures/creep.png");               /* declare: name and file match */
+  --ts-body-bg-image: var(--tx-creep), linear-gradient(175deg, #0c070d, #170c17);
+  --ts-body-bg-size: 256px 256px, auto;                /* optional: draw the tile smaller or larger */
+}
+```
+
+* **Format.** PNG only: not interlaced, not animated, 8 bits per channel (greyscale
+  may be 1, 2, 4 or 8 bits, and a palette image any depth up to 8), at most
+  **256 x 256 px**. Non-square is fine. No JPEG, GIF, WebP or SVG.
+* **Size.** At most **64 KB once cleaned**, 4 textures, 128 KB altogether. A palette
+  (indexed) image or greyscale with alpha is usually far smaller than RGBA; a
+  256 x 256 tile of soft detail is often 10 to 40 KB.
+* **Names.** The file is `textures/<name>.png`, the name is lowercase letters,
+  digits and hyphens (up to 41 characters), and the declaration is exactly
+  `--tx-<name>: url("textures/<name>.png");` with the same name. Every file must be
+  declared and every declaration used.
+* **Where it goes.** A texture can be used by any **image token** (the ones that take
+  gradients: `--ts-body-bg-image`, `--ts-panel-bg-image`, `--ts-widget-bg-image`,
+  `--ts-btn-default-bg-image`, the frame and strip slots...), directly or through a
+  `--p-*` palette entry. In a colour or a font it is an error.
+* **Size and position of the page background.** `--ts-body-bg-size`,
+  `--ts-body-bg-position` and `--ts-body-bg-repeat` take one value per layer in
+  `--ts-body-bg-image`, in order (`auto` for a gradient that fills the page). Size and
+  position may be up to 512px, so a 256px image can be shown at 2x. Other
+  backgrounds draw the image at its own size.
+* **Make it seamless.** The check can't tell whether a tile repeats cleanly, so
+  export one that does: every edge should continue into the opposite edge. Keep
+  contrast low behind text.
+* **Export plain.** Tools write colour profiles, gamma, text and EXIF into a PNG.
+  Those are dropped, not kept, which can change colours slightly (save as sRGB).
+* **Licence.** Say where the image came from. A texture you did not make needs the
+  same licence notice as a font (`LICENSE.txt`).
+
+What is served is not your file: the plugin reads the PNG itself (no image library),
+checks every chunk, checksum and row, and writes a clean copy, which it embeds in the
+generated stylesheet as a `data:` URL. Nothing you upload is ever a file on the
+server. `docs/ORNAMENTS.md` has more on what a skin can draw; the bundled Zerg skin's
+`textures/creep.png` is a worked example, and `scripts/make-creep.py` shows how a
+tile can be generated so that it repeats.
 
 ## LICENSE.txt
 

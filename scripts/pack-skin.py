@@ -10,6 +10,8 @@ The directory holds exactly:
     graph.conf    optional   graph colour palette
     LICENSE.txt   optional   licence notice for the fonts (stored and shown to admins, never served)
     fonts/*.woff2 optional   the fonts skin.css refers to (also .woff)
+    textures/*.png optional  repeating background tiles, declared in skin.css as
+                             --tx-<name>: url("textures/<name>.png"); (at most 4, 256x256 px each)
 
 Anything else in the directory is an error, not silently skipped: the upload
 page rejects a bundle with any other entry, and it is better to hear about it
@@ -25,9 +27,10 @@ import re
 import sys
 import zipfile
 
-NAME = re.compile(r'^(skin\.json|skin\.css|graph\.conf|LICENSE\.txt|fonts/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.(woff2|woff))$')
+NAME = re.compile(r'^(skin\.json|skin\.css|graph\.conf|LICENSE\.txt|fonts/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.(woff2|woff)|textures/[a-z0-9][a-z0-9-]{0,40}\.png)$')
 LIMITS = {'skin.json': 4096, 'skin.css': 98304, 'graph.conf': 8192, 'LICENSE.txt': 20480}
 FONT_LIMIT = 409600
+TEXTURE_LIMIT = 262144
 
 
 def die(msg):
@@ -58,9 +61,9 @@ def main(argv):
     problems = []
     for rel, full in entries:
         if not NAME.match(rel):
-            problems.append(f'{rel}: not allowed in a skin bundle (allowed: skin.json, skin.css, graph.conf, LICENSE.txt, fonts/*.woff2, fonts/*.woff)')
+            problems.append(f'{rel}: not allowed in a skin bundle (allowed: skin.json, skin.css, graph.conf, LICENSE.txt, fonts/*.woff2, fonts/*.woff, textures/*.png)')
             continue
-        limit = LIMITS.get(rel, FONT_LIMIT)
+        limit = LIMITS.get(rel, TEXTURE_LIMIT if rel.startswith('textures/') else FONT_LIMIT)
         if os.path.getsize(full) > limit:
             problems.append(f'{rel}: larger than {limit} bytes')
         if os.path.islink(full):
@@ -71,6 +74,8 @@ def main(argv):
             problems.append(f'{required} is missing')
     if len([n for n in names if n.startswith('fonts/')]) > 8:
         problems.append('more than 8 fonts')
+    if len([n for n in names if n.startswith('textures/')]) > 4:
+        problems.append('more than 4 textures')
     if problems:
         print('Not packed:', file=sys.stderr)
         for p in problems:

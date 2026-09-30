@@ -11,7 +11,9 @@ namespace Xblossia\ThemeSelector\Skin;
  *     html.dark { --ts-name: value; --p-name: value; ... }
  *     @font-face { font-family: "Name"; src: url("fonts/file.woff2") format("woff2"); ... }
  *
- * and nothing else: no other selector, no other at-rule, no property that
+ * plus, inside html.dark, one `--tx-<name>: url("textures/<name>.png");` per
+ * texture (a small repeating PNG that the skin then uses as var(--tx-<name>) in
+ * an image token, as in --ts-body-bg-image), and nothing else: no other selector, no other at-rule, no property that
  * isn't a custom property, no comment inside a value. That leaves a skin no way
  * to reach an element, only to supply values to hooks the base stylesheet
  * already exposes.
@@ -19,8 +21,8 @@ namespace Xblossia\ThemeSelector\Skin;
  * WHAT IS SERVED IS NEVER WHAT WAS UPLOADED. The file is scanned by a
  * character-level reader (not a regex over the whole file), every value goes
  * through ValueValidator, and the stylesheet is then re-emitted from the parsed
- * result. Fonts are embedded in it as base64 data: URLs, so no uploaded byte
- * is ever a file in the web root. The output is then checked once more by
+ * result. Fonts and textures are embedded in it as base64 data: URLs (textures
+ * re-written by PngTexture), so no uploaded byte is ever a file in the web root. The output is then checked once more by
  * OutputGuard, so a bug here still can't publish something the rules forbid.
  *
  * Names:
@@ -45,12 +47,13 @@ final class TokenFile
 
     /**
      * @param  array<string, string>  $fonts  file name (as in the bundle, "fonts/x.woff2") => bytes, already checked by FontFile
+     * @param  array<string, array{png: string, width: int, height: int}>  $textures  file name ("textures/x.png") => the cleaned PNG, already checked by PngTexture
      * @return string|null  the stylesheet to serve, or null (see $report)
      */
-    public function compile(string $css, array $fonts, Report $report): ?string
+    public function compile(string $css, array $fonts, Report $report, array $textures = []): ?string
     {
         $local = new Report();
-        $out = $this->run($css, $fonts, $local);
+        $out = $this->run($css, $fonts, $local, $textures);
         $report->merge($local);
 
         return $local->ok() ? $out : null;
@@ -58,8 +61,9 @@ final class TokenFile
 
     /**
      * @param  array<string, string>  $fonts
+     * @param  array<string, array{png: string, width: int, height: int}>  $textures
      */
-    private function run(string $css, array $fonts, Report $report): ?string
+    private function run(string $css, array $fonts, Report $report, array $textures): ?string
     {
         if (strlen($css) > Limits::CSS_BYTES) {
             $report->error('skin.css', 'is larger than ' . Limits::CSS_BYTES . ' bytes');
@@ -90,7 +94,7 @@ final class TokenFile
             return null;
         }
 
-        $decls = $this->declarations($root, $report);
+        $decls = $this->declarations($root, $textures, $report);
         $fontCss = $this->fontFaces($faces, $fonts, $report);
         if ($decls !== null && $report->ok() && ! array_filter(array_keys($decls), fn ($n) => str_starts_with($n, '--ts-'))) {
             $report->error('skin.css', 'sets no --ts-* tokens, so it would change nothing');
@@ -114,7 +118,7 @@ final class TokenFile
 
             return null;
         }
-        if ($this->mode === Mode::Upload && ! OutputGuard::safe($out, count($fontCss))) {
+        if ($this->mode === Mode::Upload && ! OutputGuard::safe($out, count($fontCss), count($textures))) {
             $report->error('skin.css', 'failed the final safety check (this is a bug; please report it)');
 
             return null;
@@ -300,11 +304,13 @@ final class TokenFile
 
     /**
      * @param  array<int, array{0: string, 1: string, 2: int}>  $root
+     * @param  array<string, array{png: string, width: int, height: int}>  $textures
      * @return array<string, string>|null  name => canonical value, in source order
      */
-    private function declarations(array $root, Report $report): ?array
+    private function declarations(array $root, array $textures, Report $report): ?array
     {
         $upload = $this->mode === Mode::Upload;
+        $declared = [];      // --tx-* name => true
         $out = [];
         $refs = [];          // name => var() names it uses
         $private = [];       // --p-* name => largest px length in its value
@@ -316,6 +322,34 @@ final class TokenFile
             if (isset($out[$name])) {
                 $report->error($where, 'is set more than once');
                 $failed = true;
+                continue;
+            }
+
+            if (str_starts_with($name, '--tx-')) {
+                // A texture: --tx-<name>: url("textures/<name>.png"), nothing else. The file must
+                // be in the bundle; what is served is its cleaned re-write, embedded.
+                $slug = substr($name, 5);
+                if (! preg_match('/^[a-z0-9][a-z0-9-]{0,40}\z/D', $slug)) {
+                    $report->error($where, 'is not a valid texture name (lowercase letters, digits and hyphens)');
+                    $failed = true;
+                    continue;
+                }
+                if (! preg_match('#^url\(\s*(["\'])textures/([a-z0-9][a-z0-9-]{0,40})\.png\1\s*\)\z#D', trim($raw), $um) || $um[2] !== $slug) {
+                    $report->error($where, 'must be exactly url("textures/' . $slug . '.png"), with the same name');
+                    $failed = true;
+                    continue;
+                }
+                $file = "textures/$slug.png";
+                if (! isset($textures[$file])) {
+                    $report->error($where, 'refers to ' . Report::quote($file) . ', which is not in the bundle');
+                    $failed = true;
+                    continue;
+                }
+                $declared[$name] = true;
+                $out[$name] = $this->mode === Mode::Upload
+                    ? 'url("data:image/png;base64,' . base64_encode($textures[$file]['png']) . '")'
+                    : 'url("' . $file . '")';
+                $refs[$name] = [];
                 continue;
             }
 
@@ -414,9 +448,11 @@ final class TokenFile
         // isn't structural); palette entries may not loop.
         foreach ($refs as $name => $vars) {
             foreach ($vars as $var) {
-                $ok = str_starts_with($var, '--p-')
-                    ? isset($private[$var])
-                    : $this->catalog->has($var) && ! ($upload && $this->catalog->isStructural($var));
+                $ok = match (true) {
+                    str_starts_with($var, '--p-') => isset($private[$var]),
+                    str_starts_with($var, '--tx-') => isset($declared[$var]),
+                    default => $this->catalog->has($var) && ! ($upload && $this->catalog->isStructural($var)),
+                };
                 if (! $ok) {
                     $report->error(Report::quote($name), 'refers to ' . Report::quote($var) . ', which is not defined or not allowed');
                     $failed = true;
@@ -432,6 +468,43 @@ final class TokenFile
 
                 return null;
             }
+        }
+
+        // Textures: each file must be declared, each declared texture used, and only by an
+        // image token (a texture in a colour or a font would just be an invalid value, but
+        // say so rather than carry it).
+        foreach (array_keys($textures) as $file) {
+            $tn = '--tx-' . substr($file, 9, -4);
+            if (! isset($declared[$tn])) {
+                $report->error('bundle', Report::quote($file) . ' is not declared by ' . Report::quote($tn) . ': url("' . $file . '")');
+                $failed = true;
+            }
+        }
+        $used = [];
+        foreach ($refs as $name => $vars) {
+            if (! str_starts_with($name, '--ts-')) {
+                continue;
+            }
+            foreach ($this->textureClosure($vars, $refs) as $tx) {
+                $used[$tx] = true;
+                if (! in_array('image', $this->catalog->kinds($name), true)) {
+                    $report->error(Report::quote($name), 'uses the texture ' . Report::quote($tx) . ', but only image tokens (such as --ts-body-bg-image) can take a texture');
+                    $failed = true;
+                }
+            }
+        }
+        foreach (array_keys($declared) as $tn) {
+            if (! isset($used[$tn])) {
+                $report->error(Report::quote($tn), 'is declared but no token uses it');
+                $failed = true;
+            }
+        }
+        if (count($declared) > Limits::TEXTURES) {
+            $report->error('skin.css', 'declares more than ' . Limits::TEXTURES . ' textures');
+            $failed = true;
+        }
+        if ($failed) {
+            return null;
         }
 
         // A palette entry is only bounded at 800px on its own. Where a token
@@ -472,6 +545,31 @@ final class TokenFile
         }
 
         return false;
+    }
+
+    /**
+     * Every --tx-* name reachable from a list of var() names, directly or through palette entries.
+     *
+     * @param  string[]  $vars
+     * @param  array<string, string[]>  $refs
+     * @return string[]
+     */
+    private function textureClosure(array $vars, array $refs): array
+    {
+        $seen = [];
+        $found = [];
+        $queue = $vars;
+        while ($queue !== []) {
+            $v = array_pop($queue);
+            if (str_starts_with($v, '--tx-')) {
+                $found[$v] = true;
+            } elseif (str_starts_with($v, '--p-') && ! isset($seen[$v])) {
+                $seen[$v] = true;
+                array_push($queue, ...($refs[$v] ?? []));
+            }
+        }
+
+        return array_keys($found);
     }
 
     /**

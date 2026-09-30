@@ -23,6 +23,13 @@ final class Limits
     public const FONT_BYTES = 409_600;
     public const FONTS = 8;
     public const FONT_FACES = 12;
+    /** A texture as uploaded (before it is cleaned and re-written). */
+    public const TEXTURE_INPUT_BYTES = 262_144;
+    /** A texture once re-written: what is embedded in the stylesheet. */
+    public const TEXTURE_BYTES = 65_536;
+    public const TEXTURES = 4;
+    /** All of a skin's textures, re-written. */
+    public const TEXTURES_TOTAL = 131_072;
 
     /** Custom-property declarations in one token file. */
     public const DECLARATIONS = 500;

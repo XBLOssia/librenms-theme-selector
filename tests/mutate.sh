@@ -80,7 +80,7 @@ run_with $T "s/if (! isset(\$fonts\[\$file\])) {/if (false) {/" "allow fonts tha
 run_with $F "s/if (\$h\['length'\] !== \$len) {/if (false) {/" "skip the font declared-length check"
 run_with $F "s/if (substr(\$bytes, 0, 4) !== \$magic) {/if (false) {/" "skip the font signature check"
 run_with $F "s/if (stripos(\$bytes, '<?php') !== false/if (false \&\& stripos(\$bytes, '<?php') !== false/" "skip the PHP-in-font scan"
-run_with $G "s/if (substr_count(strtolower(\$css), 'url(') !== \$fonts) {/if (false) {/" "guard: ignore stray url("
+run_with $G "s/if (substr_count(strtolower(\$css), 'url(') !== \$fonts + \$textures) {/if (false) {/" "guard: ignore stray url("
 run_with $G "s/foreach (\['<', '>', /foreach ([/" "guard: allow angle brackets"
 run_with $M "s/} elseif (in_array(\$id, self::RESERVED_IDS, true)) {/} elseif (false) {/" "allow reserved skin ids"
 run_with $M "s/if (\$modes !== \['dark'\]) {/if (false) {/" "allow non-dark modes"
@@ -154,6 +154,24 @@ run_with $B "$RP s/--ts-panel-chamfer, 0px))/--ts-panel, 0px))/" "cuts: drop the
 run_with $B "$RG s/calc(100% + 8px) -8px/calc(100% + 80px) -8px/" "cuts: a widget clip region 80px wider than the widget"
 run_with resources/token-catalog.json '/"--ts-panel-chamfer-bl": {/,/}/ s/"maxPx": 12/"maxPx": 800/' "cuts: no cap on panel cuts"
 run_with $B 's/html.dark .panel\[class\*="tw:rounded"\] {/html.dark .panel[class*="tw:roundedx"] {/' "cuts: radius tokens no longer reach tw:rounded panels"
+
+X=src/Skin/PngTexture.php
+run_with $X 's#if (\$crc !== (crc32(\$type \. \$data) \& 0xFFFFFFFF)) {#if (false) {#' "png: skip the chunk checksum"
+run_with $X "s#if (\$h\['interlace'\] !== 0) {#if (false) {#" "png: accept interlaced images"
+run_with $X 's#if (strlen(\$out) > Limits::TEXTURE_BYTES) {#if (false) {#' "png: no size limit once cleaned"
+run_with $X 's#if (\$ended) {#if (false) {#' "png: accept data after IEND"
+run_with $X 's#if (strlen(\$out) > \$want) {#if (false) {#' "png: do not stop a decompression bomb early"
+run_with $X 's#if (\$strict) {#if (false) {#' "png: accept metadata in a strict (bundled) texture"
+run_with $X "s#case 'acTL':#case 'acTLx':#" "png: accept an animated PNG"
+run_with $X 's#\$w > self::MAX_SIDE || \$ht > self::MAX_SIDE#false#' "png: no size limit on the image"
+run_with $X 's#if (\$type === 3 \&\& \$palette === null) {#if (false) {#' "png: accept a palette image with no palette"
+run_with $X "s#if (ord(\$raw\[\$row \* (\$rowBytes + 1)\]) > 4) {#if (false) {#" "png: accept an invalid row filter"
+run_with src/Skin/TokenFile.php 's#if (! isset(\$used\[\$tn\])) {#if (false) {#' "texture: allow a texture nothing uses"
+run_with src/Skin/TokenFile.php "s#if (! in_array('image', \$this->catalog->kinds(\$name), true)) {#if (false) {#" "texture: allow a texture in a non-image token"
+run_with src/Skin/TokenFile.php 's# || \$um\[2\] !== \$slug##' "texture: allow a name that differs from its file"
+run_with src/Skin/OutputGuard.php "s#|| PngTexture::check('texture', \$png, new Report(), true) === null#|| false#" "guard: do not re-check the embedded PNG"
+run_with src/Skin/ZipBundleReader.php 's#|textures/\[a-z0-9\]\[a-z0-9-\]{0,40}\\.png##' "zip: textures/*.png is not an allowed entry"
+run_with src/Skin/Limits.php 's#TEXTURE_BYTES = 65_536#TEXTURE_BYTES = 6_553_600#' "texture: no limit on a cleaned texture's size"
 
 echo
 echo "caught $CAUGHT, redundant $REDUNDANT, missed $MISSED, not applied $UNAPPLIED"

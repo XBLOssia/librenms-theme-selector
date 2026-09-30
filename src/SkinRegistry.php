@@ -3,6 +3,7 @@
 namespace Xblossia\ThemeSelector;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 use Xblossia\ThemeSelector\Skin\CompiledSkin;
 
@@ -34,6 +35,8 @@ class SkinRegistry
             foreach (DB::table(self::TABLE)->orderBy('name')->get() as $row) {
                 $row = (array) $row;
                 $row['graph'] = $row['graph'] === null ? [] : json_decode((string) $row['graph'], true);
+                $tex = isset($row['textures']) ? json_decode((string) $row['textures'], true) : [];
+                $row['textures'] = is_array($tex) ? $tex : [];
                 $rows[$row['id']] = $row;
             }
 
@@ -67,6 +70,10 @@ class SkinRegistry
             'installed_by' => $installedBy,
             'updated_at' => $now,
         ];
+        // Added by a later migration: an update that hasn't run it yet still installs skins.
+        if (Schema::hasColumn(self::TABLE, 'textures')) {
+            $fields['textures'] = $skin->textures === [] ? null : json_encode($skin->textures);
+        }
         if (DB::table(self::TABLE)->where('id', $m['id'])->exists()) {
             DB::table(self::TABLE)->where('id', $m['id'])->update($fields);
         } else {

@@ -88,6 +88,14 @@
                         <td>
                             {{ $skin['source'] === 'bundled' ? 'Bundled' : 'Uploaded' }}
                             @if(! empty($skin['license']))<span class="text-muted">({{ $skin['license'] }})</span>@endif
+                            @if(! empty($skin['textures']))
+                                <div class="text-muted">
+                                    Textures:
+                                    @foreach($skin['textures'] as $tx)
+                                        <code>{{ $tx['name'] ?? '' }}</code> {{ (int) ($tx['width'] ?? 0) }}&times;{{ (int) ($tx['height'] ?? 0) }}{{ ! $loop->last ? ',' : '' }}
+                                    @endforeach
+                                </div>
+                            @endif
                             @if(! empty($skin['license_text']))
                                 {{-- Shown as escaped text inside <pre>: the notice is data, never markup or a served file. --}}
                                 <details>

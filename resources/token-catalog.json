@@ -283,6 +283,27 @@
    "maxPx": 800,
    "structural": false
   },
+  "--ts-body-bg-position": {
+   "kinds": [
+    "length"
+   ],
+   "maxPx": 512,
+   "structural": false
+  },
+  "--ts-body-bg-repeat": {
+   "kinds": [
+    "text"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-body-bg-size": {
+   "kinds": [
+    "length"
+   ],
+   "maxPx": 512,
+   "structural": false
+  },
   "--ts-body-font-family": {
    "kinds": [
     "font"

@@ -19,6 +19,8 @@ final class CompiledSkin
         public readonly string $sha256,
         public readonly int $fontCount,
         public readonly string $licenseText = '',
+        /** @var array<int, array{name: string, width: int, height: int, bytes: int}> */
+        public readonly array $textures = [],
     ) {
     }
 

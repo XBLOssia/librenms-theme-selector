@@ -59,7 +59,7 @@ Run all of it with `sh dev/test.sh all`.
 
 | Attack | Control | Tested by |
 |---|---|---|
-| Zip-slip (`../evil.php`, absolute paths, backslashes, drive letters, NUL) | Nothing is extracted and no path is built from an entry name. Entry names must match an exact allowlist (`skin.json`, `skin.css`, `graph.conf`, `LICENSE.txt`, `fonts/<slug>.woff2\|woff`), matched with `\z` so a trailing newline can't slip through | `ZipTest` (48 hostile names), mutation "match with `$`" |
+| Zip-slip (`../evil.php`, absolute paths, backslashes, drive letters, NUL) | Nothing is extracted and no path is built from an entry name. Entry names must match an exact allowlist (`skin.json`, `skin.css`, `graph.conf`, `LICENSE.txt`, `fonts/<slug>.woff2\|woff`, `textures/<slug>.png`), matched with `\z` so a trailing newline can't slip through | `ZipTest` (48 hostile names), mutation "match with `$`" |
 | A `.php`, `.htaccess`, `.svg`, nested zip or anything else in the bundle | Any entry outside the allowlist rejects the *whole* bundle, not just that entry | `ZipTest`, `evil-php-entry`, `evil-htaccess`, `evil-nested-zip` |
 | Symlink or device entries | Unix mode bits checked; only regular files and directories | `ZipTest`, mutation "accept symlink entries" |
 | Decompression bomb | Inflation counts output as it is produced and stops at the declared size; declared sizes are capped per file and in total | `ZipTest` (40 MB bomb stopped with < 20 MB memory), mutation "no cap while inflating" |
@@ -83,6 +83,26 @@ Run all of it with `sh dev/test.sh all`.
 | Filters that hide controls (`blur`, `opacity`, `drop-shadow`) | Only `brightness contrast saturate sepia hue-rotate invert grayscale`, each with one bounded argument | `CssTest` |
 | Anything the parser lets through by mistake | `OutputGuard` re-checks the finished text with no knowledge of how it was produced: ASCII only, exactly one `html.dark` block, one `@font-face` per font, exactly one `url(` per font and each a base64 `data:` font URL, no angle brackets, backslashes or scriptable schemes | `CssTest` (guard cases), mutation "guard: ignore stray url(" |
 | The output as a whole | A mutation **fuzzer** (thousands of corrupted and injected variants per run) checks that whatever is accepted satisfies the invariants above | `FuzzTest` |
+
+### Textures
+
+A texture is a PNG a skin tiles in a background. It follows the font model: read
+from its bytes with no image library, checked to the last byte, re-written as a
+clean canonical PNG, and embedded in the generated stylesheet as a base64 `data:`
+URL. No uploaded image is ever a file in the web root, and no `url()` in a skin
+can point anywhere else.
+
+| Attack | Control | Tested by |
+|---|---|---|
+| A script, SVG, PHP or other file renamed `.png` | The signature must be a PNG's, and every chunk, CRC and the pixel data must parse | `TextureTest` (signature cases, text, GIF, JPEG, SVG, PHP), `evil-texture-svg` |
+| A real PNG with a payload appended (polyglot) | Nothing is allowed after `IEND`; the IEND chunk must be empty; the file is re-written, so the original bytes are not served | `TextureTest`, mutation "accept data after IEND", `evil-texture-php` |
+| A payload hidden in the compressed stream, or in a chunk | The pixel data must inflate to exactly the size the header implies with nothing after the stream's end, and is **re-compressed**; every ancillary chunk (text, EXIF, colour profile, time) is dropped | `TextureTest`, mutations |
+| A decompression bomb (a tiny stream that expands to gigabytes) | Inflation is fed in 512-byte slices and stops as soon as it passes the expected size; refusing a 64 MB bomb costs under 8 MB of memory; a header that declares more than 256 x 256 is refused before any inflation | `TextureTest` (bombs, memory bound), mutation "do not stop a decompression bomb early", `evil-texture-bomb`, `evil-texture-huge` |
+| A decoder bug in the visitor's browser (the libwebp class of bug) | Only PNG (the simplest format), non-interlaced, 8 bits or less, not animated; the browser is shown only a file this plugin built, with the minimum chunks | by construction; `TextureTest` |
+| A remote image (tracking beacon, mixed content) | The only `url()` a skin may write is `--tx-<name>: url("textures/<name>.png")` naming a file in the bundle; the output guard allows only `data:image/png` URLs that decode to a clean PNG | `TextureTest` (remote, data: and traversal cases), `evil-texture-remote`, mutations on the guard |
+| A texture used to cover content or to fake UI | Image tokens are all backgrounds (behind content); textures are refused in every other kind of token; none can reach the panel corner overlay (whose values are plain colours) | `TextureTest` (colour, font and palette-route cases), mutation "allow a texture in a non-image token" |
+| A long text or message drawn into a tile | Not preventable by parsing. Tiles are at most 256 x 256 and repeat behind content, never above it; the admin page lists each texture's name and size, and the admin who installs a skin is the control | documented limit |
+| Cost (stylesheet size, page weight) | 64 KB per cleaned texture, 4 per skin, 128 KB in all; the stylesheet is cached by the browser and busted by its `?v=` | `TextureTest`, mutation |
 
 ### Fonts
 

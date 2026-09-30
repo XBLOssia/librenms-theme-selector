@@ -54,7 +54,7 @@ final class ValueValidator
     ];
 
     /** var() names: the base stylesheet's tokens and the skin's own palette. */
-    private const VAR_NAME = '/^--(?:ts|p)-[a-z0-9][a-z0-9-]{0,62}\z/D';
+    private const VAR_NAME = '/^--(?:ts|p|tx)-[a-z0-9][a-z0-9-]{0,62}\z/D';
 
     public function __construct(private readonly Mode $mode)
     {
@@ -203,7 +203,7 @@ final class ValueValidator
                     if ($fn === 'var') {
                         // var( --name ) and nothing else: no fallback.
                         if (! preg_match('/\G *(--[A-Za-z0-9-]+) *\)/', $value, $v, 0, $i) || ! preg_match(self::VAR_NAME, $v[1])) {
-                            $report->error($before, 'uses var() with something other than one --ts-* or --p-* name');
+                            $report->error($before, 'uses var() with something other than one --ts-*, --p-* or --tx-* name');
 
                             return null;
                         }

@@ -114,8 +114,9 @@ function test_fuzz(): void
         ['name' => 'skin.css', 'data' => good_css(), 'method' => 8],
         ['name' => 'graph.conf', 'data' => "graph_colours.greens=[\"FFFFFF\"]\n"],
         ['name' => 'fonts/a.woff2', 'data' => fake_font(), 'method' => 8],
+        ['name' => 'textures/t.png', 'data' => png_build(['w' => 8, 'h' => 8]), 'method' => 8],
     ]);
-    $allowed = '#^(skin\.json|skin\.css|graph\.conf|fonts/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.(woff2|woff))\z#D';
+    $allowed = '#^(skin\.json|skin\.css|graph\.conf|LICENSE\.txt|fonts/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.(woff2|woff)|textures/[a-z0-9][a-z0-9-]{0,40}\.png)\z#D';
     $crashed = [];
     $bad = [];
     $ok = 0;

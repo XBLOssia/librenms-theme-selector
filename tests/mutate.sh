@@ -146,6 +146,15 @@ run_with $B "$RM s/animation: none;/animation: ts-breathe 1s infinite;/" "motion
 run_with $B 's/box-shadow: 0 0 16px var(--ts-alert-glow-high);/box-shadow: 0 0 160px var(--ts-alert-glow-high);/' "motion: a 160px alert glow"
 run_with $B 's/filter: drop-shadow(0 0 8px var(--ts-frame-glow));/filter: drop-shadow(0 0 80px var(--ts-frame-glow));/' "motion: an 80px frame glow"
 
+RP='/data-ts-orn\]) \.panel::after {/,/^}/'
+RG='/data-ts-orn\]) \.grid-stack \.grid-stack-item-content {/,/^}/'
+run_with $B "$RP s/pointer-events: none;/pointer-events: auto;/" "cuts: let the panel corner overlay take clicks"
+run_with $B "$RP s/inset: 0;/inset: -40px;/" "cuts: let the panel corner overlay extend 40px out"
+run_with $B "$RP s/--ts-panel-chamfer, 0px))/--ts-panel, 0px))/" "cuts: drop the panel size fallback chain"
+run_with $B "$RG s/calc(100% + 8px) -8px/calc(100% + 80px) -8px/" "cuts: a widget clip region 80px wider than the widget"
+run_with resources/token-catalog.json '/"--ts-panel-chamfer-bl": {/,/}/ s/"maxPx": 12/"maxPx": 800/' "cuts: no cap on panel cuts"
+run_with $B 's/html.dark .panel\[class\*="tw:rounded"\] {/html.dark .panel[class*="tw:roundedx"] {/' "cuts: radius tokens no longer reach tw:rounded panels"
+
 echo
 echo "caught $CAUGHT, redundant $REDUNDANT, missed $MISSED, not applied $UNAPPLIED"
 [ "$MISSED" = 0 ] && [ "$UNAPPLIED" = 0 ]

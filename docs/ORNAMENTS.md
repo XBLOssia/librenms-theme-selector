@@ -154,6 +154,48 @@ The classifier treats `animation` and `filter` as structural except in these
 exact shapes, so `--ts-navbar-after-animation`, `--ts-alert-badge-animation` and
 the other tokens the bundled skins use stay closed to uploads.
 
+## Phase E (built): cut corners on panels and widgets, and round corners that stay round
+
+**Panels** take the same cut as buttons (`--ts-panel-chamfer`, `-tl -tr -br -bl`,
+`--ts-panel-chamfer-rise`), at most 12px, plus two plain colours:
+
+```css
+--ts-panel-chamfer: 0px;
+--ts-panel-chamfer-bl: 12px;
+--ts-panel-chamfer-rise: 1.732;     /* 60 degrees */
+--ts-panel-cut-fill: #000f26;       /* the page colour: the corner looks cut away */
+--ts-panel-cut-stroke: #34497a;     /* a 2px line along the cut edge */
+```
+
+A panel's cut is four small triangles painted *over* the corners (the panel's
+`::after`, above its content, `pointer-events: none`), not a `clip-path`: a clip
+would also cut off the dropdowns and menus that open past a panel's edge. Each
+triangle is at most 12px by 24px, so it can't reach text (table text starts 8px
+in). The sizes fall back to `0px`, never to `auto`, so a missing size can't make
+a triangle cover the panel, and nothing is painted unless the skin sets both a
+size and a colour. The fill is what makes it look cut, so use the page colour; on
+a page with a gradient background the corner will show the flat colour.
+
+**Widgets** are clipped for real (a widget already hides what overflows it),
+through one polygon written in `base.css`: the widget's box with an 8px margin
+(so the ring around it survives) and a zero-width slit into each corner that
+removes only its triangle. A cut of 0 leaves the whole box, so a skin that cuts
+one corner keeps the rest. `--ts-widget-chamfer*` (at most 12px) and
+`--ts-widget-cut-stroke` (a line along the cut, painted as one of the widget's
+background layers, so the title bar covers it at a top corner).
+
+**Colours** (`--ts-panel-cut-fill`, `-stroke`, `--ts-widget-cut-stroke`) take one
+literal colour, like the glow colours: no `var()`, no list.
+
+**Rounded corners that refuse to go.** Some LibreNMS elements carry a Tailwind
+`rounded-*` utility with `!important` inside the `utilities` layer (the device
+page header is `tw:rounded-2xl!`). An ordinary rule can't beat that, so
+`--ts-panel-radius-*` and `--ts-widget-radius-*` had no effect on them. Both
+token sets now reach panels and widgets that carry any `tw:rounded-*` class, from
+a re-opened `utilities` layer, the same way the `bg-white!` colours are handled.
+This applies to every skin, bundled ones too: the device header takes the skin's
+radius instead of a fixed 16px.
+
 ## Roadmap to parity with the bundled skins
 
 | Bundled skin does this | With | Status |

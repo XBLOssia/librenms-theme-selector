@@ -212,6 +212,25 @@ is between 2s and 60s; a glow takes exactly one literal colour (`#hex`, `rgb()`,
 `rgba()`, `hsl()` or `hsla()`), not a `var()` or a list. Motion stops for
 visitors whose system asks for reduced motion.
 
+**Cut corners on panels and widgets.**
+
+```css
+--ts-panel-chamfer: 0px;
+--ts-panel-chamfer-bl: 12px;          /* at most 12px */
+--ts-panel-chamfer-rise: 1.732;       /* 60 degrees */
+--ts-panel-cut-fill: #000f26;         /* your page colour: one literal colour */
+--ts-panel-cut-stroke: #34497a;       /* a line along the cut */
+--ts-widget-chamfer: 0px;
+--ts-widget-chamfer-bl: 12px;
+--ts-widget-chamfer-rise: 1.732;
+--ts-widget-cut-stroke: #34497a;
+```
+
+A panel's cut is painted over its corner, so set the fill to your page colour.
+A widget is clipped. The colours take a literal `#hex`, `rgb()` or `hsl()`, not a
+`var(--p-*)`. `--ts-panel-radius-*` and `--ts-widget-radius-*` also work on
+elements LibreNMS rounds with a Tailwind class (the device page header).
+
 **Widgets.** Dashboard widgets take the same eight slots as panels under the
 names `--ts-widget-frame-tl` ... `--ts-widget-frame-left`, plus
 `--ts-widget-radius-tl` and so on. They stay inside the widget's edge (no

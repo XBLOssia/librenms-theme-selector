@@ -144,10 +144,11 @@ function test_ornaments(): void
             'animation: ts-breathe var(--ts-navbar-strip-bottom-breathe) ease-in-out infinite',
         ],
         "$gate .grid-stack .grid-stack-item-content" => [
-            'background-image: var(--ts-widget-frame-tl), var(--ts-widget-frame-tr), var(--ts-widget-frame-bl), var(--ts-widget-frame-br), var(--ts-widget-frame-top), var(--ts-widget-frame-right), var(--ts-widget-frame-bottom), var(--ts-widget-frame-left), var(--ts-widget-bg-image)',
-            'background-size: 32px 32px, 32px 32px, 32px 32px, 32px 32px, 100% 12px, 12px 100%, 100% 12px, 12px 100%, auto, auto, auto, auto, auto, auto, auto, auto',
-            'background-position: left top, right top, left bottom, right bottom, left top, right top, left bottom, left top, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0',
-            'background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat',
+            'background-image: var(--ts-widget-frame-tl), var(--ts-widget-frame-tr), var(--ts-widget-frame-bl), var(--ts-widget-frame-br), var(--ts-widget-frame-top), var(--ts-widget-frame-right), var(--ts-widget-frame-bottom), var(--ts-widget-frame-left), linear-gradient(to top right, transparent 0, transparent calc(50% - 1px), var(--ts-widget-cut-stroke, transparent) calc(50% - 1px), var(--ts-widget-cut-stroke, transparent) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to top left, transparent 0, transparent calc(50% - 1px), var(--ts-widget-cut-stroke, transparent) calc(50% - 1px), var(--ts-widget-cut-stroke, transparent) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom right, transparent 0, transparent calc(50% - 1px), var(--ts-widget-cut-stroke, transparent) calc(50% - 1px), var(--ts-widget-cut-stroke, transparent) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom left, transparent 0, transparent calc(50% - 1px), var(--ts-widget-cut-stroke, transparent) calc(50% - 1px), var(--ts-widget-cut-stroke, transparent) calc(50% + 1px), transparent calc(50% + 1px)), var(--ts-widget-bg-image)',
+            'background-size: 32px 32px, 32px 32px, 32px 32px, 32px 32px, 100% 12px, 12px 100%, 100% 12px, 12px 100%, var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer, 0px)) calc(var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer, 0px)) * var(--ts-widget-chamfer-rise, 1)), var(--ts-widget-chamfer-br, var(--ts-widget-chamfer, 0px)) calc(var(--ts-widget-chamfer-br, var(--ts-widget-chamfer, 0px)) * var(--ts-widget-chamfer-rise, 1)), var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer, 0px)) calc(var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer, 0px)) * var(--ts-widget-chamfer-rise, 1)), var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer, 0px)) calc(var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer, 0px)) * var(--ts-widget-chamfer-rise, 1)), auto, auto, auto, auto, auto, auto, auto, auto',
+            'background-position: left top, right top, left bottom, right bottom, left top, right top, left bottom, left top, left bottom, right bottom, left top, right top, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0',
+            'background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat',
+            'clip-path: polygon(-8px -8px, calc(100% + 8px) -8px, calc(100% + 8px) 0, calc(100% - var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer))) 0, 100% calc(var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1)), 100% 0, calc(100% + 8px) 0, calc(100% + 8px) 100%, 100% 100%, 100% calc(100% - calc(var(--ts-widget-chamfer-br, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1))), calc(100% - var(--ts-widget-chamfer-br, var(--ts-widget-chamfer))) 100%, calc(100% + 8px) 100%, calc(100% + 8px) calc(100% + 8px), -8px calc(100% + 8px), -8px 100%, var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer)) 100%, 0 calc(100% - calc(var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1))), 0 100%, -8px 100%, -8px 0, 0 0, 0 calc(var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1)), var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer)) 0, -8px 0)',
         ],
         "$gate .btn" => [
             'clip-path: polygon(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) 0, calc(100% - var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer))) 0, 100% calc(var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-btn-chamfer-br, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1))), calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))) 100%, var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) 100%, 0 calc(100% - calc(var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1))), 0 calc(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1)))',
@@ -163,6 +164,20 @@ function test_ornaments(): void
         ],
         "$gate .panel::before, html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before, html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after, html.dark:has(link[data-ts-orn]) .navbar-default::before, html.dark:has(link[data-ts-orn]) .navbar-default::after, html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger" => [
             'animation: none',
+        ],
+        "$gate .panel::after" => [
+            'content: ""',
+            'position: absolute',
+            'inset: 0',
+            'z-index: 1',
+            'pointer-events: none',
+            'width: auto',
+            'height: auto',
+            'border: 0',
+            'background-image: linear-gradient(to top right, var(--ts-panel-cut-fill, transparent) 0, var(--ts-panel-cut-fill, transparent) calc(50% - 1px), var(--ts-panel-cut-stroke, transparent) calc(50% - 1px), var(--ts-panel-cut-stroke, transparent) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to top left, var(--ts-panel-cut-fill, transparent) 0, var(--ts-panel-cut-fill, transparent) calc(50% - 1px), var(--ts-panel-cut-stroke, transparent) calc(50% - 1px), var(--ts-panel-cut-stroke, transparent) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom right, var(--ts-panel-cut-fill, transparent) 0, var(--ts-panel-cut-fill, transparent) calc(50% - 1px), var(--ts-panel-cut-stroke, transparent) calc(50% - 1px), var(--ts-panel-cut-stroke, transparent) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom left, var(--ts-panel-cut-fill, transparent) 0, var(--ts-panel-cut-fill, transparent) calc(50% - 1px), var(--ts-panel-cut-stroke, transparent) calc(50% - 1px), var(--ts-panel-cut-stroke, transparent) calc(50% + 1px), transparent calc(50% + 1px))',
+            'background-size: var(--ts-panel-chamfer-bl, var(--ts-panel-chamfer, 0px)) calc(var(--ts-panel-chamfer-bl, var(--ts-panel-chamfer, 0px)) * var(--ts-panel-chamfer-rise, 1)), var(--ts-panel-chamfer-br, var(--ts-panel-chamfer, 0px)) calc(var(--ts-panel-chamfer-br, var(--ts-panel-chamfer, 0px)) * var(--ts-panel-chamfer-rise, 1)), var(--ts-panel-chamfer-tl, var(--ts-panel-chamfer, 0px)) calc(var(--ts-panel-chamfer-tl, var(--ts-panel-chamfer, 0px)) * var(--ts-panel-chamfer-rise, 1)), var(--ts-panel-chamfer-tr, var(--ts-panel-chamfer, 0px)) calc(var(--ts-panel-chamfer-tr, var(--ts-panel-chamfer, 0px)) * var(--ts-panel-chamfer-rise, 1))',
+            'background-position: left bottom, right bottom, left top, right top',
+            'background-repeat: no-repeat',
         ],
     ];
     T::ok('no rule carries the gate that has not been reviewed', array_keys($rules) === array_keys($expected), implode(' | ', array_diff(array_keys($rules), array_keys($expected))));
@@ -201,7 +216,13 @@ function test_ornaments(): void
         $motionTokens[] = "--ts-$n-breathe";
         $motionTokens[] = "--ts-$n-glow";
     }
-    $paint = array_merge($slotTokens, $headingTokens, $navTokens, $widgetSlots, $chamferTokens, $motionTokens, ['--ts-widget-bg-image']);
+    $cutTokens = ['--ts-panel-cut-fill', '--ts-panel-cut-stroke', '--ts-widget-cut-stroke'];
+    foreach (['panel', 'widget'] as $e) {
+        foreach (['', '-tl', '-tr', '-br', '-bl', '-rise'] as $k) {
+            $cutTokens[] = "--ts-$e-chamfer$k";
+        }
+    }
+    $paint = array_merge($slotTokens, $headingTokens, $navTokens, $widgetSlots, $chamferTokens, $motionTokens, $cutTokens, ['--ts-widget-bg-image']);
     $read = array_keys($tokenUses);
     sort($read);
     // The four the keyframes read (not a gated rule) are checked in the motion group below.
@@ -358,6 +379,71 @@ function test_ornaments(): void
     css_bad('an alert glow colour through the palette', dark('--ts-bg: #000;', '--p-c: #f00, 0 0 100px 60px #00f;', '--ts-alert-glow-low: var(--p-c);'), 'plain colour');
     css_bad('the raw animation token is still closed to uploads', dark('--ts-bg: #000;', '--ts-navbar-after-animation: zg-breathe 1s linear infinite;'), 'structural');
     css_bad('the raw alert animation token is still closed to uploads', dark('--ts-bg: #000;', '--ts-alert-badge-animation: zg-swell .1s infinite;'), 'structural');
+
+    T::group('ornaments: cut corners on panels and widgets');
+    // The widget clip-path, written out independently: the expanded box (8px margin), with a
+    // zero-width slit into each corner that removes just the cut triangle. A cut of 0 leaves the
+    // whole box, so a skin that cuts one corner keeps the others.
+    $wc = fn (string $k) => "var(--ts-widget-chamfer-$k, var(--ts-widget-chamfer))";
+    $wv = fn (string $k) => "calc({$wc($k)} * var(--ts-widget-chamfer-rise, 1))";
+    $m = '8px';
+    $pm = "calc(100% + $m)";
+    $pts = [
+        ["-$m", "-$m"], [$pm, "-$m"],
+        [$pm, '0'], ["calc(100% - {$wc('tr')})", '0'], ['100%', $wv('tr')], ['100%', '0'], [$pm, '0'],
+        [$pm, '100%'], ['100%', '100%'], ['100%', "calc(100% - {$wv('br')})"], ["calc(100% - {$wc('br')})", '100%'], [$pm, '100%'],
+        [$pm, $pm], ["-$m", $pm],
+        ["-$m", '100%'], [$wc('bl'), '100%'], ['0', "calc(100% - {$wv('bl')})"], ['0', '100%'], ["-$m", '100%'],
+        ["-$m", '0'], ['0', '0'], ['0', $wv('tl')], [$wc('tl'), '0'], ["-$m", '0'],
+    ];
+    $widgetPolygon = 'polygon(' . implode(', ', array_map(fn ($p) => "$p[0] $p[1]", $pts)) . ')';
+    $widgetDecls = $rules["$gate .grid-stack .grid-stack-item-content"] ?? [];
+    T::ok('the widget clip-path is the fixed polygon', in_array("clip-path: $widgetPolygon", $widgetDecls, true));
+    T::ok('a widget clip-path is only in that one declaration', count(array_filter($widgetDecls, fn ($d) => str_starts_with($d, 'clip-path:'))) === 1);
+
+    $panelAfter = $rules["$gate .panel::after"] ?? [];
+    T::ok('the panel overlay is above the content, inert and text-free', array_intersect(['content: ""', 'position: absolute', 'inset: 0', 'z-index: 1', 'pointer-events: none'], $panelAfter) === ['content: ""', 'position: absolute', 'inset: 0', 'z-index: 1', 'pointer-events: none']);
+    $size = function (string $k): string {
+        $c = "var(--ts-panel-chamfer-$k, var(--ts-panel-chamfer, 0px))";
+
+        return "$c calc($c * var(--ts-panel-chamfer-rise, 1))";
+    };
+    T::ok('its four corner sizes fall back to 0px, never to auto', in_array('background-size: ' . implode(', ', array_map($size, ['bl', 'br', 'tl', 'tr'])), $panelAfter, true));
+    T::ok('its corners are at the four corners of the panel', in_array('background-position: left bottom, right bottom, left top, right top', $panelAfter, true));
+    $images = array_values(array_filter($panelAfter, fn ($d) => str_starts_with($d, 'background-image:')));
+    T::ok('it paints only fill and stroke gradients, each confined to its corner cell', count($images) === 1 && substr_count($images[0], 'linear-gradient(') === 4 && ! str_contains($images[0], 'url(') && substr_count($images[0], 'var(--ts-panel-cut-fill, transparent)') === 8 && substr_count($images[0], 'var(--ts-panel-cut-stroke, transparent)') === 8, $images[0] ?? '');
+    // tw's rounded-* utilities are !important inside the utilities layer (the device page header is
+    // tw:rounded-2xl!), so the radius tokens only reach them from a re-opened utilities layer.
+    T::ok('the radius tokens reach panels and widgets that carry a tw:rounded-* utility', (bool) preg_match('/@layer utilities \{\s*html\.dark \.panel\[class\*="tw:rounded"\] \{(\s*border-(?:top-left|top-right|bottom-right|bottom-left)-radius: var\(--ts-panel-radius-(?:tl|tr|br|bl)\) !important;){4}\s*\}\s*html\.dark \.grid-stack-item-content\[class\*="tw:rounded"\] \{(\s*border-(?:top-left|top-right|bottom-right|bottom-left)-radius: var\(--ts-widget-radius-(?:tl|tr|br|bl)\) !important;){4}\s*\}/', $css));
+    foreach (['panel', 'widget'] as $e) {
+        foreach (['', '-tl', '-tr', '-br', '-bl'] as $k) {
+            $t = "--ts-$e-chamfer$k";
+            T::ok("$t is a px size, at most 12px, settable by upload", $cat->has($t) && ! $cat->isStructural($t) && in_array('chamfer', $cat->kinds($t), true) && $cat->maxPx($t) === 12, json_encode([$cat->kinds($t), $cat->maxPx($t)]));
+            T::ok("$t defaults to initial", str_contains($css, "  $t: initial;\n"));
+        }
+        T::ok("--ts-$e-chamfer-rise is a ratio, settable by upload", in_array('ratio', $cat->kinds("--ts-$e-chamfer-rise"), true) && ! $cat->isStructural("--ts-$e-chamfer-rise"));
+    }
+    foreach ($cutTokens as $t) {
+        if (str_contains($t, '-cut-')) {
+            T::ok("$t takes one literal colour", in_array('glowcolor', $cat->kinds($t), true) && ! $cat->isStructural($t));
+        }
+    }
+    $uncapped = array_filter($cat->names(), fn ($n) => in_array('chamfer', $cat->kinds($n), true) && $cat->maxPx($n) > 12);
+    T::ok('no cut-size token in the catalog is larger than 12px', $uncapped === [], json_encode(array_values($uncapped)));
+    css_good('a cut bottom-left on panels and widgets, with fill and stroke', dark('--ts-bg: #000;',
+        '--ts-panel-chamfer: 0px;', '--ts-panel-chamfer-bl: 12px;', '--ts-panel-chamfer-rise: 1.732;', '--ts-panel-cut-fill: #000f26;', '--ts-panel-cut-stroke: #34497a;',
+        '--ts-widget-chamfer: 0px;', '--ts-widget-chamfer-bl: 12px;', '--ts-widget-chamfer-rise: 1.732;', '--ts-widget-cut-stroke: rgba(52, 73, 122, .9);'));
+    css_bad('a panel cut over 12px', dark('--ts-bg: #000;', '--ts-panel-chamfer-bl: 13px;'), 'out of range');
+    css_bad('a widget cut over 12px', dark('--ts-bg: #000;', '--ts-widget-chamfer: 24px;'), 'out of range');
+    css_bad('a panel cut in %', dark('--ts-bg: #000;', '--ts-panel-chamfer-tl: 50%;'), 'px');
+    css_bad('a widget cut through var()', dark('--ts-bg: #000;', '--p-x: 5px;', '--ts-widget-chamfer: var(--p-x);'), 'px');
+    css_bad('a bare 0 panel cut', dark('--ts-bg: #000;', '--ts-panel-chamfer: 0;'), 'px');
+    css_bad('a panel steepness over 2', dark('--ts-bg: #000;', '--ts-panel-chamfer-rise: 3;'), 'plain number');
+    css_bad('a widget steepness in px', dark('--ts-bg: #000;', '--ts-widget-chamfer-rise: 2px;'), 'plain number');
+    foreach (['red', 'var(--p-c)', '#000, 0 0 90px blue', 'linear-gradient(red, blue)', 'url(a.png)', 'transparent', 'currentColor'] as $bad) {
+        css_bad("a panel cut fill of $bad", dark('--ts-bg: #000;', '--p-c: #000;', "--ts-panel-cut-fill: $bad;"), 'plain colour');
+        css_bad("a widget cut stroke of $bad", dark('--ts-bg: #000;', '--p-c: #000;', "--ts-widget-cut-stroke: $bad;"), 'plain colour');
+    }
 
     T::group('ornaments: the bundled skins are untouched');
     foreach (glob(__DIR__ . '/../skins/*/skin.css') ?: [] as $file) {

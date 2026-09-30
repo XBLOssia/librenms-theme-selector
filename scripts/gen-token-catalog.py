@@ -73,9 +73,13 @@ GLOW_SHAPE = re.compile(r'^drop-shadow\(0 0 8px var\((--ts-[\w-]+)\)\)$')
 KINDS['motion-layer'] = 'period'
 KINDS['glow-filter'] = 'glowcolor'
 # Tokens the keyframes read, which need a stricter grammar than their property's.
-TOKEN_KINDS = [(re.compile(r'^--ts-breathe-(low|high)$'), 'level'),
+TOKEN_KINDS = [(re.compile(r'^--ts-(panel|widget)-chamfer(-tl|-tr|-br|-bl)?$'), 'chamfer'),
+               (re.compile(r'^--ts-(panel|widget)-chamfer-rise$'), 'ratio'),
+               (re.compile(r'^--ts-(panel-cut-(fill|stroke)|widget-cut-stroke)$'), 'glowcolor'),
+               (re.compile(r'^--ts-breathe-(low|high)$'), 'level'),
                (re.compile(r'^--ts-alert-glow-(low|high)$'), 'glowcolor')]
-TOKEN_CAPS = [(re.compile(r'^--ts-btn-chamfer'), 10), (re.compile(r'^--ts-(label|badge)-chamfer'), 6)]
+TOKEN_CAPS = [(re.compile(r'^--ts-btn-chamfer'), 10), (re.compile(r'^--ts-(label|badge)-chamfer'), 6),
+              (re.compile(r'^--ts-(panel|widget)-chamfer'), 12)]
 
 
 def chamfer_template(e):
@@ -88,14 +92,30 @@ def chamfer_template(e):
             f'calc(100% - {c("br")}) 100%, {c("bl")} 100%, 0 calc(100% - {v("bl")}), 0 {v("tl")})')
 
 
-CHAMFER_TEMPLATES = {chamfer_template(e) for e in ('btn', 'label', 'badge')}
+def widget_polygon(prefix='widget', m='8px'):
+    def c(k):
+        return f'var(--ts-{prefix}-chamfer-{k}, var(--ts-{prefix}-chamfer))'
+
+    def v(k):
+        return f'calc({c(k)} * var(--ts-{prefix}-chamfer-rise, 1))'
+    mm, pm = f'-{m}', f'calc(100% + {m})'
+    pts = [(mm, mm), (pm, mm),
+           (pm, '0'), (f'calc(100% - {c("tr")})', '0'), ('100%', v('tr')), ('100%', '0'), (pm, '0'),
+           (pm, '100%'), ('100%', '100%'), ('100%', f'calc(100% - {v("br")})'), (f'calc(100% - {c("br")})', '100%'), (pm, '100%'),
+           (pm, pm), (mm, pm),
+           (mm, '100%'), (c('bl'), '100%'), ('0', f'calc(100% - {v("bl")})'), ('0', '100%'), (mm, '100%'),
+           (mm, '0'), ('0', '0'), ('0', v('tl')), (c('tl'), '0'), (mm, '0')]
+    return 'polygon(' + ', '.join(f'{x} {y}' for x, y in pts) + ')'
+
+
+CHAMFER_TEMPLATES = {chamfer_template(e) for e in ('btn', 'label', 'badge')} | {widget_polygon()}
 KINDS['transition'] = 'motion'
 KINDS['filter'] = 'filter'
 # A Tailwind theme variable the base retints; every one is a colour.
 TAILWIND_COLOUR = re.compile(r'^--tw-color-')
 
 # how large a px length may be in a token of each kind
-MAX_PX = {'period': 800, 'level': 800, 'glowcolor': 800, 'ratio': 800, 'chamfer': 10, 'shadow': 100, 'border': 24, 'length': 64, 'motion': 800, 'filter': 800,
+MAX_PX = {'period': 800, 'level': 800, 'glowcolor': 800, 'ratio': 800, 'chamfer': 800, 'shadow': 100, 'border': 24, 'length': 64, 'motion': 800, 'filter': 800,
           'color': 800, 'image': 800, 'font': 800, 'text': 800}
 
 

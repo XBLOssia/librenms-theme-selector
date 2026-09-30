@@ -63,7 +63,9 @@ html.dark {
   --p-font-stack: var(--p-font-chrome);
   --p-mono-stack: var(--p-font-data);
 
-  --ts-body-bg-image: repeating-linear-gradient( -45deg, transparent 0 62px, rgba(255, 255, 255, .012) 62px 63px), linear-gradient(180deg, var(--p-void) 0%, var(--p-hull) 420px);
+  /* Diamond plate: a 64px tile of raised lozenges (scripts/make-textures.py plate) under the skin's own lines. */
+  --tx-plate: url("textures/plate.png");
+  --ts-body-bg-image: var(--tx-plate), repeating-linear-gradient( -45deg, transparent 0 62px, rgba(255, 255, 255, .012) 62px 63px), linear-gradient(180deg, var(--p-void) 0%, var(--p-hull) 420px);
   --ts-link-hover-fg: #8fcaea;
   --ts-hr-border-top-color: var(--p-edge);
   --ts-navbar-bg-image: linear-gradient(180deg, #2b343b 0%, #1e252a 100%);

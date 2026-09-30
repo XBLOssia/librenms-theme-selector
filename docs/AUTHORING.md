@@ -157,8 +157,8 @@ What is served is not your file: the plugin reads the PNG itself (no image libra
 checks every chunk, checksum and row, and writes a clean copy, which it embeds in the
 generated stylesheet as a `data:` URL. Nothing you upload is ever a file on the
 server. `docs/ORNAMENTS.md` has more on what a skin can draw; the bundled Zerg skin's
-`textures/creep.png` is a worked example, and `scripts/make-creep.py` shows how a
-tile can be generated so that it repeats.
+`textures/creep.png` is a worked example, and `docs/TEXTURES.md` shows how the
+bundled tiles (plate, crystal, creep, waves) are generated so that they repeat.
 
 ## LICENSE.txt
 

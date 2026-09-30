@@ -156,44 +156,47 @@ the other tokens the bundled skins use stay closed to uploads.
 
 ## Phase E (built): cut corners on panels and widgets, and round corners that stay round
 
-**Panels** take the same cut as buttons (`--ts-panel-chamfer`, `-tl -tr -br -bl`,
-`--ts-panel-chamfer-rise`), at most 12px, plus two plain colours:
+**Panels and widgets** take the same cut as buttons (`--ts-panel-chamfer`, `-tl -tr -br
+-bl`, `--ts-panel-chamfer-rise`, and the same for `--ts-widget-*`), at most 12px, plus a
+colour for the line along the cut:
 
 ```css
 --ts-panel-chamfer: 0px;
 --ts-panel-chamfer-bl: 12px;
 --ts-panel-chamfer-rise: 1.732;     /* 60 degrees */
---ts-panel-cut-fill: #000f26;       /* the page colour: the corner looks cut away */
 --ts-panel-cut-stroke: #34497a;     /* a 2px line along the cut edge */
+--ts-widget-chamfer: 0px;
+--ts-widget-chamfer-bl: 12px;
+--ts-widget-chamfer-rise: 1.732;
+--ts-widget-cut-stroke: #34497a;
 ```
 
-A panel's cut is four small triangles painted *over* the corners (the panel's
-`::after`, above its content, `pointer-events: none`), not a `clip-path`: a clip
-would also cut off the dropdowns and menus that open past a panel's edge. Each
-triangle is at most about 14px by 28px, so it can't reach text (table text starts 8px
-in). The sizes fall back to `0px`, never to `auto`, so a missing size can't make
-a triangle cover the panel, and nothing is painted unless the skin sets both a
-size and a colour. The fill is what makes it look cut, so use the page colour; on
-a page with a gradient background the corner will show the flat colour.
+**It is a real clip**, through one polygon written in `base.css` (the same for panels and
+widgets): the element's box with a margin of 10000px, and a zero-width slit into each
+corner that removes only its triangle. A cut of 0 leaves the whole box, so a skin that
+cuts one corner keeps the rest. Border, background and content are cut together, so
+nothing is painted over the page and the cut works on any page background, including a
+texture.
 
-**Clean edges (a little slop).** The overlay reaches 2px past the panel's padding
-box, so the triangles also cover the panel's own 1px border (an earlier version
-left a thin line of border running through the cut), and each cut is drawn 2px
-larger than asked for so its edge is clean. That slop is `min(cut * 1000, 2px)`:
-a corner with no cut gets none, and a cut of 12px at rise 1.732 is really about
-14px by 28px. It only covers a border up to 2px wide; a skin with a thicker panel
-border will see the rest of it.
+* **Nothing that hangs out is cut off.** The margin is 10000px, so a dropdown that opens
+  past a panel's edge, or a fixed-position dialog inside one, is not clipped; only the
+  cut triangles are. (Checked in a browser: both still receive clicks on a clipped panel.)
+* **The cut edge gets a line.** The panel's `::after` draws it above the content, on the
+  panel's own corners (it is exactly the border box for the usual 1px border), so the
+  line runs from the left border to the bottom border and stops. For a widget it is one
+  of the widget's background layers, so the title bar covers it at a top corner. The
+  sizes fall back to `0px`, never to `auto`, and nothing is drawn unless the skin sets a
+  size and a colour.
+* **An earlier version painted a triangle in the page colour** over the corner, because a
+  clip seemed to risk cutting off dropdowns. On a flat page that worked, but on a textured
+  page the flat triangle showed as a darker patch, with faint edges running out to the old
+  square corner. `--ts-panel-cut-fill` is still accepted so skins written for it keep
+  installing, but nothing reads it now.
+* A cut corner can take a pixel or two off text that sits right at it; each triangle is at
+  most 12px by 24px, and table text starts 8px in.
 
-**Widgets** are clipped for real (a widget already hides what overflows it),
-through one polygon written in `base.css`: the widget's box with an 8px margin
-(so the ring around it survives) and a zero-width slit into each corner that
-removes only its triangle. A cut of 0 leaves the whole box, so a skin that cuts
-one corner keeps the rest. `--ts-widget-chamfer*` (at most 12px) and
-`--ts-widget-cut-stroke` (a line along the cut, painted as one of the widget's
-background layers, so the title bar covers it at a top corner).
-
-**Colours** (`--ts-panel-cut-fill`, `-stroke`, `--ts-widget-cut-stroke`) take one
-literal colour, like the glow colours: no `var()`, no list.
+**Colours** (`--ts-panel-cut-stroke`, `--ts-widget-cut-stroke`) take one literal colour,
+like the glow colours: no `var()`, no list.
 
 **Rounded corners that refuse to go.** Some LibreNMS elements carry a Tailwind
 `rounded-*` utility with `!important` inside the `utilities` layer (the device

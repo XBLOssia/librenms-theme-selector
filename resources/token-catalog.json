@@ -1882,8 +1882,7 @@
   },
   "--ts-panel-cut-fill": {
    "kinds": [
-    "glowcolor",
-    "image"
+    "glowcolor"
    ],
    "maxPx": 800,
    "structural": false

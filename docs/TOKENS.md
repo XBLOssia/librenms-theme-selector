@@ -195,7 +195,7 @@ Used by the defaults below.
 | `--ts-panel-border` | `1px solid var(--ts-border)` | `.panel (+1)` border |
 | `--ts-panel-border-bottom-width` | `1px` | `.panel (+1)` border-bottom-width |
 | `--ts-panel-border-left-width` | `1px` | `.panel (+1)` border-left-width |
-| `--ts-panel-chamfer` | `initial` | — |
+| `--ts-panel-chamfer` | `initial` | `/* --------------------------------------------------------------------------- * FRAME ORNAMENTS (skins installed by upload; see docs/ORNAMENTS.md) * * A fixed decorative layer behind a panel (+10)` clip-path; `/* --------------------------------------------------------------------------- * FRAME ORNAMENTS (skins installed by upload; see docs/ORNAMENTS.md) * * A fixed decorative layer behind a panel (+10)` clip-path; `/* --------------------------------------------------------------------------- * FRAME ORNAMENTS (skins installed by upload; see docs/ORNAMENTS.md) * * A fixed decorative layer behind a panel (+10)` clip-path; +5 more |
 | `--ts-panel-chamfer-bl` | `initial` | — |
 | `--ts-panel-chamfer-br` | `initial` | — |
 | `--ts-panel-chamfer-rise` | `1` | — |
@@ -243,24 +243,24 @@ Used by the defaults below.
 | `--ts-widget-alert-label-letter-spacing` | `1.32px` | `.widget-alert-totals .label (+2)` letter-spacing |
 | `--ts-widget-bar-bg` | `var(--ts-surface-raised)` | `.grid-stack-item-content > header` background |
 | `--ts-widget-bar-border-bottom` | `1px solid var(--ts-border)` | `.grid-stack-item-content > header` border-bottom |
-| `--ts-widget-bg-image` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image; `.gs-w (+1)` background-image |
+| `--ts-widget-bg-image` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image; `.gs-w (+1)` background-image |
 | `--ts-widget-border` | `1px solid var(--ts-border)` | `.gs-w (+1)` border |
 | `--ts-widget-border-left-width` | `1px` | `.gs-w (+1)` border-left-width |
-| `--ts-widget-chamfer` | `initial` | `/* Dashboard widgets: the same eight slots (+6)` clip-path; `/* Dashboard widgets: the same eight slots (+6)` clip-path; `/* Dashboard widgets: the same eight slots (+6)` clip-path; +5 more |
+| `--ts-widget-chamfer` | `initial` | `/* Dashboard widgets: the same eight slots (+8)` clip-path; `/* Dashboard widgets: the same eight slots (+8)` clip-path; `/* Dashboard widgets: the same eight slots (+8)` clip-path; +5 more |
 | `--ts-widget-chamfer-bl` | `initial` | — |
 | `--ts-widget-chamfer-br` | `initial` | — |
 | `--ts-widget-chamfer-rise` | `1` | — |
 | `--ts-widget-chamfer-tl` | `initial` | — |
 | `--ts-widget-chamfer-tr` | `initial` | — |
 | `--ts-widget-cut-stroke` | `initial` | — |
-| `--ts-widget-frame-bl` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image |
-| `--ts-widget-frame-bottom` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image |
-| `--ts-widget-frame-br` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image |
-| `--ts-widget-frame-left` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image |
-| `--ts-widget-frame-right` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image |
-| `--ts-widget-frame-tl` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image |
-| `--ts-widget-frame-top` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image |
-| `--ts-widget-frame-tr` | `none` | `/* Dashboard widgets: the same eight slots (+6)` background-image |
+| `--ts-widget-frame-bl` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image |
+| `--ts-widget-frame-bottom` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image |
+| `--ts-widget-frame-br` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image |
+| `--ts-widget-frame-left` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image |
+| `--ts-widget-frame-right` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image |
+| `--ts-widget-frame-tl` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image |
+| `--ts-widget-frame-top` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image |
+| `--ts-widget-frame-tr` | `none` | `/* Dashboard widgets: the same eight slots (+8)` background-image |
 | `--ts-widget-header-bg-image` | `none` | `.widget-header` background-image |
 | `--ts-widget-header-letter-spacing` | `normal` | `.widget-header` letter-spacing |
 | `--ts-widget-radius-bl` | `var(--ts-radius-md)` | `.gs-w (+1)` border-bottom-left-radius; `.grid-stack-item-content[class*="tw:rounded"]` border-bottom-left-radius |

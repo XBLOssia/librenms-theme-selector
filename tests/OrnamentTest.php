@@ -46,7 +46,7 @@ function test_ornaments(): void
         "$gate .panel" => [
             'position: relative',
             'isolation: isolate',
-            'clip-path: polygon(-10000px -10000px, calc(100% + 10000px) -10000px, calc(100% + 10000px) 0, calc(100% - var(--ts-panel-chamfer-tr, var(--ts-panel-chamfer))) 0, 100% calc(var(--ts-panel-chamfer-tr, var(--ts-panel-chamfer)) * var(--ts-panel-chamfer-rise, 1)), 100% 0, calc(100% + 10000px) 0, calc(100% + 10000px) 100%, 100% 100%, 100% calc(100% - calc(var(--ts-panel-chamfer-br, var(--ts-panel-chamfer)) * var(--ts-panel-chamfer-rise, 1))), calc(100% - var(--ts-panel-chamfer-br, var(--ts-panel-chamfer))) 100%, calc(100% + 10000px) 100%, calc(100% + 10000px) calc(100% + 10000px), -10000px calc(100% + 10000px), -10000px 100%, var(--ts-panel-chamfer-bl, var(--ts-panel-chamfer)) 100%, 0 calc(100% - calc(var(--ts-panel-chamfer-bl, var(--ts-panel-chamfer)) * var(--ts-panel-chamfer-rise, 1))), 0 100%, -10000px 100%, -10000px 0, 0 0, 0 calc(var(--ts-panel-chamfer-tl, var(--ts-panel-chamfer)) * var(--ts-panel-chamfer-rise, 1)), var(--ts-panel-chamfer-tl, var(--ts-panel-chamfer)) 0, -10000px 0)',
+            'clip-path: polygon(-10000px -10000px, calc(100% + 10000px) -10000px, calc(100% + 10000px) -2px, calc(100% - var(--ts-panel-chamfer-tr, var(--ts-panel-chamfer)) - 2px / var(--ts-panel-chamfer-rise, 1)) -2px, calc(100% + 2px) calc(calc(var(--ts-panel-chamfer-tr, var(--ts-panel-chamfer)) * var(--ts-panel-chamfer-rise, 1)) + 2px * var(--ts-panel-chamfer-rise, 1)), calc(100% + 2px) -2px, calc(100% + 10000px) -2px, calc(100% + 10000px) calc(100% + 2px), calc(100% + 2px) calc(100% + 2px), calc(100% + 2px) calc(100% - calc(var(--ts-panel-chamfer-br, var(--ts-panel-chamfer)) * var(--ts-panel-chamfer-rise, 1)) - 2px * var(--ts-panel-chamfer-rise, 1)), calc(100% - var(--ts-panel-chamfer-br, var(--ts-panel-chamfer)) - 2px / var(--ts-panel-chamfer-rise, 1)) calc(100% + 2px), calc(100% + 10000px) calc(100% + 2px), calc(100% + 10000px) calc(100% + 10000px), -10000px calc(100% + 10000px), -10000px calc(100% + 2px), calc(var(--ts-panel-chamfer-bl, var(--ts-panel-chamfer)) + 2px / var(--ts-panel-chamfer-rise, 1)) calc(100% + 2px), -2px calc(100% - calc(var(--ts-panel-chamfer-bl, var(--ts-panel-chamfer)) * var(--ts-panel-chamfer-rise, 1)) - 2px * var(--ts-panel-chamfer-rise, 1)), -2px calc(100% + 2px), -10000px calc(100% + 2px), -10000px -2px, -2px -2px, -2px calc(calc(var(--ts-panel-chamfer-tl, var(--ts-panel-chamfer)) * var(--ts-panel-chamfer-rise, 1)) + 2px * var(--ts-panel-chamfer-rise, 1)), calc(var(--ts-panel-chamfer-tl, var(--ts-panel-chamfer)) + 2px / var(--ts-panel-chamfer-rise, 1)) -2px, -10000px -2px)',
         ],
         "$gate .panel::before" => [
             'content: ""',
@@ -149,7 +149,7 @@ function test_ornaments(): void
             'background-size: 32px 32px, 32px 32px, 32px 32px, 32px 32px, 100% 12px, 12px 100%, 100% 12px, 12px 100%, var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer, 0px)) calc(var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer, 0px)) * var(--ts-widget-chamfer-rise, 1)), var(--ts-widget-chamfer-br, var(--ts-widget-chamfer, 0px)) calc(var(--ts-widget-chamfer-br, var(--ts-widget-chamfer, 0px)) * var(--ts-widget-chamfer-rise, 1)), var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer, 0px)) calc(var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer, 0px)) * var(--ts-widget-chamfer-rise, 1)), var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer, 0px)) calc(var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer, 0px)) * var(--ts-widget-chamfer-rise, 1)), auto, auto, auto, auto, auto, auto, auto, auto',
             'background-position: left top, right top, left bottom, right bottom, left top, right top, left bottom, left top, left bottom, right bottom, left top, right top, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0',
             'background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat',
-            'clip-path: polygon(-10000px -10000px, calc(100% + 10000px) -10000px, calc(100% + 10000px) 0, calc(100% - var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer))) 0, 100% calc(var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1)), 100% 0, calc(100% + 10000px) 0, calc(100% + 10000px) 100%, 100% 100%, 100% calc(100% - calc(var(--ts-widget-chamfer-br, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1))), calc(100% - var(--ts-widget-chamfer-br, var(--ts-widget-chamfer))) 100%, calc(100% + 10000px) 100%, calc(100% + 10000px) calc(100% + 10000px), -10000px calc(100% + 10000px), -10000px 100%, var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer)) 100%, 0 calc(100% - calc(var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1))), 0 100%, -10000px 100%, -10000px 0, 0 0, 0 calc(var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1)), var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer)) 0, -10000px 0)',
+            'clip-path: polygon(-10000px -10000px, calc(100% + 10000px) -10000px, calc(100% + 10000px) -2px, calc(100% - var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer)) - 2px / var(--ts-widget-chamfer-rise, 1)) -2px, calc(100% + 2px) calc(calc(var(--ts-widget-chamfer-tr, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1)) + 2px * var(--ts-widget-chamfer-rise, 1)), calc(100% + 2px) -2px, calc(100% + 10000px) -2px, calc(100% + 10000px) calc(100% + 2px), calc(100% + 2px) calc(100% + 2px), calc(100% + 2px) calc(100% - calc(var(--ts-widget-chamfer-br, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1)) - 2px * var(--ts-widget-chamfer-rise, 1)), calc(100% - var(--ts-widget-chamfer-br, var(--ts-widget-chamfer)) - 2px / var(--ts-widget-chamfer-rise, 1)) calc(100% + 2px), calc(100% + 10000px) calc(100% + 2px), calc(100% + 10000px) calc(100% + 10000px), -10000px calc(100% + 10000px), -10000px calc(100% + 2px), calc(var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer)) + 2px / var(--ts-widget-chamfer-rise, 1)) calc(100% + 2px), -2px calc(100% - calc(var(--ts-widget-chamfer-bl, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1)) - 2px * var(--ts-widget-chamfer-rise, 1)), -2px calc(100% + 2px), -10000px calc(100% + 2px), -10000px -2px, -2px -2px, -2px calc(calc(var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer)) * var(--ts-widget-chamfer-rise, 1)) + 2px * var(--ts-widget-chamfer-rise, 1)), calc(var(--ts-widget-chamfer-tl, var(--ts-widget-chamfer)) + 2px / var(--ts-widget-chamfer-rise, 1)) -2px, -10000px -2px)',
         ],
         "$gate .btn" => [
             'clip-path: polygon(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) 0, calc(100% - var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer))) 0, 100% calc(var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-btn-chamfer-br, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1))), calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))) 100%, var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) 100%, 0 calc(100% - calc(var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1))), 0 calc(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) * var(--ts-btn-chamfer-rise, 1)))',
@@ -383,21 +383,27 @@ function test_ornaments(): void
 
     T::group('ornaments: cut corners on panels and widgets');
     // The clip-path for widgets and panels, written out independently: the box with a margin of
-    // 10000px (so nothing that hangs out of it is clipped), and a zero-width slit into each corner
-    // that removes just the cut triangle. A cut of 0 leaves the whole box, so a skin that cuts one
-    // corner keeps the others.
+    // 10000px (so nothing that hangs out of it is clipped), and into each corner a notch that removes
+    // the cut triangle grown by 2px on the two sides along the box edges (its hypotenuse stays on the
+    // same line), joined to the outside by a zero-width slit that runs 2px outside the box. The clip
+    // edge therefore never lies on the border's outer edge, where a border snapped to a device pixel
+    // and an unsnapped clip disagree at fractional zoom levels and leave a hairline behind. A cut of 0
+    // removes only a 2px sliver outside the corner, so a skin that cuts one corner keeps the others.
     $polygonFor = function (string $e): string {
         $c = fn (string $k) => "var(--ts-$e-chamfer-$k, var(--ts-$e-chamfer))";
-        $v = fn (string $k) => "calc({$c($k)} * var(--ts-$e-chamfer-rise, 1))";
+        $r = "var(--ts-$e-chamfer-rise, 1)";
+        $v = fn (string $k) => "calc({$c($k)} * $r)";
         $m = '10000px';
+        $g = '2px';
         $pm = "calc(100% + $m)";
+        $pe = "calc(100% + $g)";
         $pts = [
             ["-$m", "-$m"], [$pm, "-$m"],
-            [$pm, '0'], ["calc(100% - {$c('tr')})", '0'], ['100%', $v('tr')], ['100%', '0'], [$pm, '0'],
-            [$pm, '100%'], ['100%', '100%'], ['100%', "calc(100% - {$v('br')})"], ["calc(100% - {$c('br')})", '100%'], [$pm, '100%'],
+            [$pm, "-$g"], ["calc(100% - {$c('tr')} - $g / $r)", "-$g"], [$pe, "calc({$v('tr')} + $g * $r)"], [$pe, "-$g"], [$pm, "-$g"],
+            [$pm, $pe], [$pe, $pe], [$pe, "calc(100% - {$v('br')} - $g * $r)"], ["calc(100% - {$c('br')} - $g / $r)", $pe], [$pm, $pe],
             [$pm, $pm], ["-$m", $pm],
-            ["-$m", '100%'], [$c('bl'), '100%'], ['0', "calc(100% - {$v('bl')})"], ['0', '100%'], ["-$m", '100%'],
-            ["-$m", '0'], ['0', '0'], ['0', $v('tl')], [$c('tl'), '0'], ["-$m", '0'],
+            ["-$m", $pe], ["calc({$c('bl')} + $g / $r)", $pe], ["-$g", "calc(100% - {$v('bl')} - $g * $r)"], ["-$g", $pe], ["-$m", $pe],
+            ["-$m", "-$g"], ["-$g", "-$g"], ["-$g", "calc({$v('tl')} + $g * $r)"], ["calc({$c('tl')} + $g / $r)", "-$g"], ["-$m", "-$g"],
         ];
 
         return 'polygon(' . implode(', ', array_map(fn ($p) => "$p[0] $p[1]", $pts)) . ')';
@@ -408,7 +414,7 @@ function test_ornaments(): void
     $panelDecls = $rules["$gate .panel"] ?? [];
     T::ok('the panel clip-path is the same fixed polygon, over the panel tokens', in_array('clip-path: ' . $polygonFor('panel'), $panelDecls, true));
     T::ok('a panel clip-path is only in that one declaration', count(array_filter($panelDecls, fn ($d) => str_starts_with($d, 'clip-path:'))) === 1);
-    T::ok('the clip margin is large enough that a dropdown or a fixed dialog inside a panel is not cut off', str_contains($polygonFor('panel'), '10000px') && ! preg_match('/calc\(100% \+ (?:[0-9]|[0-9]{2,3}|[0-9]{4})px\)/', implode(',', $panelDecls)));
+    T::ok('the clip margin is large enough that a dropdown or a fixed dialog inside a panel is not cut off', in_array('clip-path: ' . $polygonFor('panel'), $panelDecls, true) && str_starts_with($polygonFor('panel'), 'polygon(-10000px -10000px, calc(100% + 10000px) -10000px, ') && str_contains($polygonFor('panel'), 'calc(100% + 10000px) calc(100% + 10000px), -10000px calc(100% + 10000px)'));
 
     // The panel's ::after draws only the edge lines of the cut (the clip makes the cut).
     $panelAfter = $rules["$gate .panel::after"] ?? [];

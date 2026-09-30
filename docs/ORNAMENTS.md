@@ -181,6 +181,13 @@ texture.
 * **Nothing that hangs out is cut off.** The margin is 10000px, so a dropdown that opens
   past a panel's edge, or a fixed-position dialog inside one, is not clipped; only the
   cut triangles are. (Checked in a browser: both still receive clicks on a clipped panel.)
+* **The notch is grown 2px off the box edges.** Each notch is the cut triangle plus 2px on
+  the two sides that lie along the box edges (the hypotenuse stays on the same line), and
+  the zero-width slit that joins it to the outside runs 2px outside the box. Reason: with
+  the clip edge exactly on the border's outer edge, a border snapped to a device pixel and
+  an unsnapped clip disagree at fractional zoom levels (100%, 110%, 125% and 150% in one
+  browser, not at 90% or 175%) and leave a one-pixel hairline of border running out to the
+  old square corner. A corner with no cut loses only a 2px sliver outside itself.
 * **The cut edge gets a line.** The panel's `::after` draws it above the content, on the
   panel's own corners (it is exactly the border box for the usual 1px border), so the
   line runs from the left border to the bottom border and stops. For a widget it is one

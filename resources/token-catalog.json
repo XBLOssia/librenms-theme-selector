@@ -1811,6 +1811,70 @@
    "maxPx": 24,
    "structural": false
   },
+  "--ts-panel-chamfer": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-panel-chamfer-bl": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-panel-chamfer-br": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-panel-chamfer-rise": {
+   "kinds": [
+    "length",
+    "ratio"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-panel-chamfer-tl": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-panel-chamfer-tr": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-panel-cut-fill": {
+   "kinds": [
+    "glowcolor",
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-panel-cut-stroke": {
+   "kinds": [
+    "glowcolor",
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
   "--ts-panel-footer-bg": {
    "kinds": [
     "color"
@@ -2574,6 +2638,62 @@
     "border"
    ],
    "maxPx": 24,
+   "structural": false
+  },
+  "--ts-widget-chamfer": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-widget-chamfer-bl": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-widget-chamfer-br": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-widget-chamfer-rise": {
+   "kinds": [
+    "length",
+    "ratio"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-widget-chamfer-tl": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-widget-chamfer-tr": {
+   "kinds": [
+    "chamfer",
+    "length"
+   ],
+   "maxPx": 12,
+   "structural": false
+  },
+  "--ts-widget-cut-stroke": {
+   "kinds": [
+    "glowcolor",
+    "image"
+   ],
+   "maxPx": 800,
    "structural": false
   },
   "--ts-widget-frame-bl": {

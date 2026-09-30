@@ -85,7 +85,17 @@
                         <td><code>{{ $id }}</code></td>
                         <td>{{ $skin['author'] ?: '-' }}</td>
                         <td>{{ $skin['version'] ?: '-' }}</td>
-                        <td>{{ $skin['source'] === 'bundled' ? 'Bundled' : 'Uploaded' }}</td>
+                        <td>
+                            {{ $skin['source'] === 'bundled' ? 'Bundled' : 'Uploaded' }}
+                            @if(! empty($skin['license']))<span class="text-muted">({{ $skin['license'] }})</span>@endif
+                            @if(! empty($skin['license_text']))
+                                {{-- Shown as escaped text inside <pre>: the notice is data, never markup or a served file. --}}
+                                <details>
+                                    <summary>Licence notice</summary>
+                                    <pre style="max-height:16em; overflow:auto; white-space:pre-wrap;">{{ $skin['license_text'] }}</pre>
+                                </details>
+                            @endif
+                        </td>
                         <td class="text-right">
                             @if($skin['source'] === 'uploaded')
                                 <form method="post" action="{{ route('theme-selector.delete', ['id' => $id]) }}" style="display:inline"
@@ -101,21 +111,83 @@
             </table>
 
             @if($uploadsAvailable)
+                <style>
+                    .ts-drop { display:block; margin:0 0 10px; padding:22px 16px; text-align:center; font-weight:normal;
+                               border:2px dashed var(--ts-info, #337ab7); border-radius:4px; cursor:pointer; }
+                    .ts-drop:hover, .ts-drop:focus-within, .ts-drop.ts-over { border-style:solid; background:rgba(128,128,128,.14); }
+                    .ts-drop.ts-picked { border-style:solid; }
+                    .ts-drop.ts-bad { border-color:#d9534f; }
+                    .ts-drop input { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; }
+                    .ts-drop .ts-big { display:block; font-size:1.15em; margin-bottom:4px; }
+                    .ts-step { display:inline-block; min-width:1.6em; margin-right:.4em; padding:0 .4em; border-radius:1em;
+                               border:1px solid currentColor; text-align:center; font-size:.9em; }
+                    .ts-file { display:block; margin-top:6px; }
+                </style>
                 <h4>Add a skin</h4>
-                <form method="post" action="{{ route('theme-selector.upload') }}" enctype="multipart/form-data">
+                <form method="post" action="{{ route('theme-selector.upload') }}" enctype="multipart/form-data"
+                      id="ts-upload" data-max-mb="{{ $uploadLimit }}">
                     @csrf
-                    <div class="form-group">
-                        <input type="file" name="bundle" accept=".zip,application/zip" required>
-                        <p class="help-block">
-                            A <code>.zip</code> of up to {{ $uploadLimit }} MB (this server's PHP allows {{ $phpLimit }}) containing
-                            <code>skin.json</code>, <code>skin.css</code>, optionally <code>graph.conf</code> and
-                            <code>fonts/*.woff2</code>. The bundle is checked strictly and re-generated before anything is
-                            published: only known colour, type and spacing values are accepted, never selectors, images,
-                            imports or scripts. Installing a skin doesn't change what anyone sees until they choose it.
-                        </p>
-                    </div>
-                    <button type="submit" class="btn btn-default">Upload and install</button>
+                    <p><span class="ts-step">1</span><strong>Choose a skin bundle</strong>
+                       <span class="text-muted">then</span>
+                       <span class="ts-step">2</span><strong>Install it</strong></p>
+                    <label class="ts-drop" id="ts-drop" for="ts-file">
+                        <input type="file" id="ts-file" name="bundle" accept=".zip,application/zip" required>
+                        <span class="ts-big"><span class="ts-step">1</span>Drop a <code>.zip</code> here, or click to browse</span>
+                        <span class="text-muted" id="ts-hint">Up to {{ $uploadLimit }} MB (this server's PHP allows {{ $phpLimit }}). Nothing is installed until you press the button below.</span>
+                        <span class="ts-file" id="ts-file-name" aria-live="polite"></span>
+                    </label>
+                    <button type="submit" class="btn btn-primary" id="ts-go" disabled><span class="ts-step">2</span>Install skin</button>
+                    <span class="text-muted" id="ts-go-hint">Choose a file first.</span>
+                    <p class="help-block">
+                        The bundle holds <code>skin.json</code> and <code>skin.css</code>, and optionally
+                        <code>graph.conf</code>, <code>LICENSE.txt</code> and <code>fonts/*.woff2</code>. It is checked strictly and
+                        re-generated before anything is published: only known colour, type and spacing values are accepted,
+                        never selectors, images, imports or scripts. Installing a skin doesn't change what anyone sees
+                        until they choose it.
+                    </p>
                 </form>
+                <script>
+                (function () {
+                    var form = document.getElementById('ts-upload'), drop = document.getElementById('ts-drop'),
+                        input = document.getElementById('ts-file'), go = document.getElementById('ts-go'),
+                        name = document.getElementById('ts-file-name'), goHint = document.getElementById('ts-go-hint'),
+                        max = parseFloat(form.getAttribute('data-max-mb')) * 1024 * 1024;
+                    function show() {
+                        var f = input.files && input.files[0], problem = '';
+                        drop.classList.remove('ts-bad', 'ts-picked');
+                        if (!f) { name.textContent = ''; go.disabled = true; goHint.textContent = 'Choose a file first.'; return; }
+                        if (!/\.zip$/i.test(f.name)) problem = 'That is not a .zip file.';
+                        else if (max && f.size > max) problem = 'That file is larger than the ' + (max / 1048576) + ' MB limit.';
+                        name.textContent = f.name + ' (' + (f.size / 1024 < 1024 ? Math.max(1, Math.round(f.size / 1024)) + ' KB' : (f.size / 1048576).toFixed(1) + ' MB') + ')';
+                        if (problem) {
+                            drop.classList.add('ts-bad'); name.textContent += ' - ' + problem;
+                            go.disabled = true; goHint.textContent = 'Choose a different file.';
+                        } else {
+                            drop.classList.add('ts-picked'); go.disabled = false; goHint.textContent = 'Ready. Press Install skin to upload it.';
+                        }
+                    }
+                    input.addEventListener('change', show);
+                    ['dragenter', 'dragover'].forEach(function (t) {
+                        drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('ts-over'); });
+                    });
+                    ['dragleave', 'dragend'].forEach(function (t) {
+                        drop.addEventListener(t, function () { drop.classList.remove('ts-over'); });
+                    });
+                    drop.addEventListener('drop', function (e) {
+                        e.preventDefault(); drop.classList.remove('ts-over');
+                        var files = e.dataTransfer && e.dataTransfer.files;
+                        if (files && files.length) {
+                            try { input.files = files; } catch (err) { return; }
+                            show();
+                        }
+                    });
+                    // A file dropped anywhere else on the page must not navigate away from it.
+                    window.addEventListener('dragover', function (e) { if (!drop.contains(e.target)) { e.preventDefault(); } });
+                    window.addEventListener('drop', function (e) { if (!drop.contains(e.target)) { e.preventDefault(); } });
+                    form.addEventListener('submit', function () { go.disabled = true; goHint.textContent = 'Uploading and checking...'; });
+                    show();
+                })();
+                </script>
             @else
                 <p class="text-muted">Uploading skins needs PHP's zlib extension, which this server doesn't have.</p>
             @endif

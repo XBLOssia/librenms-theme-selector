@@ -10,6 +10,7 @@ my-skin/
   skin.css         required
   graph.conf       optional: graph colours
   fonts/           optional: .woff2 or .woff files skin.css refers to
+  LICENSE.txt      optional: a licence notice, shown to admins
 ```
 
 Pack, check, upload:
@@ -106,8 +107,24 @@ allowed in `@font-face`. On install the font is embedded in the skin's
 stylesheet, so your files are not served as files.
 
 **You are responsible for the font's licence.** Use fonts you may redistribute
-(the bundled skins use SIL Open Font License faces) and say so in
-`license`.
+(the bundled skins use SIL Open Font License faces), say so in `license`, and
+include the licence text as `LICENSE.txt` (below), which most font licences
+(the OFL among them) require you to keep with the font.
+
+## LICENSE.txt
+
+Optional. Plain text, up to 20 KB: the copyright line and licence text for the
+fonts (or anything else) in your bundle. The exact name `LICENSE.txt` is the only
+one accepted; `license.txt`, `OFL.txt`, `fonts/OFL.txt` and so on are refused.
+
+The text is stored with the skin and shown to admins under **Licence notice** in
+the skin list. It is never served as a file and never reaches the stylesheet.
+It must be UTF-8 text: letters, digits, punctuation, symbols, spaces, tabs and
+newlines. Control characters, invisible or direction-changing characters
+(zero-width spaces, bidi overrides), private-use and unassigned characters are
+errors, so a notice can't hide or disguise anything. Angle brackets and
+ampersands are fine (they are displayed as text, never interpreted). Replacing
+a skin replaces its notice; a bundle with no `LICENSE.txt` has none.
 
 ## graph.conf
 

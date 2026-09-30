@@ -47,6 +47,14 @@ file_put_contents("$out/notzip.zip", '<html><script>alert(document.cookie)</scri
 file_put_contents("$out/php-as-zip.zip", '<?php system($_GET["c"]); ?>');
 file_put_contents("$out/oversize.zip", "PK\x03\x04" . random_bytes(5 * 1024 * 1024));
 
+// ---- licence notices -------------------------------------------------------------
+// Markup characters are legal in a notice (it is shown escaped), so this one
+// tries to be an XSS payload. It must be stored and shown as text.
+$notice = "Copyright (c) 2026 <b>Test</b> & Co <script>alert('licence-xss')</script>\nThis Font Software is licensed under the SIL Open Font License, Version 1.1.\n";
+$put('good-license.zip', array_merge($std('with-license', $css), [['name' => 'LICENSE.txt', 'data' => $notice, 'method' => 8]]));
+$put('evil-license-control.zip', array_merge($std('evil', $css), [['name' => 'LICENSE.txt', 'data' => "Copyright \x1b[31m2026 \xe2\x80\xae txt.exe", 'method' => 8]]));
+$put('evil-license-name.zip', array_merge($std('evil', $css), [['name' => 'license.php', 'data' => '<?php system($_GET[0]);', 'method' => 8]]));
+
 // ---- hostile: the stylesheet -----------------------------------------------------
 $put('evil-css-url.zip', $std('evil', "html.dark {\n  --ts-navbar-bg-image: url(http://evil.example/beacon.png);\n  --ts-bg: #000;\n}\n"));
 $put('evil-css-import.zip', $std('evil', "@import url(http://evil.example/x.css);\n" . $css));

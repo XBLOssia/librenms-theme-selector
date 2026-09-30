@@ -168,7 +168,8 @@ host's nginx config has not been checked.
 <skin>/
   skin.json        manifest: id, name, author, version, modes
   skin.css         the token file (below)
-  fonts/           optional .woff2 + licence files
+  fonts/           optional .woff2 files
+  LICENSE.txt      optional licence notice (stored, shown to admins, never served)
   graph.json       optional graph palette (instance-wide in v1)
 ```
 
@@ -212,7 +213,7 @@ per-skin raw CSS escape hatch.
 As built (2026-09-29; the design here originally allowed `.ttf` and `.txt`
 and extracted files, and neither survived a threat model): the reader parses the
 zip itself, extracts nothing, and accepts only `skin.json`, `skin.css`,
-`graph.conf` and `fonts/<slug>.woff2|woff` by exact name. Fonts are embedded in
+`graph.conf`, `LICENSE.txt` and `fonts/<slug>.woff2|woff` by exact name. Fonts are embedded in
 the generated stylesheet, so no uploaded file is served as a file. The full
 list of controls, each with the test that would notice it breaking, is
 [SECURITY.md](SECURITY.md); the format is [AUTHORING.md](AUTHORING.md).
@@ -416,9 +417,9 @@ gave:
   and `?theme-selector=off` as an escape hatch;
 - `lnms theme-selector:validate` and `scripts/pack-skin.py` for skin authors.
 
-Verification: 1,085 unit checks (hostile archives, a large CSS injection
+Verification: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
-breaks each defence and requires a failing test (39 caught, 7 documented as
+breaks each defence and requires a failing test (46 caught, 7 documented as
 redundant layers, 0 missed) and an end-to-end script against the real routes.
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See

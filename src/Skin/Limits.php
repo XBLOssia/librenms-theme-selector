@@ -19,6 +19,7 @@ final class Limits
     public const MANIFEST_BYTES = 4_096;
     public const CSS_BYTES = 98_304;
     public const GRAPH_BYTES = 8_192;
+    public const LICENSE_BYTES = 20_480;
     public const FONT_BYTES = 409_600;
     public const FONTS = 8;
     public const FONT_FACES = 12;

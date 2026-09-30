@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 1,085 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (39 flaws caught, 7 documented as
+`php tests/run.php` runs 1,178 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (46 flaws caught, 7 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 Run all of it with `sh dev/test.sh all`.
 
@@ -59,7 +59,7 @@ Run all of it with `sh dev/test.sh all`.
 
 | Attack | Control | Tested by |
 |---|---|---|
-| Zip-slip (`../evil.php`, absolute paths, backslashes, drive letters, NUL) | Nothing is extracted and no path is built from an entry name. Entry names must match an exact allowlist (`skin.json`, `skin.css`, `graph.conf`, `fonts/<slug>.woff2\|woff`), matched with `\z` so a trailing newline can't slip through | `ZipTest` (48 hostile names), mutation "match with `$`" |
+| Zip-slip (`../evil.php`, absolute paths, backslashes, drive letters, NUL) | Nothing is extracted and no path is built from an entry name. Entry names must match an exact allowlist (`skin.json`, `skin.css`, `graph.conf`, `LICENSE.txt`, `fonts/<slug>.woff2\|woff`), matched with `\z` so a trailing newline can't slip through | `ZipTest` (48 hostile names), mutation "match with `$`" |
 | A `.php`, `.htaccess`, `.svg`, nested zip or anything else in the bundle | Any entry outside the allowlist rejects the *whole* bundle, not just that entry | `ZipTest`, `evil-php-entry`, `evil-htaccess`, `evil-nested-zip` |
 | Symlink or device entries | Unix mode bits checked; only regular files and directories | `ZipTest`, mutation "accept symlink entries" |
 | Decompression bomb | Inflation counts output as it is produced and stops at the declared size; declared sizes are capped per file and in total | `ZipTest` (40 MB bomb stopped with < 20 MB memory), mutation "no cap while inflating" |
@@ -92,6 +92,20 @@ Run all of it with `sh dev/test.sh all`.
 | A real font with a payload appended (polyglot) | WOFF and WOFF2 declare their own length; it must equal the file size | `MiscTest`, mutation |
 | PHP or script inside the font bytes | Scanned for `<?php`, `<?=`, `<? `, `<script`. (`<%`, an ASP tag nothing here executes, is not scanned: two bytes occur by chance in real compressed fonts.) | `MiscTest`, mutation |
 | A font file executed through a path-info trick (`.../font.woff2/x.php`) | There are no font files: fonts exist only inside the generated CSS as base64, which contains no `<`. Verified against the running server | `test-upload.sh` ("path-info trick") |
+
+### Licence notices
+
+`LICENSE.txt` is the one free-text field in a bundle, so it is treated as
+hostile text: it is stored in the database, never written to the web root, never
+copied into the stylesheet, and shown only as escaped text inside `<pre>`.
+
+| Attack | Control | Tested by |
+|---|---|---|
+| Script or markup in the notice (stored XSS) | Rendered with Blade's escaping in a `<pre>`; the notice is never echoed as HTML and never placed in CSS. Verified against the running server with a `<script>` payload | `test-upload.sh` ("shown escaped, never as markup") |
+| Hiding or disguising text (bidi overrides, zero-width characters, terminal escapes, NUL) | Only letters, marks, digits, punctuation, symbols, spaces, tab and newline are accepted; control, format, private-use and unassigned characters and invalid UTF-8 are errors | `LicenseTest` (18 refused cases), mutation "accept control, invisible and spoofing characters" |
+| A notice used to deliver a file (`license.php`, `LICENSE.txt.php`, `fonts/LICENSE.txt`) | Exact-name allowlist. The notice is data in the database, so there is nothing to execute or fetch | `LicenseTest` (near-miss names), `evil-license-name`, mutation |
+| An oversized notice | 20 KB cap, checked on the declared size and while inflating | `LicenseTest`, mutations |
+| Empty notices, or a notice that silently replaces a good one | Empty text is an error; a refused bundle changes nothing | `LicenseTest`, `test-upload.sh` |
 
 ### Graph settings
 

@@ -27,7 +27,7 @@ namespace Xblossia\ThemeSelector\Skin;
  */
 final class ZipBundleReader
 {
-    private const NAME = '#^(skin\.json|skin\.css|graph\.conf|fonts/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.(woff2|woff))\z#D';
+    private const NAME = '#^(skin\.json|skin\.css|graph\.conf|LICENSE\.txt|fonts/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.(woff2|woff))\z#D';
 
     /**
      * @return array<string, string>|null  entry name => contents, or null (see $report)
@@ -200,6 +200,7 @@ final class ZipBundleReader
                 $name === 'skin.json' => Limits::MANIFEST_BYTES,
                 $name === 'skin.css' => Limits::CSS_BYTES,
                 $name === 'graph.conf' => Limits::GRAPH_BYTES,
+                $name === 'LICENSE.txt' => Limits::LICENSE_BYTES,
                 default => Limits::FONT_BYTES,
             };
             if ($h['usize'] > $limit) {

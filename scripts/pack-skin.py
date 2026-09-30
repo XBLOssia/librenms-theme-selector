@@ -8,6 +8,7 @@ The directory holds exactly:
     skin.json     required   id, name, description, author, version, license
     skin.css      required   html.dark { --ts-*: ...; --p-*: ...; } and @font-face
     graph.conf    optional   graph colour palette
+    LICENSE.txt   optional   licence notice for the fonts (stored and shown to admins, never served)
     fonts/*.woff2 optional   the fonts skin.css refers to (also .woff)
 
 Anything else in the directory is an error, not silently skipped: the upload
@@ -24,8 +25,8 @@ import re
 import sys
 import zipfile
 
-NAME = re.compile(r'^(skin\.json|skin\.css|graph\.conf|fonts/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.(woff2|woff))$')
-LIMITS = {'skin.json': 4096, 'skin.css': 98304, 'graph.conf': 8192}
+NAME = re.compile(r'^(skin\.json|skin\.css|graph\.conf|LICENSE\.txt|fonts/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.(woff2|woff))$')
+LIMITS = {'skin.json': 4096, 'skin.css': 98304, 'graph.conf': 8192, 'LICENSE.txt': 20480}
 FONT_LIMIT = 409600
 
 
@@ -57,7 +58,7 @@ def main(argv):
     problems = []
     for rel, full in entries:
         if not NAME.match(rel):
-            problems.append(f'{rel}: not allowed in a skin bundle (allowed: skin.json, skin.css, graph.conf, fonts/*.woff2, fonts/*.woff)')
+            problems.append(f'{rel}: not allowed in a skin bundle (allowed: skin.json, skin.css, graph.conf, LICENSE.txt, fonts/*.woff2, fonts/*.woff)')
             continue
         limit = LIMITS.get(rel, FONT_LIMIT)
         if os.path.getsize(full) > limit:
@@ -76,7 +77,7 @@ def main(argv):
             print('  - ' + p, file=sys.stderr)
         return 1
 
-    order = ['skin.json', 'skin.css', 'graph.conf']
+    order = ['skin.json', 'skin.css', 'graph.conf', 'LICENSE.txt']
     entries.sort(key=lambda e: (order.index(e[0]) if e[0] in order else 99, e[0]))
     with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for rel, full in entries:

@@ -54,6 +54,11 @@ for p in ['border-radius', 'padding', 'letter-spacing', 'font-size', 'line-heigh
 for p in ['font-weight', 'font-style', 'text-transform', 'text-decoration', 'font-variant-numeric',
           'border-style', 'opacity']:
     KINDS[p] = 'text'
+# Backgrounds are painted inside the element they belong to: their size, position
+# and repeat can't move, resize or raise anything.
+for p in ['background-size', 'background-position']:
+    KINDS[p] = 'length'
+KINDS['background-repeat'] = 'text'
 KINDS['transition'] = 'motion'
 KINDS['filter'] = 'filter'
 # A Tailwind theme variable the base retints; every one is a colour.

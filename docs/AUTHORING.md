@@ -76,7 +76,7 @@ html.dark {
   and every other at-rule except `@font-face`, `calc()` and arithmetic,
   backslash escapes, `!important`, comments inside a value, `;`, `{`, `}`, `<`,
   `>`, `@`, `:` inside a value.
-- **Some tokens can't be set by an upload**: the 36 *structural* ones that
+- **Some tokens can't be set by an upload**: the 31 *structural* ones that
   move or size things or generate text (`docs/TOKENS.md` lists them, and why).
   For decoration, use gradients and shadows on the tokens that allow them, and
   the frame slots below.
@@ -151,8 +151,35 @@ and the box gives you the other, so a corner slot is how you make a short bar.
 Put several gradients in one slot, separated by commas, for L-shapes and stripes.
 You can't move, resize or raise the layer, and it can't hold text or take clicks.
 The part of a slot that lies under the panel's heading or body is hidden by them.
-`docs/ORNAMENTS.md` has the rules and what is planned next (heading markers,
-navbar strips, cut corners, animation).
+`docs/ORNAMENTS.md` has the rules and what is planned next (cut corners,
+animation).
+
+**Heading marker and strip.** Each panel heading has a 12px-wide marker band on
+its left edge and a strip layer across the whole heading, both under the
+heading's text:
+
+```css
+--ts-heading-marker: linear-gradient(180deg, #e50832 50%, #f37c2f 50%);
+--ts-heading-marker-size: 4px 100%;          /* a 4px bar, full height */
+--ts-heading-marker-position: left top;
+--ts-heading-strip: radial-gradient(circle, #8ea0c2 0, #8ea0c2 1.5px, transparent 1.6px);
+--ts-heading-strip-size: 34px 6px;           /* a row of rivets */
+--ts-heading-strip-position: 10px 5px;
+--ts-heading-strip-repeat: repeat-x;
+--ts-heading-strip-opacity: .5;
+```
+
+**Navbar strips.** `--ts-navbar-strip-top` paints an 8px band along the top
+edge of the navbar; `--ts-navbar-strip-bottom` a 12px band along the bottom edge
+(8px of it below the navbar). Each has `-size`, `-repeat` and `-opacity` tokens
+(for example `--ts-navbar-strip-top-size: 100% 3px;`). They sit under the
+navbar's links.
+
+**Widgets.** Dashboard widgets take the same eight slots as panels under the
+names `--ts-widget-frame-tl` ... `--ts-widget-frame-left`, plus
+`--ts-widget-radius-tl` and so on. They stay inside the widget's edge (no
+overhang). A widget's title bar covers its top edge; paint the bar itself through
+`--ts-widget-bar-bg`, which takes layered gradients.
 
 ## graph.conf
 

@@ -91,6 +91,34 @@ html.dark {
   --ts-frame-right: none;
   --ts-frame-bottom: none;
   --ts-frame-left: none;
+  --ts-heading-marker: none;
+  --ts-heading-marker-size: auto;
+  --ts-heading-marker-position: left center;
+  --ts-heading-strip: none;
+  --ts-heading-strip-size: auto;
+  --ts-heading-strip-position: 0 0;
+  --ts-heading-strip-repeat: no-repeat;
+  --ts-heading-strip-opacity: 1;
+  --ts-navbar-strip-top: none;
+  --ts-navbar-strip-top-size: auto;
+  --ts-navbar-strip-top-repeat: repeat-x;
+  --ts-navbar-strip-top-opacity: 1;
+  --ts-navbar-strip-bottom: none;
+  --ts-navbar-strip-bottom-size: auto;
+  --ts-navbar-strip-bottom-repeat: repeat-x;
+  --ts-navbar-strip-bottom-opacity: 1;
+  --ts-widget-radius-tl: var(--ts-radius-md);
+  --ts-widget-radius-tr: var(--ts-radius-md);
+  --ts-widget-radius-br: var(--ts-radius-md);
+  --ts-widget-radius-bl: var(--ts-radius-md);
+  --ts-widget-frame-tl: none;
+  --ts-widget-frame-tr: none;
+  --ts-widget-frame-bl: none;
+  --ts-widget-frame-br: none;
+  --ts-widget-frame-top: none;
+  --ts-widget-frame-right: none;
+  --ts-widget-frame-bottom: none;
+  --ts-widget-frame-left: none;
   --ts-panel-heading-bg-image: none;
   --ts-panel-heading-border-bottom: 1px solid var(--ts-border);
   --ts-panel-heading-padding-left: 15px;
@@ -540,6 +568,97 @@ html.dark:has(link[data-ts-orn]) .panel::before {
   background-repeat: no-repeat;
   clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 32px 32px, 32px calc(100% - 32px), calc(100% - 32px) calc(100% - 32px), calc(100% - 32px) 32px, 32px 32px);
 }
+/* Panel headings: a marker on the left edge and a strip across the heading,
+ * both painted under the heading's text (the heading is isolated so that -1
+ * puts them above its background and below its content). */
+html.dark:has(link[data-ts-orn]) .panel > .panel-heading {
+  isolation: isolate;
+}
+html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  z-index: -1;
+  pointer-events: none;
+  background-color: transparent;
+  background-image: var(--ts-heading-marker);
+  background-size: var(--ts-heading-marker-size);
+  background-position: var(--ts-heading-marker-position);
+  background-repeat: no-repeat;
+  box-shadow: none;
+  border-radius: 0;
+}
+html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: transparent;
+  background-image: var(--ts-heading-strip);
+  background-size: var(--ts-heading-strip-size);
+  background-position: var(--ts-heading-strip-position);
+  background-repeat: var(--ts-heading-strip-repeat);
+  opacity: var(--ts-heading-strip-opacity);
+}
+/* Navbar: a strip along the top edge (inside) and along the bottom edge
+ * (4px inside, 8px out), under the navbar's links. */
+html.dark:has(link[data-ts-orn]) .navbar-default {
+  isolation: isolate;
+}
+html.dark:has(link[data-ts-orn]) .navbar-default::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 8px;
+  z-index: -1;
+  pointer-events: none;
+  background-color: transparent;
+  background-image: var(--ts-navbar-strip-top);
+  background-size: var(--ts-navbar-strip-top-size);
+  background-position: left top;
+  background-repeat: var(--ts-navbar-strip-top-repeat);
+  opacity: var(--ts-navbar-strip-top-opacity);
+}
+html.dark:has(link[data-ts-orn]) .navbar-default::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 12px;
+  z-index: -1;
+  pointer-events: none;
+  background-color: transparent;
+  background-image: var(--ts-navbar-strip-bottom);
+  background-size: var(--ts-navbar-strip-bottom-size);
+  background-position: left bottom;
+  background-repeat: var(--ts-navbar-strip-bottom-repeat);
+  opacity: var(--ts-navbar-strip-bottom-opacity);
+  box-shadow: none;
+  animation: none;
+}
+/* Dashboard widgets: the same eight slots, painted as the widget's own
+ * background layers. They stay inside its edge (a widget scrolls, and its
+ * gutters are uneven, so there is no overhang), above its colour and under its
+ * content. The last eight entries of each list are for layers of
+ * --ts-widget-bg-image. */
+html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content {
+  background-image: var(--ts-widget-frame-tl), var(--ts-widget-frame-tr), var(--ts-widget-frame-bl), var(--ts-widget-frame-br), var(--ts-widget-frame-top), var(--ts-widget-frame-right), var(--ts-widget-frame-bottom), var(--ts-widget-frame-left), var(--ts-widget-bg-image);
+  background-size: 32px 32px, 32px 32px, 32px 32px, 32px 32px, 100% 12px, 12px 100%, 100% 12px, 12px 100%, auto, auto, auto, auto, auto, auto, auto, auto;
+  background-position: left top, right top, left bottom, right bottom, left top, right top, left bottom, left top, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat;
+}
 html.dark .panel-default > .panel-heading, html.dark .panel > .panel-heading {
   background-color: var(--ts-surface-raised);
   background-image: var(--ts-panel-heading-bg-image);
@@ -943,6 +1062,10 @@ html.dark .gs-w, html.dark .grid-stack .grid-stack-item-content {
   box-shadow: var(--ts-widget-shadow);
   color: var(--ts-text);
   border-left-width: var(--ts-widget-border-left-width);
+  border-top-left-radius: var(--ts-widget-radius-tl);
+  border-top-right-radius: var(--ts-widget-radius-tr);
+  border-bottom-right-radius: var(--ts-widget-radius-br);
+  border-bottom-left-radius: var(--ts-widget-radius-bl);
 }
 html.dark .dashboard-widget-title, html.dark .grid-stack .grid-stack-item-content .widget-header {
   background-image: var(--ts-widget-title-bg-image);

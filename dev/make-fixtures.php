@@ -57,10 +57,13 @@ $put('evil-license-name.zip', array_merge($std('evil', $css), [['name' => 'licen
 
 // ---- ornaments -----------------------------------------------------------------
 $bar = 'linear-gradient(180deg, transparent 2px, #e50832 2px, #e50832 6px, transparent 6px)';
-$put('good-frames.zip', $std('with-frames', str_replace('--ts-bg:', "--ts-frame-tl: $bar;
-  --ts-frame-br: $bar;
-  --ts-panel-radius-tl: 0;
-  --ts-bg:", $css)));
+$extra = "--ts-frame-tl: $bar;\n  --ts-frame-br: $bar;\n  --ts-panel-radius-tl: 0;\n"
+    . "  --ts-heading-marker: linear-gradient(90deg, #e50832, #f37c2f);\n  --ts-heading-marker-size: 3px 60%;\n"
+    . "  --ts-heading-strip: radial-gradient(circle, #8ea0c2 0, #8ea0c2 1.5px, transparent 1.6px);\n  --ts-heading-strip-size: 34px 6px;\n  --ts-heading-strip-repeat: repeat-x;\n  --ts-heading-strip-opacity: .5;\n"
+    . "  --ts-navbar-strip-top: linear-gradient(90deg, transparent, #f37c2f, transparent);\n  --ts-navbar-strip-top-size: 100% 3px;\n"
+    . "  --ts-navbar-strip-bottom: linear-gradient(90deg, #e50832 50%, #f37c2f 50%);\n  --ts-navbar-strip-bottom-size: 100% 4px;\n"
+    . "  --ts-widget-frame-bottom: linear-gradient(0deg, #f37c2f 2px, transparent 2px);\n  --ts-widget-radius-tl: 0;\n";
+$put('good-frames.zip', $std('with-frames', str_replace('--ts-bg:', "$extra  --ts-bg:", $css)));
 $put('evil-frames-url.zip', $std('evil', str_replace('--ts-bg:', "--ts-frame-tl: url(http://evil.example/a.png);
   --ts-bg:", $css)));
 

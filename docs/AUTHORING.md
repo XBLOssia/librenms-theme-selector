@@ -175,6 +175,21 @@ edge of the navbar; `--ts-navbar-strip-bottom` a 12px band along the bottom edge
 (for example `--ts-navbar-strip-top-size: 100% 3px;`). They sit under the
 navbar's links.
 
+**Cut corners.** Buttons, labels and badges can have cut corners:
+
+```css
+--ts-btn-chamfer: 0px;        /* corners not named below stay square */
+--ts-btn-chamfer-tl: 8px;     /* cut the top-left and bottom-right */
+--ts-btn-chamfer-br: 8px;
+--ts-label-chamfer: 5px;      /* every corner of labels */
+--ts-badge-chamfer: 5px;
+```
+
+A size is written in `px` (`0px` for a square corner), at most 10px for buttons
+and 6px for labels and badges. If you set `--ts-btn-chamfer-tl` alone, set
+`--ts-btn-chamfer: 0px` too, or no corner is cut (an unset corner uses the
+all-corners token, and with neither set there is no clip at all).
+
 **Widgets.** Dashboard widgets take the same eight slots as panels under the
 names `--ts-widget-frame-tl` ... `--ts-widget-frame-left`, plus
 `--ts-widget-radius-tl` and so on. They stay inside the widget's edge (no

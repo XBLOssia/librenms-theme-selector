@@ -84,6 +84,36 @@ Two details worth knowing:
   an absolutely positioned strip to zero width, so the navbar layers set
   `display: block`.
 
+## Phase C (built): cut corners
+
+`--ts-btn-chamfer`, `--ts-label-chamfer` and `--ts-badge-chamfer` cut the
+corners of buttons, labels and badges. Each has per-corner forms (`-tl`, `-tr`,
+`-br`, `-bl`) that fall back to the all-corners token:
+
+```css
+--ts-btn-chamfer: 0px;          /* the corners I don't name are square */
+--ts-btn-chamfer-tl: 8px;       /* cut the top-left and bottom-right */
+--ts-btn-chamfer-br: 8px;
+--ts-label-chamfer: 5px;        /* all four corners */
+```
+
+* **The polygon is fixed.** `clip-path` is structural, and stays so, except in
+  the one polygon that `base.css` writes for these three elements. The
+  classifier (`scripts/gen-token-catalog.py`) recognises only that exact
+  template; a skin gives sizes, never points.
+* **Sizes are small and in px.** At most 10px for buttons and 6px for labels and
+  badges, so a cut is a little triangle at a corner and can't reach the text
+  (a label's text starts about 8px in from its corner). A size must be written
+  in `px` (`0px` for none): `%` and `em` would scale past the cap, a `var()` could
+  point at one, and a bare `0` makes the polygon's `calc()` invalid.
+* **No cut, no clip.** The tokens default to `initial`, which makes the
+  `clip-path` declaration invalid until a skin sets them, so an unchamfered
+  control has no `clip-path` and keeps its focus ring and shadow.
+* **A cut control clips what lies outside its box**: its focus outline at the
+  cut corners and any outer shadow. Bootstrap's focus ring is drawn inside the
+  button, so it survives, but a skin that chamfers buttons should keep a
+  visible focus style.
+
 ## Roadmap to parity with the bundled skins
 
 | Bundled skin does this | With | Status |
@@ -95,7 +125,7 @@ Two details worth knowing:
 | Rivet / sheen row in a heading (Terran) | the heading strip | Phase B, built |
 | Glow or rivet strips on the navbar's top and bottom edge (all three) | the navbar strips (a *glow*, which is a blur around a shape, comes with Phase D's effects) | Phase B, built |
 | Frames on dashboard widgets | widget frame slots inside the widget's own edge (no overhang: LibreNMS gives widgets uneven gutters and scrolls their contents) | Phase B, built |
-| Cut (chamfered) corners on buttons, labels, badges (Protoss) | one length per element, `--ts-btn-chamfer` and so on, bounded to ~10px, used in a fixed `clip-path` polygon that base.css writes. A cut is a triangle at most 10px across: too small to hide text | Phase C |
+| Cut (chamfered) corners on buttons, labels, badges (Protoss) | `--ts-btn-chamfer` and so on: sizes in px, used in a fixed `clip-path` polygon that base.css writes | Phase C, built. Panels and widgets are not cut: a clip would also trim the frame layers |
 | Animation: a breathing glow, pulse, LED blink (Zerg, Protoss, Terran) | a short list of animations written in base.css, selectable by name, running only on ornament layers, never shorter than 2s, off under `prefers-reduced-motion` | Phase D |
 | Page background (facets, glow) | already possible: `--ts-body-bg-image` takes gradients | done |
 | `hr` height, dropdown submenu offset | not ornaments | stay bundled-only |

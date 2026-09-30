@@ -167,6 +167,8 @@ check "a skin painting frame slots installs" "$(yes_if "printf '%s' \"\$PAGE\" |
 check "its generated stylesheet carries the slot" "$(yes_if "grep -q -e '--ts-frame-tl: linear-gradient' $PUB/skins/with-frames/skin.css")"
 upload dev-admin "$FIX/evil-frames-url.zip"
 check "a frame slot with a url() is refused" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'was not installed'")"
+upload dev-admin "$FIX/evil-chamfer-percent.zip"
+check "a cut corner sized in % is refused" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'in px' && printf '%s' \"\$PAGE\" | grep -q 'was not installed'")"
 post dev-user /plugin/theme-selector "skin=with-frames"
 check "an uploaded skin's links are marked data-ts-orn (base.css and skin.css)" "$(yes_if "[ \"\$(get dev-user /devices | grep -c 'data-ts-orn')\" = 2 ]")"
 post dev-user /plugin/theme-selector "skin=terran"

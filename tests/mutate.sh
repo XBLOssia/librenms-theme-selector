@@ -132,6 +132,12 @@ run_with $B "$RN s/content: \"\";/content: \"Session expired\";/" "ornaments: gi
 run_with $B "$RB s/bottom: -8px;/bottom: -80px;/" "ornaments: let the navbar bottom strip hang 80px"
 run_with $B "$RW s/background-size: 32px 32px,/background-size: 300px 300px,/" "ornaments: make a widget corner slot 300px"
 
+RC='/data-ts-orn\]) \.btn {/,/^}/'
+run_with src/Skin/TokenFile.php "s#&& ! preg_match('/^\[0-9\]{1,2}#\&\& false \&\& ! preg_match('/^[0-9]{1,2}#" "chamfer: accept % and em sizes"
+run_with resources/token-catalog.json '/"--ts-btn-chamfer": {/,/}/ s/"maxPx": 10/"maxPx": 800/' "chamfer: no cap on button cuts"
+run_with $B "$RC s/calc(100% - var(--ts-btn-chamfer-tr/calc(50% - var(--ts-btn-chamfer-tr/" "chamfer: a button cut that scales with its width"
+run_with $B 's/--ts-btn-chamfer-tl: initial;/--ts-btn-chamfer-tl: 0px;/' "chamfer: clip every button by default"
+
 echo
 echo "caught $CAUGHT, redundant $REDUNDANT, missed $MISSED, not applied $UNAPPLIED"
 [ "$MISSED" = 0 ] && [ "$UNAPPLIED" = 0 ]

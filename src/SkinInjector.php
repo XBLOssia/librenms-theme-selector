@@ -38,9 +38,12 @@ class SkinInjector
             $urls = $skin === null ? [] : $this->skins->stylesheetUrls($skin);
 
             $html = '<meta name="theme-selector" content="' . e($skin ?? 'none') . '">';
+            // Skins installed by upload get the fixed ornament layer in base.css
+            // (docs/ORNAMENTS.md): that rule is keyed on this attribute.
+            $mark = $skin !== null && $this->skins->isUploaded($skin) ? ' data-ts-orn' : '';
             foreach ($urls as $url) {
                 // Webroot-relative, like webui.custom_css; resolves via the layout's <base>.
-                $html .= "\n    <link href=\"" . e($url) . '" rel="stylesheet" data-theme-selector>';
+                $html .= "\n    <link href=\"" . e($url) . '" rel="stylesheet" data-theme-selector' . $mark . '>';
             }
 
             $view->getFactory()->startPush('styles', $html . "\n");

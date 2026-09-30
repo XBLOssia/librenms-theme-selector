@@ -112,6 +112,15 @@ run_with src/Skin/ZipBundleReader.php 's#LICENSE..txt|##' "zip: LICENSE.txt is n
 run_with src/Skin/ZipBundleReader.php "s#\$name === 'LICENSE.txt' => Limits::LICENSE_BYTES,##" "zip: no LICENSE.txt size limit (falls back to the font limit)"
 run_with src/Skin/SkinCompiler.php "s#if (isset(\$files\['LICENSE.txt'\])) {#if (false) {#" "compiler: ignore the LICENSE.txt entry"
 
+B=base/base.css
+R='/data-ts-orn\]) \.panel::before {/,/^}/'
+run_with $B "$R s/z-index: -1;/z-index: 2;/" "ornaments: raise the layer above content"
+run_with $B "$R s/pointer-events: none;/pointer-events: auto;/" "ornaments: let the layer take clicks"
+run_with $B "$R s/inset: -8px;/inset: -80px;/" "ornaments: overhang by 80px"
+run_with $B "$R s/content: \"\";/content: \"Session expired\";/" "ornaments: give the layer text"
+run_with $B "$R{/clip-path:/d}" "ornaments: drop the safe-zone ring"
+run_with $B "$R s/background-image: var(--ts-frame-tl)/background-image: var(--ts-panel-before-width), var(--ts-frame-tl)/" "ornaments: read a structural token in the layer"
+
 echo
 echo "caught $CAUGHT, redundant $REDUNDANT, missed $MISSED, not applied $UNAPPLIED"
 [ "$MISSED" = 0 ] && [ "$UNAPPLIED" = 0 ]

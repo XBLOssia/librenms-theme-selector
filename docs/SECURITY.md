@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 1,178 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (46 flaws caught, 7 documented as
+`php tests/run.php` runs 1,227 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (52 flaws caught, 7 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 Run all of it with `sh dev/test.sh all`.
 
@@ -92,6 +92,25 @@ Run all of it with `sh dev/test.sh all`.
 | A real font with a payload appended (polyglot) | WOFF and WOFF2 declare their own length; it must equal the file size | `MiscTest`, mutation |
 | PHP or script inside the font bytes | Scanned for `<?php`, `<?=`, `<? `, `<script`. (`<%`, an ASP tag nothing here executes, is not scanned: two bytes occur by chance in real compressed fonts.) | `MiscTest`, mutation |
 | A font file executed through a path-info trick (`.../font.woff2/x.php`) | There are no font files: fonts exist only inside the generated CSS as base64, which contains no `<`. Verified against the running server | `test-upload.sh` ("path-info trick") |
+
+### Ornaments
+
+The 36 structural tokens stay closed to uploads. Installed skins decorate panels
+through a fixed layer whose mechanics live in `base.css` and whose only inputs
+are paint (gradients), so the attacks the structural rule exists for (a fake
+message over the page, an invisible box over a control) have no input to use.
+Full description and roadmap: [ORNAMENTS.md](ORNAMENTS.md).
+
+| Attack | Control | Tested by |
+|---|---|---|
+| Covering data with decoration | The layer is at `z-index: -1` inside an isolated stacking context: painted under the panel's content, so opaque content hides it. No token reaches `z-index` | `OrnamentTest` (rule pinned declaration by declaration), mutation "raise the layer above content" |
+| Reaching into the panel | `clip-path` ring: 24px inside the edge, 8px outside, written in `base.css` | `OrnamentTest`, mutation "drop the safe-zone ring" |
+| An invisible click target | `pointer-events: none` | `OrnamentTest`, mutation "let the layer take clicks" |
+| Fake text | `content: ""`, fixed | `OrnamentTest`, mutation "give the layer text" |
+| A large overhang over neighbours | `inset: -8px`, fixed | `OrnamentTest`, mutation "overhang by 80px" |
+| A skin reading a structural token through the layer | The layer may read only the eight paint slots; any other `var()` fails the test | `OrnamentTest`, mutation "read a structural token in the layer" |
+| Loading an image through a slot | Slots are image-kind tokens: gradients only, no `url()`, `image-set()` or escapes (same validator as every other value) | `OrnamentTest`, `evil-frames-url` |
+| The layer leaking into bundled skins | Rules are keyed on `data-ts-orn`, which only uploaded skins' links carry | `test-upload.sh` ("a bundled skin's links are not"), `OrnamentTest` |
 
 ### Licence notices
 

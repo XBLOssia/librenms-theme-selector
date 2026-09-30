@@ -113,6 +113,20 @@
                : '../skins/' + skin + '/skin.css';
   document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
                  (skinHref ? '<link id="skin-css" rel="stylesheet" href="' + skinHref + bust + '">' : ''));
+  // A url() in a custom property is resolved against the stylesheet that USES the variable
+  // (base.css), not the one that declares it, so a skin's --tx-<name>: url("textures/<name>.png")
+  // would point into base/. The plugin embeds textures as data: URLs when it publishes; here, point
+  // them at the skin's folder, relative to base.css (which is where the browser resolves them from).
+  if (skinHref && !special) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', skinHref + bust, false);
+    xhr.send();
+    var fixes = '';
+    (xhr.responseText.match(/--tx-[a-z0-9-]+: url\("textures\/[a-z0-9-]+\.png"\);/g) || []).forEach(function (d) {
+      fixes += d.replace('url("textures/', 'url("../skins/' + skin + '/textures/');
+    });
+    if (fixes) document.write('<style id="skin-textures">html.dark{' + fixes + '}</style>');
+  }
 </script>
 </head>
 <body>

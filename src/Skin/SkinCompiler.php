@@ -8,6 +8,7 @@ namespace Xblossia\ThemeSelector\Skin;
  *   zip  ->  ZipBundleReader     the entries, by allowlisted name, in memory
  *        ->  Manifest            id, name, ... (strict)
  *        ->  FontFile            each font is a real, unpadded WOFF/WOFF2
+ *        ->  PngTexture          each texture is a real PNG, cleaned and re-written
  *        ->  TokenFile           the stylesheet, regenerated from a parse
  *        ->  GraphConf           the graph palette, exact shapes
  *
@@ -55,7 +56,26 @@ final class SkinCompiler
             }
         }
 
-        $css = (new TokenFile($this->catalog, $mode))->compile($files['skin.css'], $fonts, $report);
+        $textures = [];
+        $textureBytes = 0;
+        foreach ($files as $name => $bytes) {
+            if (str_starts_with($name, 'textures/')) {
+                // Bundled skins ship as files, so theirs must already be clean.
+                $t = PngTexture::check($name, $bytes, $report, $mode === Mode::Bundled);
+                if ($t !== null) {
+                    $textures[$name] = $t;
+                    $textureBytes += strlen($t['png']);
+                }
+            }
+        }
+        if (count($textures) > Limits::TEXTURES) {
+            $report->error('bundle', 'has more than ' . Limits::TEXTURES . ' textures');
+        }
+        if ($textureBytes > Limits::TEXTURES_TOTAL) {
+            $report->error('bundle', 'has textures totalling ' . $textureBytes . ' bytes once cleaned; the limit is ' . Limits::TEXTURES_TOTAL);
+        }
+
+        $css = (new TokenFile($this->catalog, $mode))->compile($files['skin.css'], $fonts, $report, $textures);
 
         $graph = [];
         if (isset($files['graph.conf'])) {
@@ -80,6 +100,7 @@ final class SkinCompiler
             hash('sha256', json_encode([$manifest, $css, $graph, $licenseText])),
             count($fonts),
             $licenseText,
+            array_map(fn (string $file, array $t) => ['name' => substr($file, 9, -4), 'width' => $t['width'], 'height' => $t['height'], 'bytes' => strlen($t['png'])], array_keys($textures), array_values($textures)),
         );
     }
 }

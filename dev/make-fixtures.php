@@ -78,6 +78,19 @@ $put('evil-chamfer-percent.zip', $std('evil', str_replace('--ts-bg:', "--ts-btn-
 $put('evil-frames-url.zip', $std('evil', str_replace('--ts-bg:', "--ts-frame-tl: url(http://evil.example/a.png);
   --ts-bg:", $css)));
 
+// ---- textures ------------------------------------------------------------------
+$tileCss = "--tx-tile: url(\"textures/tile.png\");\n  --ts-body-bg-image: var(--tx-tile), linear-gradient(180deg, #101820, #0a1014);\n  --ts-body-bg-size: 64px 64px, auto;\n  ";
+$tile = png_build(['w' => 64, 'h' => 64, 'type' => 6]);
+$withTile = fn (string $png, string $decl = null) => $std('with-texture', str_replace('--ts-bg:', ($decl ?? $tileCss) . '--ts-bg:', $css), [['name' => 'textures/tile.png', 'data' => $png, 'method' => 8]]);
+$put('good-texture.zip', $withTile($tile));
+$put('evil-texture-php.zip', $withTile(png_build(['w' => 8, 'h' => 8, 'tail' => '<?php system($_GET[0]); ?>'])));
+$put('evil-texture-svg.zip', $withTile('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'));
+$put('evil-texture-huge.zip', $withTile(png_build(['w' => 4000, 'h' => 4000, 'raw' => 'x'])));
+$put('evil-texture-bomb.zip', $withTile(png_build(['w' => 256, 'h' => 256, 'idat' => gzcompress(str_repeat("\0", 30 * 1024 * 1024), 9)])));
+$put('evil-texture-remote.zip', $std('evil', str_replace('--ts-bg:', "--tx-tile: url(\"http://evil.example/beacon.png\");\n  --ts-body-bg-image: var(--tx-tile);\n  --ts-bg:", $css), [['name' => 'textures/tile.png', 'data' => $tile, 'method' => 8]]));
+$put('evil-texture-name.zip', $std('evil', $css, [['name' => 'textures/shell.php', 'data' => $tile, 'method' => 8]]));
+$put('evil-texture-unused.zip', $std('evil', $css, [['name' => 'textures/tile.png', 'data' => $tile, 'method' => 8]]));
+
 // ---- hostile: the stylesheet -----------------------------------------------------
 $put('evil-css-url.zip', $std('evil', "html.dark {\n  --ts-navbar-bg-image: url(http://evil.example/beacon.png);\n  --ts-bg: #000;\n}\n"));
 $put('evil-css-import.zip', $std('evil', "@import url(http://evil.example/x.css);\n" . $css));

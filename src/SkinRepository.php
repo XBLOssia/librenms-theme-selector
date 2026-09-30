@@ -120,6 +120,7 @@ class SkinRepository
                 'modes' => ['dark'],
                 'license' => (string) ($row['license'] ?? ''),
                 'license_text' => (string) ($row['license_text'] ?? ''),
+                'textures' => array_values(array_filter((array) ($row['textures'] ?? []), 'is_array')),
             ];
         }
 

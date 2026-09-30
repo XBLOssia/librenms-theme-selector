@@ -14,13 +14,15 @@ namespace Xblossia\ThemeSelector\Skin;
  * What a served skin stylesheet may contain, in full:
  *   - printable ASCII and newlines;
  *   - one `html.dark { ... }` block and one `@font-face { ... }` block per font;
- *   - exactly one `url(` per font, each a base64 data: URL for a font type.
+ *   - exactly one `url(` per font, each a base64 data: URL for a font type;
+ *   - exactly one `url(` per texture, each a `--tx-<name>` declaration holding a
+ *     base64 data: URL that decodes to a clean PNG (PngTexture checks it again).
  * There is no `@import`, no other at-rule, no other `url(`, no backslash, no
  * angle bracket, no scriptable pseudo-protocol.
  */
 final class OutputGuard
 {
-    public static function safe(string $css, int $fonts): bool
+    public static function safe(string $css, int $fonts, int $textures = 0): bool
     {
         if ($css === '' || preg_match('/[^\x0A\x20-\x7E]/', $css)) {
             return false;
@@ -37,13 +39,23 @@ final class OutputGuard
             return false;
         }
 
-        // Every url( is a data: URL for a font, and there are no others.
-        if (substr_count(strtolower($css), 'url(') !== $fonts) {
+        // Every url( is a data: URL for a font or a texture, and there are no others.
+        if (substr_count(strtolower($css), 'url(') !== $fonts + $textures) {
             return false;
         }
         if ($fonts > 0) {
             $matched = preg_match_all('#url\("data:font/(?:woff2|woff);base64,[A-Za-z0-9+/]+={0,2}"\)#', $css);
             if ($matched !== $fonts) {
+                return false;
+            }
+        }
+        $found = preg_match_all('#^  --tx-[a-z0-9][a-z0-9-]{0,40}: url\("data:image/png;base64,([A-Za-z0-9+/]+={0,2})"\);$#m', $css, $m);
+        if ($found !== $textures) {
+            return false;
+        }
+        foreach ($m[1] as $b64) {
+            $png = base64_decode($b64, true);
+            if ($png === false || PngTexture::check('texture', $png, new Report(), true) === null) {
                 return false;
             }
         }

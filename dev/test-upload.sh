@@ -190,6 +190,27 @@ check "and base.css carries the gated layer" "$(yes_if "grep -q 'link\[data-ts-o
 echo "== waiting out the upload rate limit again"
 sleep 62
 
+echo "== waiting out the upload rate limit (textures)"
+sleep 62
+
+echo "== textures are cleaned, embedded, never served as files"
+upload dev-admin "$FIX/good-texture.zip"
+check "a bundle with a texture installs" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Installed With Texture'")"
+check "its directory holds only skin.css (the image is inside it)" "$(yes_if "[ \"\$(find $PUB/skins/with-texture -type f | wc -l)\" = 1 ] && [ -f $PUB/skins/with-texture/skin.css ]")"
+check "the texture is a data: PNG in the stylesheet, and no file path is" "$(yes_if "grep -q -e '--tx-tile: url(\"data:image/png;base64,' $PUB/skins/with-texture/skin.css && ! grep -q 'textures/' $PUB/skins/with-texture/skin.css")"
+check "the admin page lists it (name and size)" "$(yes_if "printf '%s' \"\$PAGE\" | grep -Eq 'Textures: tile 64.{1,8}64'")"
+check "the embedded image is a clean PNG (only IHDR, IDAT and IEND; nothing after)" "$(yes_if "php /plugin/dev/check-png.php $PUB/skins/with-texture/skin.css")"
+for spec in "evil-texture-php:after its IEND" "evil-texture-svg:not a PNG" "evil-texture-huge:4000x4000" "evil-texture-bomb:does not match" "evil-texture-remote:exactly url" "evil-texture-name:not allowed" "evil-texture-unused:not declared"; do
+  f="${spec%%:*}"; why="${spec#*:}"
+  upload dev-admin "$FIX/$f.zip"
+  check "$f is refused and says why" "$(yes_if "printf '%s' \"\$PAGE\" | grep -qi '$why' && printf '%s' \"\$PAGE\" | grep -q 'was not installed'")"
+done
+check "none of them left anything behind" "$(yes_if "[ ! -e $PUB/skins/evil ] && [ \"\$(leftovers)\" = 0 ]")"
+check "the PHP-in-a-PNG text is never echoed back as markup" "$(yes_if "! get dev-admin /plugin/theme-selector | grep -q '<?php'")"
+
+echo "== waiting out the upload rate limit (after textures)"
+sleep 62
+
 echo "== the escape hatch"
 post dev-user /plugin/theme-selector "skin=slate-teal"
 check "?theme-selector=off shows a page with no skin" "$(yes_if "[ \"\$(get dev-user '/devices?theme-selector=off' | grep -c 'data-theme-selector')\" = 0 ]")"
@@ -262,7 +283,7 @@ reset_state
 upload_ok=0
 sleep 62
 upload dev-admin "$FIX/good-slate.zip"; upload dev-admin "$FIX/good-font.zip"; upload dev-admin "$FIX/good-graph.zip"
-UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/with-license/skin.css" ! -path "$PUB/skins/with-frames/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
+UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/with-license/skin.css" ! -path "$PUB/skins/with-frames/skin.css" ! -path "$PUB/skins/with-texture/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
 check "only base.css, bundled skins and each uploaded skin's single skin.css exist" "$(yes_if "[ -z '$UNEXPECTED' ]")"
 check "there are no PHP, HTML, script or config files anywhere in it" "$(yes_if "[ \"\$(find $PUB -type f \( -iname '*.php*' -o -iname '*.phtml' -o -iname '*.htm*' -o -iname '*.js' -o -iname '.htaccess' -o -iname '*.svg' -o -iname '*.sh' \) | wc -l)\" = 0 ]")"
 check "no file in it is executable" "$(yes_if "[ \"\$(find $PUB -type f -perm /111 | wc -l)\" = 0 ]")"

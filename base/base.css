@@ -56,6 +56,9 @@ html.dark {
 
   /* Components: restrained defaults built from the roles. */
   --ts-body-bg-image: none;
+  --ts-body-bg-size: auto;
+  --ts-body-bg-position: 0% 0%;
+  --ts-body-bg-repeat: repeat;
   --ts-link-hover-fg: color-mix(in srgb, var(--ts-link) 70%, #fff);
   --ts-navbar-bg-image: linear-gradient(180deg, var(--ts-surface-raised) 0%, var(--ts-surface) 100%);
   --ts-navbar-border-bottom: 1px solid var(--ts-border);
@@ -424,6 +427,9 @@ html.dark body {
 }
 html.dark body {
   background-image: var(--ts-body-bg-image);
+  background-size: var(--ts-body-bg-size);
+  background-position: var(--ts-body-bg-position);
+  background-repeat: var(--ts-body-bg-repeat);
   background-attachment: fixed;
 }
 html.dark a {

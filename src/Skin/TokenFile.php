@@ -351,6 +351,33 @@ final class TokenFile
                     $failed = true;
                     continue;
                 }
+                // Motion and glow for the ornament layers: a period of 2s to 60s, a fade depth
+                // of .3 to 1, or one literal colour. Nothing else, and never a var(): a
+                // palette value could carry a comma and with it a second, enormous shadow.
+                $strict = null;
+                $kinds = $this->catalog->kinds($name);
+                if (in_array('period', $kinds, true)) {
+                    $strict = ['/^(?:[2-9]|[1-5][0-9])(?:\.[0-9]{1,2})?s$|^60s$/D', 'must be a period of 2s to 60s, for example 6s'];
+                } elseif (in_array('level', $kinds, true)) {
+                    $strict = ['/^(?:0?\.[3-9][0-9]{0,2}|1(?:\.0{1,3})?)$/D', 'must be a plain number from .3 to 1'];
+                } elseif (in_array('glowcolor', $kinds, true)) {
+                    $strict = ['/^(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(?:rgba?|hsla?)\([0-9.%, \/]{3,40}\))$/D', 'must be one plain colour (#rrggbb, rgb(), rgba(), hsl() or hsla()), not a var() or a list'];
+                }
+                if ($strict !== null) {
+                    if (! preg_match($strict[0], trim($raw))) {
+                        $report->error($where, $strict[1]);
+                        $failed = true;
+                        continue;
+                    }
+                    if (! in_array('glowcolor', $kinds, true)) {
+                        // Fully determined by the pattern above; the generic bounds (5s at most
+                        // for a time) are for other tokens.
+                        $out[$name] = trim($raw);
+                        $refs[$name] = [];
+                        $caps[$name] = 800;
+                        continue;
+                    }
+                }
                 // The steepness of a cut: a plain number from 0.5 to 2 (1.732 is 60 degrees).
                 if (in_array('ratio', $this->catalog->kinds($name), true)
                     && ! preg_match('/^(0?\.[5-9][0-9]{0,2}|1(\.[0-9]{1,3})?|2(\.0{1,3})?)$/D', trim($raw))) {

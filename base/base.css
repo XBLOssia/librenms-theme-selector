@@ -137,6 +137,21 @@ html.dark {
   --ts-badge-chamfer-br: initial;
   --ts-badge-chamfer-bl: initial;
   --ts-badge-chamfer-rise: 1;
+  --ts-frame-breathe: initial;
+  --ts-frame-glow: initial;
+  --ts-heading-marker-breathe: initial;
+  --ts-heading-marker-glow: initial;
+  --ts-heading-strip-breathe: initial;
+  --ts-heading-strip-glow: initial;
+  --ts-navbar-strip-top-breathe: initial;
+  --ts-navbar-strip-top-glow: initial;
+  --ts-navbar-strip-bottom-breathe: initial;
+  --ts-navbar-strip-bottom-glow: initial;
+  --ts-breathe-low: .45;
+  --ts-breathe-high: 1;
+  --ts-alert-glow-period: initial;
+  --ts-alert-glow-low: initial;
+  --ts-alert-glow-high: initial;
   --ts-panel-heading-bg-image: none;
   --ts-panel-heading-border-bottom: 1px solid var(--ts-border);
   --ts-panel-heading-padding-left: 15px;
@@ -585,6 +600,8 @@ html.dark:has(link[data-ts-orn]) .panel::before {
   background-position: left top, right top, left bottom, right bottom, left top, right top, left bottom, left top;
   background-repeat: no-repeat;
   clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 32px 32px, 32px calc(100% - 32px), calc(100% - 32px) calc(100% - 32px), calc(100% - 32px) 32px, 32px 32px);
+  filter: drop-shadow(0 0 8px var(--ts-frame-glow));
+  animation: ts-breathe var(--ts-frame-breathe) ease-in-out infinite;
 }
 /* Panel headings: a marker on the left edge and a strip across the heading,
  * both painted under the heading's text (the heading is isolated so that -1
@@ -608,6 +625,8 @@ html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before {
   background-repeat: no-repeat;
   box-shadow: none;
   border-radius: 0;
+  filter: drop-shadow(0 0 8px var(--ts-heading-marker-glow));
+  animation: ts-breathe var(--ts-heading-marker-breathe) ease-in-out infinite;
 }
 html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after {
   content: "";
@@ -624,6 +643,8 @@ html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after {
   background-position: var(--ts-heading-strip-position);
   background-repeat: var(--ts-heading-strip-repeat);
   opacity: var(--ts-heading-strip-opacity);
+  filter: drop-shadow(0 0 8px var(--ts-heading-strip-glow));
+  animation: ts-breathe var(--ts-heading-strip-breathe) ease-in-out infinite;
 }
 /* Navbar: a strip along the top edge (inside) and along the bottom edge
  * (4px inside, 8px out), under the navbar's links. */
@@ -646,6 +667,8 @@ html.dark:has(link[data-ts-orn]) .navbar-default::before {
   background-position: left top;
   background-repeat: var(--ts-navbar-strip-top-repeat);
   opacity: var(--ts-navbar-strip-top-opacity);
+  filter: drop-shadow(0 0 8px var(--ts-navbar-strip-top-glow));
+  animation: ts-breathe var(--ts-navbar-strip-top-breathe) ease-in-out infinite;
 }
 html.dark:has(link[data-ts-orn]) .navbar-default::after {
   content: "";
@@ -664,7 +687,8 @@ html.dark:has(link[data-ts-orn]) .navbar-default::after {
   background-repeat: var(--ts-navbar-strip-bottom-repeat);
   opacity: var(--ts-navbar-strip-bottom-opacity);
   box-shadow: none;
-  animation: none;
+  filter: drop-shadow(0 0 8px var(--ts-navbar-strip-bottom-glow));
+  animation: ts-breathe var(--ts-navbar-strip-bottom-breathe) ease-in-out infinite;
 }
 /* Dashboard widgets: the same eight slots, painted as the widget's own
  * background layers. They stay inside its edge (a widget scrolls, and its
@@ -693,6 +717,40 @@ html.dark:has(link[data-ts-orn]) .label {
 }
 html.dark:has(link[data-ts-orn]) .badge {
   clip-path: polygon(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) 0, calc(100% - var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer))) 0, 100% calc(var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1)), 100% calc(100% - calc(var(--ts-badge-chamfer-br, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1))), calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))) 100%, var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) 100%, 0 calc(100% - calc(var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1))), 0 calc(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) * var(--ts-badge-chamfer-rise, 1)));
+}
+/* Motion for the ornament layers: a slow fade (breathe), a glow behind a shape
+ * (drop-shadow) and a pulse on the navbar's alert badge. The keyframes, the
+ * easing and the glow radius are fixed here; a skin gives a period (2s to 60s),
+ * the depth of the fade (.3 to 1) and plain colours. Opacity and shadow only,
+ * never faster than one cycle in two seconds, and off under reduced motion. */
+@keyframes ts-breathe {
+  0%, 100% {
+    opacity: var(--ts-breathe-low);
+  }
+  50% {
+    opacity: var(--ts-breathe-high);
+  }
+}
+@keyframes ts-glow {
+  0%, 100% {
+    box-shadow: 0 0 7px var(--ts-alert-glow-low);
+  }
+  50% {
+    box-shadow: 0 0 16px var(--ts-alert-glow-high);
+  }
+}
+html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger {
+  animation: ts-glow var(--ts-alert-glow-period) ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.dark:has(link[data-ts-orn]) .panel::before,
+  html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before,
+  html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after,
+  html.dark:has(link[data-ts-orn]) .navbar-default::before,
+  html.dark:has(link[data-ts-orn]) .navbar-default::after,
+  html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger {
+    animation: none;
+  }
 }
 html.dark .panel-default > .panel-heading, html.dark .panel > .panel-heading {
   background-color: var(--ts-surface-raised);

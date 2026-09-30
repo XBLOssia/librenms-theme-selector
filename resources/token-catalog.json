@@ -89,6 +89,29 @@
    "maxPx": 800,
    "structural": false
   },
+  "--ts-alert-glow-high": {
+   "kinds": [
+    "glowcolor",
+    "shadow"
+   ],
+   "maxPx": 100,
+   "structural": false
+  },
+  "--ts-alert-glow-low": {
+   "kinds": [
+    "glowcolor",
+    "shadow"
+   ],
+   "maxPx": 100,
+   "structural": false
+  },
+  "--ts-alert-glow-period": {
+   "kinds": [
+    "period"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
   "--ts-alert-info-border": {
    "kinds": [
     "color"
@@ -286,6 +309,22 @@
   "--ts-brand": {
    "kinds": [
     "color"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-breathe-high": {
+   "kinds": [
+    "level",
+    "text"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-breathe-low": {
+   "kinds": [
+    "level",
+    "text"
    ],
    "maxPx": 800,
    "structural": false
@@ -736,6 +775,20 @@
    "maxPx": 800,
    "structural": false
   },
+  "--ts-frame-breathe": {
+   "kinds": [
+    "period"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-frame-glow": {
+   "kinds": [
+    "glowcolor"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
   "--ts-frame-left": {
    "kinds": [
     "image"
@@ -785,6 +838,20 @@
    "maxPx": 800,
    "structural": false
   },
+  "--ts-heading-marker-breathe": {
+   "kinds": [
+    "period"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-heading-marker-glow": {
+   "kinds": [
+    "glowcolor"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
   "--ts-heading-marker-position": {
    "kinds": [
     "length"
@@ -802,6 +869,20 @@
   "--ts-heading-strip": {
    "kinds": [
     "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-heading-strip-breathe": {
+   "kinds": [
+    "period"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-heading-strip-glow": {
+   "kinds": [
+    "glowcolor"
    ],
    "maxPx": 800,
    "structural": false
@@ -1489,6 +1570,20 @@
    "maxPx": 800,
    "structural": false
   },
+  "--ts-navbar-strip-bottom-breathe": {
+   "kinds": [
+    "period"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-navbar-strip-bottom-glow": {
+   "kinds": [
+    "glowcolor"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
   "--ts-navbar-strip-bottom-opacity": {
    "kinds": [
     "text"
@@ -1513,6 +1608,20 @@
   "--ts-navbar-strip-top": {
    "kinds": [
     "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-navbar-strip-top-breathe": {
+   "kinds": [
+    "period"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-navbar-strip-top-glow": {
+   "kinds": [
+    "glowcolor"
    ],
    "maxPx": 800,
    "structural": false

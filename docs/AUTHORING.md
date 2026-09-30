@@ -193,6 +193,25 @@ and 6px for labels and badges. If you set `--ts-btn-chamfer-tl` alone, set
 `--ts-btn-chamfer: 0px` too, or no corner is cut (an unset corner uses the
 all-corners token, and with neither set there is no clip at all).
 
+**Motion and glow.** Ornament layers can fade slowly and glow:
+
+```css
+--ts-navbar-strip-bottom-breathe: 6s;     /* 2s to 60s; unset = still */
+--ts-heading-marker-breathe: 4s;
+--ts-breathe-low: .45;                    /* how far it fades, .3 to 1 */
+--ts-breathe-high: 1;
+--ts-heading-marker-glow: rgba(255, 92, 122, .6);   /* a soft light behind it */
+--ts-alert-glow-period: 3s;               /* the navbar's alert badge */
+--ts-alert-glow-low: rgba(255, 92, 122, .5);
+--ts-alert-glow-high: rgba(255, 92, 122, .95);
+```
+
+The layers are `frame`, `heading-marker`, `heading-strip`, `navbar-strip-top` and
+`navbar-strip-bottom` (`--ts-frame-breathe`, `--ts-frame-glow`, ...). A period
+is between 2s and 60s; a glow takes exactly one literal colour (`#hex`, `rgb()`,
+`rgba()`, `hsl()` or `hsla()`), not a `var()` or a list. Motion stops for
+visitors whose system asks for reduced motion.
+
 **Widgets.** Dashboard widgets take the same eight slots as panels under the
 names `--ts-widget-frame-tl` ... `--ts-widget-frame-left`, plus
 `--ts-widget-radius-tl` and so on. They stay inside the widget's edge (no

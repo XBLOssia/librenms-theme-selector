@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 1,371 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (62 flaws caught, 7 documented as
+`php tests/run.php` runs 1,495 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (67 flaws caught, 7 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 Run all of it with `sh dev/test.sh all`.
 
@@ -112,6 +112,9 @@ Full description and roadmap: [ORNAMENTS.md](ORNAMENTS.md).
 | Loading an image through a slot | Slots are image-kind tokens: gradients only, no `url()`, `image-set()` or escapes (same validator as every other value) | `OrnamentTest`, `evil-frames-url` |
 | The same attacks through the heading, navbar and widget layers | Same fixed mechanics, same pinning: negative z-index in an isolated context, `pointer-events: none`, empty `content`, constant bands (8px / 12px, 8px overhang at the navbar's bottom). Widget frames are the widget's own background layers, so they can't leave it | `OrnamentTest`, five more mutations (heading marker raised, heading strip clickable, navbar strip with text, navbar bottom strip hanging 80px, a 300px widget slot) |
 | Hiding content with a cut corner (`clip-path`) | `clip-path` stays structural except in one polygon written in `base.css`; the classifier recognises only that exact template. A skin supplies sizes: px only (no `%`, `em`, `calc()`, `var()`, bare `0`), at most 10px (buttons) or 6px (labels, badges), so each cut is a small triangle that can't reach the text. The steepness is a plain number from 0.5 to 2 (vertical legs at most twice the cap). Unset, the declaration is invalid and there is no clip | `OrnamentTest` (polygon written out independently; a dozen refused sizes), four mutations (accept `%`/`em`, no button cap, a cut that scales with width, clip by default) |
+| A glow that paints over the page (a colour carrying a second, huge shadow) | The glow tokens take one literal colour by pattern: no list, no `var()` (a palette value could hold the comma), no function nesting. The radius (8px; 7px to 16px for the alert pulse) is fixed in `base.css` | `OrnamentTest` (glow colours, the palette route, a closed-function trick), mutations "a glow colour carrying a second shadow", "160px alert glow", "80px frame glow" |
+| Flashing or fast motion | Periods take only `2s` to `60s` by pattern (the generic 5s ceiling doesn't apply, and a minimum is needed); only opacity and a shadow animate, at fixed easing; a reduced-motion rule turns all of it off | `OrnamentTest` (17 refused periods, the reduced-motion rule covers every animated selector inside `@media`), mutations "a period under 2s", "no reduced-motion rule" |
+| Reaching the bundled skins' raw animation tokens | `animation` and `filter` are structural except in the fixed shapes; `--ts-navbar-after-animation` and the like stay closed | `OrnamentTest` |
 | The layer leaking into bundled skins | Rules are keyed on `data-ts-orn`, which only uploaded skins' links carry | `test-upload.sh` ("a bundled skin's links are not"), `OrnamentTest` |
 
 ### Licence notices

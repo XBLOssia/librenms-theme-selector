@@ -63,8 +63,13 @@ $extra = "--ts-frame-tl: $bar;\n  --ts-frame-br: $bar;\n  --ts-panel-radius-tl: 
     . "  --ts-navbar-strip-top: linear-gradient(90deg, transparent, #f37c2f, transparent);\n  --ts-navbar-strip-top-size: 100% 3px;\n"
     . "  --ts-navbar-strip-bottom: linear-gradient(90deg, #e50832 50%, #f37c2f 50%);\n  --ts-navbar-strip-bottom-size: 100% 4px;\n"
     . "  --ts-widget-frame-bottom: linear-gradient(0deg, #f37c2f 2px, transparent 2px);\n  --ts-widget-radius-tl: 0;\n"
-    . "  --ts-btn-chamfer: 0px;\n  --ts-btn-chamfer-tl: 8px;\n  --ts-btn-chamfer-br: 8px;\n  --ts-label-chamfer: 5px;\n  --ts-badge-chamfer: 5px;\n";
+    . "  --ts-btn-chamfer: 0px;\n  --ts-btn-chamfer-tl: 8px;\n  --ts-btn-chamfer-br: 8px;\n  --ts-label-chamfer: 5px;\n  --ts-badge-chamfer: 5px;\n"
+    . "  --ts-navbar-strip-bottom-breathe: 6s;\n  --ts-heading-marker-breathe: 3s;\n  --ts-breathe-low: .5;\n"
+    . "  --ts-heading-marker-glow: rgba(255, 92, 122, .6);\n  --ts-navbar-strip-top-glow: #f37c2f;\n"
+    . "  --ts-alert-glow-period: 3s;\n  --ts-alert-glow-low: rgba(255, 92, 122, .5);\n  --ts-alert-glow-high: rgba(255, 92, 122, .95);\n";
 $put('good-frames.zip', $std('with-frames', str_replace('--ts-bg:', "$extra  --ts-bg:", $css)));
+$put('evil-motion-fast.zip', $std('evil', str_replace('--ts-bg:', "--ts-navbar-strip-top-breathe: 0.2s;\n  --ts-bg:", $css)));
+$put('evil-glow-shadow.zip', $std('evil', str_replace('--ts-bg:', "--ts-alert-glow-high: #f00, 0 0 100px 60px #00f;\n  --ts-bg:", $css)));
 $put('evil-chamfer-percent.zip', $std('evil', str_replace('--ts-bg:', "--ts-btn-chamfer: 50%;\n  --ts-bg:", $css)));
 $put('evil-frames-url.zip', $std('evil', str_replace('--ts-bg:', "--ts-frame-tl: url(http://evil.example/a.png);
   --ts-bg:", $css)));

@@ -267,7 +267,6 @@ visitors whose system asks for reduced motion.
 --ts-panel-chamfer: 0px;
 --ts-panel-chamfer-bl: 12px;          /* at most 12px */
 --ts-panel-chamfer-rise: 1.732;       /* 60 degrees */
---ts-panel-cut-fill: #000f26;         /* your page colour: one literal colour */
 --ts-panel-cut-stroke: #34497a;       /* a line along the cut */
 --ts-widget-chamfer: 0px;
 --ts-widget-chamfer-bl: 12px;
@@ -275,9 +274,10 @@ visitors whose system asks for reduced motion.
 --ts-widget-cut-stroke: #34497a;
 ```
 
-A panel's cut is painted over its corner, so set the fill to your page colour.
-A widget is clipped. The colours take a literal `#hex`, `rgb()` or `hsl()`, not a
-`var(--p-*)`. `--ts-panel-radius-*` and `--ts-widget-radius-*` also work on
+Panels and widgets are clipped, so the cut works over any page background, a texture
+included, and nothing that hangs out of a panel (a dropdown) is cut off. The line takes
+a literal `#hex`, `rgb()` or `hsl()`, not a `var(--p-*)`. (`--ts-panel-cut-fill` from
+earlier versions is still accepted and ignored.) `--ts-panel-radius-*` and `--ts-widget-radius-*` also work on
 elements LibreNMS rounds with a Tailwind class (the device page header).
 
 **Widgets.** Dashboard widgets take the same eight slots as panels under the

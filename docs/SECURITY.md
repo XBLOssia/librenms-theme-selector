@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 1,572 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (73 flaws caught, 7 documented as
+`php tests/run.php` runs 1,896 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (90 flaws caught, 7 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 Run all of it with `sh dev/test.sh all`.
 
@@ -135,8 +135,8 @@ Full description and roadmap: [ORNAMENTS.md](ORNAMENTS.md).
 | A glow that paints over the page (a colour carrying a second, huge shadow) | The glow tokens take one literal colour by pattern: no list, no `var()` (a palette value could hold the comma), no function nesting. The radius (8px; 7px to 16px for the alert pulse) is fixed in `base.css` | `OrnamentTest` (glow colours, the palette route, a closed-function trick), mutations "a glow colour carrying a second shadow", "160px alert glow", "80px frame glow" |
 | Flashing or fast motion | Periods take only `2s` to `60s` by pattern (the generic 5s ceiling doesn't apply, and a minimum is needed); only opacity and a shadow animate, at fixed easing; a reduced-motion rule turns all of it off | `OrnamentTest` (17 refused periods, the reduced-motion rule covers every animated selector inside `@media`), mutations "a period under 2s", "no reduced-motion rule" |
 | Reaching the bundled skins' raw animation tokens | `animation` and `filter` are structural except in the fixed shapes; `--ts-navbar-after-animation` and the like stay closed | `OrnamentTest` |
-| A cut that hides content on a panel or widget | Panel cuts are a corner overlay of four triangles, each at most about 14px by 28px (a 12px cut plus 2px of slop that also covers the panel's border), sizes in px only (no `%`, `em`, `var()`, bare `0`), falling back to `0px`; nothing is painted without a size and a colour. Widget cuts are one fixed slit-notch polygon written in `base.css`, recognised by the classifier; a skin supplies only sizes. The overlay is inert (`pointer-events: none`) and is the panel's own `::after`, inset 0 | `OrnamentTest` (polygon and overlay written out independently, catalog caps, refused sizes and colours), mutations "panel overlay takes clicks / extends 40px", "drop the size fallback", "widget clip 80px wider", "no cap on panel cuts" |
-| Dropdowns cut off by a clip | Panels are not clipped (the overlay instead); widgets already hide their overflow | by design |
+| A cut that hides content on a panel or widget | Panel and widget cuts are one fixed slit-notch polygon written in `base.css` and recognised by the classifier; a skin supplies only sizes: px only (no `%`, `em`, `var()`, bare `0`), at most 12px, vertical legs at most twice that. Each removes only a small triangle at a corner, so it can't reach text. The edge line is the panel's own `::after` (inert, `pointer-events: none`, sized by the same cuts, falling back to `0px`) | `OrnamentTest` (both polygons and the overlay written out independently, catalog caps, refused sizes and colours), mutations "panel overlay takes clicks / extends 40px", "drop the size fallback", "widget clip cuts off what hangs out", "panel clip cuts off a dropdown", "no cap on panel cuts" |
+| Dropdowns or dialogs cut off by a clip | The clip margin is 10000px, so nothing that hangs out of a panel or widget is clipped; only the corner triangles are | `OrnamentTest` (the margin), mutations on the margin; a browser check that a fixed child and a menu 150px below a clipped panel still receive clicks |
 | The layer leaking into bundled skins | Rules are keyed on `data-ts-orn`, which only uploaded skins' links carry | `test-upload.sh` ("a bundled skin's links are not"), `OrnamentTest` |
 
 ### Licence notices

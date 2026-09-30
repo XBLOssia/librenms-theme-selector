@@ -59,13 +59,29 @@ for p in ['font-weight', 'font-style', 'text-transform', 'text-decoration', 'fon
 for p in ['background-size', 'background-position']:
     KINDS[p] = 'length'
 KINDS['background-repeat'] = 'text'
+# A cut corner: clip-path is structural, except in the one fixed polygon that
+# base.css writes for buttons, labels and badges. The tokens it reads are sizes
+# in px; TOKEN_CAPS holds their (small) limits.
+KINDS['chamfer-clip'] = 'chamfer'
+TOKEN_CAPS = [(re.compile(r'^--ts-btn-chamfer'), 10), (re.compile(r'^--ts-(label|badge)-chamfer'), 6)]
+
+
+def chamfer_template(e):
+    def c(corner):
+        return f'var(--ts-{e}-chamfer-{corner}, var(--ts-{e}-chamfer))'
+    tl, tr, br, bl = c('tl'), c('tr'), c('br'), c('bl')
+    return (f'polygon({tl} 0, calc(100% - {tr}) 0, 100% {tr}, 100% calc(100% - {br}), '
+            f'calc(100% - {br}) 100%, {bl} 100%, 0 calc(100% - {bl}), 0 {tl})')
+
+
+CHAMFER_TEMPLATES = {chamfer_template(e) for e in ('btn', 'label', 'badge')}
 KINDS['transition'] = 'motion'
 KINDS['filter'] = 'filter'
 # A Tailwind theme variable the base retints; every one is a colour.
 TAILWIND_COLOUR = re.compile(r'^--tw-color-')
 
 # how large a px length may be in a token of each kind
-MAX_PX = {'shadow': 100, 'border': 24, 'length': 64, 'motion': 800, 'filter': 800,
+MAX_PX = {'chamfer': 10, 'shadow': 100, 'border': 24, 'length': 64, 'motion': 800, 'filter': 800,
           'color': 800, 'image': 800, 'font': 800, 'text': 800}
 
 
@@ -98,6 +114,8 @@ def build():
         if ctx == ('html.dark',) and prop.startswith('--ts-') and val is not None and prop not in defaults:
             defaults[prop] = val
             continue
+        if prop == 'clip-path' and ' '.join(val.split()) in CHAMFER_TEMPLATES:
+            prop = 'chamfer-clip'
         for name in re.findall(r'var\((--ts-[\w-]+)', val):
             direct.setdefault(name, set()).add(prop)
 
@@ -125,8 +143,9 @@ def build():
             else:
                 structural = True
                 why.append(p)
+        caps = [MAX_PX[k] for k in kinds] + [cap for pat, cap in TOKEN_CAPS if pat.match(t)]
         entry = {'structural': structural,
-                 'maxPx': min([MAX_PX[k] for k in kinds] or [800]),
+                 'maxPx': min(caps or [800]),
                  'kinds': sorted(kinds)}
         if structural:
             entry['why'] = why

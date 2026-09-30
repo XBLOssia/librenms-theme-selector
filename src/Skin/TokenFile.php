@@ -342,6 +342,15 @@ final class TokenFile
                     $failed = true;
                     continue;
                 }
+                // A cut corner is a size in px (0px for none). Not %, em, a bare 0 (which is
+                // invalid inside the polygon's calc()) or a var(): those would scale past the
+                // px cap, or make the whole clip-path invalid.
+                if (in_array('chamfer', $this->catalog->kinds($name), true)
+                    && ! preg_match('/^[0-9]{1,2}(\.[0-9]{1,3})?px$/D', trim($raw))) {
+                    $report->error($where, 'must be a size in px, for example 6px (0px for a square corner)');
+                    $failed = true;
+                    continue;
+                }
                 $res = $this->values->validate(
                     $raw,
                     $where,

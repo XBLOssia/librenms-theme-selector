@@ -140,6 +140,15 @@ function test_ornaments(): void
             'background-position: left top, right top, left bottom, right bottom, left top, right top, left bottom, left top, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0',
             'background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat',
         ],
+        "$gate .btn" => [
+            'clip-path: polygon(var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)) 0, calc(100% - var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer))) 0, 100% var(--ts-btn-chamfer-tr, var(--ts-btn-chamfer)), 100% calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))), calc(100% - var(--ts-btn-chamfer-br, var(--ts-btn-chamfer))) 100%, var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer)) 100%, 0 calc(100% - var(--ts-btn-chamfer-bl, var(--ts-btn-chamfer))), 0 var(--ts-btn-chamfer-tl, var(--ts-btn-chamfer)))',
+        ],
+        "$gate .label" => [
+            'clip-path: polygon(var(--ts-label-chamfer-tl, var(--ts-label-chamfer)) 0, calc(100% - var(--ts-label-chamfer-tr, var(--ts-label-chamfer))) 0, 100% var(--ts-label-chamfer-tr, var(--ts-label-chamfer)), 100% calc(100% - var(--ts-label-chamfer-br, var(--ts-label-chamfer))), calc(100% - var(--ts-label-chamfer-br, var(--ts-label-chamfer))) 100%, var(--ts-label-chamfer-bl, var(--ts-label-chamfer)) 100%, 0 calc(100% - var(--ts-label-chamfer-bl, var(--ts-label-chamfer))), 0 var(--ts-label-chamfer-tl, var(--ts-label-chamfer)))',
+        ],
+        "$gate .badge" => [
+            'clip-path: polygon(var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)) 0, calc(100% - var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer))) 0, 100% var(--ts-badge-chamfer-tr, var(--ts-badge-chamfer)), 100% calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))), calc(100% - var(--ts-badge-chamfer-br, var(--ts-badge-chamfer))) 100%, var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer)) 100%, 0 calc(100% - var(--ts-badge-chamfer-bl, var(--ts-badge-chamfer))), 0 var(--ts-badge-chamfer-tl, var(--ts-badge-chamfer)))',
+        ],
     ];
     T::ok('no rule carries the gate that has not been reviewed', array_keys($rules) === array_keys($expected), implode(' | ', array_diff(array_keys($rules), array_keys($expected))));
     foreach ($expected as $sel => $decls) {
@@ -165,7 +174,13 @@ function test_ornaments(): void
             $navTokens[] = "--ts-navbar-strip-$edge$suffix";
         }
     }
-    $paint = array_merge($slotTokens, $headingTokens, $navTokens, $widgetSlots, ['--ts-widget-bg-image']);
+    $chamferTokens = [];
+    foreach (['btn', 'label', 'badge'] as $e) {
+        foreach (['', '-tl', '-tr', '-br', '-bl'] as $k) {
+            $chamferTokens[] = "--ts-$e-chamfer$k";
+        }
+    }
+    $paint = array_merge($slotTokens, $headingTokens, $navTokens, $widgetSlots, $chamferTokens, ['--ts-widget-bg-image']);
     $read = array_keys($tokenUses);
     sort($read);
     $want = $paint;
@@ -223,6 +238,39 @@ function test_ornaments(): void
     css_bad('text where a frame slot wants an image', dark('--ts-bg: #000;', '--ts-frame-tl: "Session expired";'));
     css_bad('the old pseudo-element tokens are still closed to uploads', dark('--ts-bg: #000;', '--ts-panel-before-content: "x";'), 'structural');
     css_bad('a made-up frame slot', dark('--ts-bg: #000;', '--ts-frame-center: linear-gradient(red, blue);'), 'not a Theme Selector token');
+
+    T::group('ornaments: cut corners (phase C)');
+    foreach ([['btn', '.btn', 10], ['label', '.label', 6], ['badge', '.badge', 6]] as [$e, $sel, $cap]) {
+        $c = fn (string $corner) => "var(--ts-$e-chamfer-$corner, var(--ts-$e-chamfer))";
+        $polygon = "polygon({$c('tl')} 0, calc(100% - {$c('tr')}) 0, 100% {$c('tr')}, 100% calc(100% - {$c('br')}), "
+            . "calc(100% - {$c('br')}) 100%, {$c('bl')} 100%, 0 calc(100% - {$c('bl')}), 0 {$c('tl')})";
+        T::ok("the $sel polygon is the fixed template, written out independently", ($rules["$gate $sel"] ?? null) === ["clip-path: $polygon"], json_encode($rules["$gate $sel"] ?? null));
+        foreach (['', '-tl', '-tr', '-br', '-bl'] as $k) {
+            $t = "--ts-$e-chamfer$k";
+            T::ok("$t is settable by upload, in px, capped at {$cap}px", $cat->has($t) && ! $cat->isStructural($t) && $cat->kinds($t) === ['chamfer'] && $cat->maxPx($t) === $cap, json_encode([$cat->kinds($t), $cat->maxPx($t)]));
+        }
+        T::ok("--ts-$e-clip-path (the raw one the bundled skins use) is still structural", $cat->isStructural("--ts-$e-clip-path"));
+    }
+    $base = (string) file_get_contents(__DIR__ . '/../base/base.css');
+    foreach (['btn', 'label', 'badge'] as $e) {
+        foreach (['', '-tl', '-tr', '-br', '-bl'] as $k) {
+            T::ok("--ts-$e-chamfer$k defaults to initial, so an unchamfered control has no clip-path (and keeps its focus ring)", str_contains($base, "  --ts-$e-chamfer$k: initial;\n"));
+        }
+    }
+    css_good('Protoss-style cuts: top-left and bottom-right', dark('--ts-bg: #000;', '--ts-btn-chamfer: 0px;', '--ts-btn-chamfer-tl: 8px;', '--ts-btn-chamfer-br: 8px;', '--ts-label-chamfer: 5px;', '--ts-badge-chamfer: 5px;'));
+    css_good('every corner of a button at the cap', dark('--ts-bg: #000;', '--ts-btn-chamfer-tl: 10px;', '--ts-btn-chamfer-tr: 10px;', '--ts-btn-chamfer-br: 10px;', '--ts-btn-chamfer-bl: 10px;'));
+    css_bad('a button cut over its cap', dark('--ts-bg: #000;', '--ts-btn-chamfer: 11px;'), 'out of range');
+    css_bad('a label cut over its cap', dark('--ts-bg: #000;', '--ts-label-chamfer-tl: 7px;'), 'out of range');
+    css_bad('a badge cut over its cap', dark('--ts-bg: #000;', '--ts-badge-chamfer: 12px;'), 'out of range');
+    css_bad('a percentage cut (scales with the control)', dark('--ts-bg: #000;', '--ts-btn-chamfer: 50%;'), 'px');
+    css_bad('an em cut', dark('--ts-bg: #000;', '--ts-label-chamfer: 1em;'), 'px');
+    css_bad('a cut through var()', dark('--ts-bg: #000;', '--p-x: 5px;', '--ts-btn-chamfer: var(--p-x);'), 'px');
+    css_bad('a cut through a palette percentage', dark('--ts-bg: #000;', '--p-x: 90%;', '--ts-btn-chamfer: var(--p-x);'), 'px');
+    css_bad('a calc() cut', dark('--ts-bg: #000;', '--ts-btn-chamfer: calc(100% - 4px);'), 'px');
+    css_bad('a bare 0 (invalid inside the polygon)', dark('--ts-bg: #000;', '--ts-btn-chamfer: 0;'), 'px');
+    css_bad('a negative cut', dark('--ts-bg: #000;', '--ts-btn-chamfer: -5px;'), 'px');
+    css_bad('a keyword cut', dark('--ts-bg: #000;', '--ts-btn-chamfer: inherit;'), 'px');
+    css_bad('a raw clip-path token is still closed to uploads', dark('--ts-bg: #000;', '--ts-btn-clip-path: polygon(0 0, 100% 0, 0 100%);'), 'structural');
 
     T::group('ornaments: the bundled skins are untouched');
     foreach (glob(__DIR__ . '/../skins/*/skin.css') ?: [] as $file) {

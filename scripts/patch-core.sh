@@ -22,17 +22,24 @@
 # plugin stores them with LibrenmsConfig::persist() and LibreNMS reads them back
 # from the config table. `apply` removes the old declaration if it finds it.)
 #
-# THE CATCH - AND WHY UPDATES NEED THE WRAPPER
+# THE CATCH - AND WHY `apply` ASKS YOU TO CONFIRM
 # daily.sh updates with `git pull`. It does NOT quietly restore a tracked file
 # that has local changes: if upstream also changed the patched file, the pull
 # stops with "Your local changes ... would be overwritten by merge", and
 # LibreNMS then stops updating (security fixes included) until someone notices.
-# So don't leave the patch applied across an update. Run daily.sh through
-# scripts/daily-wrapper.sh, which reverts the patch, runs daily.sh, and
-# re-applies the patch afterwards even if daily.sh fails.
+# So the patch must never be in place when daily.sh runs. scripts/daily-wrapper.sh
+# does that (reverse the patch, run daily.sh, re-apply from an EXIT trap), but it
+# can only help if IT starts daily.sh: a cron line you wrote, or your own timer.
+# If LibreNMS's own scheduler (librenms-scheduler.timer, `schedule:run`) starts
+# daily.sh there is nowhere to put it: that call lives in a tracked file of the
+# checkout, and editing that file would cause the same stopped pull.
+#
+# So `apply` refuses unless you pass --wrapped, meaning "daily.sh on this host is
+# started through scripts/daily-wrapper.sh". Without the patch nothing is lost
+# but the recoloured port graphs; everything else themes.
 #
 #   ./scripts/patch-core.sh status
-#   ./scripts/patch-core.sh apply
+#   ./scripts/patch-core.sh apply --wrapped
 #   ./scripts/patch-core.sh revert
 #
 # `revert` reverses the patch itself (never restores a saved copy, which would
@@ -52,9 +59,10 @@ TARGET="includes/html/graphs/generic_data.inc.php"
 LEGACY_TARGET="resources/definitions/config_definitions.json"
 MARKER="graph_colours.port_in"
 DRY=0
+WRAPPED=0
 
 usage() {
-  sed -n '2,44p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,50p' "$0" | sed 's/^# \{0,1\}//'
   exit "${1:-0}"
 }
 
@@ -64,6 +72,7 @@ while [ $# -gt 0 ]; do
     apply|revert|status) ACTION="$1"; shift ;;
     --librenms) LIBRENMS="${2:-}"; shift 2 ;;
     --dry-run)  DRY=1; shift ;;
+    --wrapped)  WRAPPED=1; shift ;;
     -h|--help)  usage 0 ;;
     *) echo "unknown argument: $1" >&2; usage 1 ;;
   esac
@@ -89,6 +98,12 @@ keep_owner() {
 # The old two-file patch also declared the keys in config_definitions.json.
 legacy() { [ -f "$LIBRENMS/$LEGACY_TARGET" ] && grep -q "$MARKER" "$LIBRENMS/$LEGACY_TARGET"; }
 in_git() { [ -e "$LIBRENMS/.git" ] && command -v git >/dev/null 2>&1 && git -C "$LIBRENMS" ls-files --error-unmatch -- "$TARGET" >/dev/null 2>&1; }
+
+# Is LibreNMS's own scheduler (a systemd timer) set up on this host?
+scheduler_timer() {
+  command -v systemctl >/dev/null 2>&1 || return 1
+  systemctl list-units --all --type=timer 2>/dev/null | grep -q 'librenms-scheduler'
+}
 
 run() {
   if [ "$DRY" -eq 1 ]; then echo "  would run: $*"; else eval "$@"; fi
@@ -127,8 +142,13 @@ status)
     echo "APPLIED    $LIBRENMS/$TARGET"
     echo
     echo "Port graphs read graph_colours.port_in / .port_out."
-    echo "Run LibreNMS updates through scripts/daily-wrapper.sh: with this file patched,"
-    echo "a daily.sh git pull that finds upstream changes to it stops with an error."
+    echo "daily.sh must be started through scripts/daily-wrapper.sh: with this file patched,"
+    echo "a git pull that finds upstream changes to it stops with an error."
+    if scheduler_timer; then
+      echo
+      echo "WARNING    this host has LibreNMS's own scheduler (librenms-scheduler.timer). If it"
+      echo "           starts daily.sh, the wrapper is not in front of it: revert the patch."
+    fi
   else
     echo "NOT APPLIED    $LIBRENMS/$TARGET"
     echo
@@ -159,6 +179,28 @@ apply)
     echo "Already applied - nothing to do."
     exit 0
   fi
+  if [ "$WRAPPED" -ne 1 ]; then
+    cat >&2 <<EOF
+Not applied. This patch edits a tracked LibreNMS file, and a patched file can stop
+daily.sh's git pull ("local changes would be overwritten"), which stops LibreNMS
+updating, security fixes included.
+
+Apply it only if daily.sh on this host is started through scripts/daily-wrapper.sh
+(a cron line you control, or your own timer), then say so:
+
+  $0 apply --wrapped
+
+EOF
+    if scheduler_timer; then
+      cat >&2 <<EOF
+This host has LibreNMS's own scheduler (librenms-scheduler.timer). If that is what runs
+daily.sh, there is nowhere to put the wrapper, and the safe choice is to leave the patch
+off: everything else themes, only the port graphs keep their stock colours.
+
+EOF
+    fi
+    exit 1
+  fi
   # Dry-run first so a version drift fails loudly instead of leaving .rej files
   # scattered through core.
   if ! patch -p1 -d "$LIBRENMS" --forward --dry-run < "$PATCHFILE" >/dev/null 2>&1; then
@@ -185,8 +227,8 @@ EOF
       echo "config:set refuses keys LibreNMS does not declare):"
       echo "  php artisan tinker --execute='App\\Facades\\LibrenmsConfig::persist(\"graph_colours.port_in\", [\"9CF7DC\",\"3AD6A8\",\"218C6E\"]);'"
       echo
-      echo "RUN LibreNMS UPDATES THROUGH scripts/daily-wrapper.sh, or the next one that"
-      echo "touches this file will stop with 'local changes would be overwritten'."
+      echo "daily.sh MUST now be started through scripts/daily-wrapper.sh, or the first update"
+      echo "that touches this file will stop with 'local changes would be overwritten'."
     else
       echo "  FAIL patch reported success but the marker is absent" >&2
       exit 1

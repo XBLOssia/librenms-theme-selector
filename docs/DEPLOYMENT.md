@@ -254,11 +254,13 @@ persistent config.
 
 ## Optional: the port-graph core patch
 
-**This is the only thing in this repo that touches a LibreNMS core file.** It
-is opt-in, separate from the plugin, and never run automatically. It patches
-**one** file, and because that is a tracked file it comes with a rule for
-updating: **run LibreNMS's `daily.sh` through `scripts/daily-wrapper.sh`**
-(below). If you skip that rule, the patch can stop LibreNMS updating.
+**This is the only thing in this repo that touches a LibreNMS core file, and
+the safe default is not to apply it.** Without it, everything themes except the
+series colours of port traffic graphs, which stay stock green-and-lavender. Because
+the file is tracked by git, a patched copy can stop LibreNMS updating (below), so
+it is only for hosts where you control how `daily.sh` is started. **If LibreNMS's
+own scheduler runs `daily.sh` on your host (the `librenms-scheduler.timer` systemd
+unit, the standard install), leave the patch off.**
 
 ### Why
 
@@ -290,10 +292,12 @@ patching.
 
 ```bash
 ./scripts/patch-core.sh status
-./scripts/patch-core.sh apply     # then re-save the instance default
+./scripts/patch-core.sh apply --wrapped   # then re-save the instance default
 ./scripts/patch-core.sh revert
 ```
 
+`apply` refuses without `--wrapped`, which means "`daily.sh` on this host is started
+through `scripts/daily-wrapper.sh`". Say it only when that is true (next section).
 After applying, re-save the instance default (Plugins → Theme Selector) so the
 plugin writes the two port keys. `apply` dry-runs first, so a version drift fails
 loudly instead of scattering `.rej` files through core. `revert` reverses the patch
@@ -308,8 +312,8 @@ back to stock. If upstream has also changed the patched file, the pull stops wit
 stops updating, security fixes included, until someone notices. It worked for nine days
 on the first host this was used on, and then upstream touched a patched file.
 
-So don't leave the patch applied across an update. `scripts/daily-wrapper.sh` runs
-`daily.sh` with the patch out of the way:
+So the patch must never be in place when `daily.sh` runs. `scripts/daily-wrapper.sh`
+does that:
 
 1. reverses the patch (and the old `config_definitions.json` declaration, if an
    earlier version of the patch left one);
@@ -319,40 +323,52 @@ So don't leave the patch applied across an update. `scripts/daily-wrapper.sh` ru
 
 It exits with `daily.sh`'s status, leaves the patch off if it was off to begin with,
 and if upstream has since changed the patched lines it says so on stderr (the update has
-still happened; port graphs use stock colours until the patch is regenerated). Use it in
-place of `daily.sh` in the cron entry, as the `librenms` user:
+still happened; port graphs use stock colours until the patch is regenerated).
+
+#### It only helps if it is what starts `daily.sh`
+
+On most installs it is **not**. The standard LibreNMS install runs a systemd timer,
+`librenms-scheduler.timer`, which calls `lnms schedule:run`; that runs `daily.sh` itself
+from code inside the checkout. There is no cron line to replace, and nowhere to put the
+wrapper: editing the tracked file that schedules it would cause the very stopped pull
+this is trying to avoid. To see which kind of host you have:
 
 ```bash
-# /etc/cron.d/librenms  - replace the daily.sh line
-15 0 * * *  librenms  /opt/librenms/vendor/xblossia/librenms-theme-selector/scripts/daily-wrapper.sh >> /dev/null 2>&1
+systemctl list-timers --all | grep librenms     # librenms-scheduler.timer  -> scheduler install
+sudo crontab -l -u librenms; ls /etc/cron.d     # a daily.sh line           -> cron install
 ```
 
-A `./daily.sh` run by hand bypasses it; run the wrapper by hand instead. If your
-`/etc/cron.d/librenms` is managed and gets overwritten, remove its `daily.sh` line and put
-the wrapper in a cron file of its own.
+| Your host | What to do |
+|---|---|
+| **Scheduler (systemd timer) runs `daily.sh`** | **Leave the patch off.** Port graphs keep stock colours; nothing else is affected. If it is already on, revert it (next section). |
+| **A cron line (or your own timer) runs `daily.sh`** | Point that entry at the wrapper (`15 0 * * *  librenms  /opt/librenms/vendor/xblossia/librenms-theme-selector/scripts/daily-wrapper.sh >> /dev/null 2>&1`), then `patch-core.sh apply --wrapped`. A `./daily.sh` run by hand bypasses it; run the wrapper by hand instead. |
+| Scheduler host, and you really want the colours | Turn LibreNMS's `update` setting off and run the wrapper from a timer of your own. Not recommended: with `update` off, `daily.sh` only migrates and cleans up and never pulls, so the wrapper would be the only thing updating LibreNMS, and you take over that job. |
 
-### If updates are already stuck
+The lasting fix is upstream (below).
 
-If `daily.sh` has been stopping on `Your local changes ... would be overwritten`, put the
-patched files back to stock and let it run. As `librenms` in `/opt/librenms`:
+### If the patch is already on a host (revert it)
+
+If `daily.sh` has been stopping on `Your local changes ... would be overwritten`, or you
+simply want out of the patch, put the patched files back to stock. As `librenms` in
+`/opt/librenms`:
 
 ```bash
-git status --short       # expect M on generic_data.inc.php and/or config_definitions.json
+git status --short       # expect M on generic_data.inc.php (and, from older versions, config_definitions.json)
 git checkout -- includes/html/graphs/generic_data.inc.php resources/definitions/config_definitions.json
+git status --short       # should now list only composer.json and composer.lock
 ./daily.sh               # or wait for the nightly run
 ```
 
-Then update the plugin, switch the cron entry to the wrapper, and apply the one-file patch:
+(Name only the files `git status` showed as modified. `composer.json` and `composer.lock` are
+expected to stay listed: `lnms plugin:add` edits them and `daily.sh` resets and re-requires
+them each run. Any other stray files, such as a `php-snmp.pcap`, are untracked and harmless.)
 
-```bash
-./lnms plugin:add xblossia/librenms-theme-selector dev-main
-vendor/xblossia/librenms-theme-selector/scripts/patch-core.sh apply
-```
-
-`apply` also removes the old declaration from `config_definitions.json` if it is still
-there. Note that `revert` from versions before this one copied a saved `*.pre-skins-patch`
-file over the target, which is stale after an update and would undo upstream's changes;
-this version removes those files and never restores them.
+The plugin notices the helper is stock again and stops writing the two port keys. Rows
+already stored under `graph_colours.port_in` / `.port_out` are harmless and are overwritten or
+erased the next time the instance default is saved. Note that `revert` from versions before
+this one copied a saved `*.pre-skins-patch` file over the target, which is stale after an
+update and would undo upstream's changes; this version removes those files and never
+restores them.
 
 ### What LibreNMS's validate page says (and what to do about each)
 
@@ -363,12 +379,12 @@ patch. Some are expected; one is a real problem. From a production host:
 |---|---|---|
 | **WARN: Your database schema has extra migrations** (the plugin's four) | LibreNMS compares the `migrations` table with its own migration files and does not know about a plugin's. The text about switching from the daily to the stable release does not apply. | Cosmetic. Nothing to do; it stays for as long as the plugin is installed. |
 | **WARN: Your local git contains modified files**: `composer.json`, `composer.lock` | `lnms plugin:add` runs `composer require`, which edits both. `daily.sh` resets them and re-requires every plugin (`composer.plugins.json`), so they don't stop updates. | Expected. |
-| **...and** `includes/html/graphs/generic_data.inc.php`, `resources/definitions/config_definitions.json` | The core patch. `config_definitions.json` is the old two-file patch's second file, and **it is what stops `daily.sh`** when upstream edits it. | `generic_data.inc.php` stays listed while the one-file patch is applied; that is expected, and `daily-wrapper.sh` is what keeps it from blocking updates. `config_definitions.json` should not be listed once you have followed "If updates are already stuck". |
+| **...and** `includes/html/graphs/generic_data.inc.php`, `resources/definitions/config_definitions.json` | The core patch. `config_definitions.json` is the old two-file patch's second file, and **it is what stops `daily.sh`** when upstream edits it. | `generic_data.inc.php` stays listed while the one-file patch is applied; that is only safe where `daily-wrapper.sh` starts `daily.sh`, and on a scheduler install it should be reverted. `config_definitions.json` should not be listed once you have followed "If the patch is already on a host". |
 | **FAIL: files owned by a different user than `librenms`**: `/opt/librenms/minimal.zip` | A stray file, almost certainly the zip from an earlier `pack-skin.py examples/minimal` run in that directory. It is not part of LibreNMS and nothing uses it, but validate says it "will stop you updating automatically". | `ls -l /opt/librenms/minimal.zip`, then remove it (`sudo rm`) or `sudo chown librenms:librenms` it. Run `pack-skin.py` from a scratch directory, not from `/opt/librenms`. |
 
 Do **not** use the `./scripts/github-remove` that the "modified files" warning suggests:
 it is for undoing a pull-request checkout and discards local changes wholesale, `composer.json`
-and `composer.lock` included. The targeted `git checkout --` of the two patched files, above, is
+and `composer.lock` included. The targeted `git checkout --` of the patched files, above, is
 what is meant. And run `patch-core.sh` as `librenms`: run as root it still puts the file's owner
 back, but a root-owned file under `/opt/librenms` is exactly what the FAIL row is about.
 
@@ -379,8 +395,9 @@ Best: have LibreNMS read the colours itself. `generic_data.inc.php` would read
 no config), the way its other palettes already read `graph_colours.*`; the plugin then
 only sets config and nothing is patched. That is a change to upstream, which is yours to
 propose (the draft in [PROPOSAL.md](PROPOSAL.md) predates this and covers more files).
-Failing that, the patch plus the wrapper is safe; the last resort is dropping the port
-series, which CSS can't recolour (they are server-side images).
+Until then, leaving the patch off is the safe choice on scheduler installs, and the patch
+plus the wrapper is safe only where the wrapper starts `daily.sh`. CSS can't recolour the
+port series (they are server-side images).
 
 ---
 

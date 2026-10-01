@@ -76,32 +76,39 @@ echo "== apply, status, revert"
 mkrepo
 P status > "$W/out" 2>&1
 check "before: status says NOT APPLIED" "$(yes_if "grep -q '^NOT APPLIED' '$W/out'")"
-P apply > "$W/out" 2>&1; rc=$?
+P apply --wrapped > "$W/out" 2>&1; rc=$?
 check "apply succeeds" "$(yes_if "[ $rc = 0 ] && grep -q 'patch applied' '$W/out'")"
 check "it patched exactly one file" "$(yes_if "[ \"\$(cd '$C' && git status --porcelain)\" = ' M $HELPER' ]")"
 check "the defaults in the patched helper are the colours it replaced" "$(yes_if "grep -q \"'D7FFC7', '90B040', '608720'\" '$C/$HELPER' && grep -q \"'E0E0FF', '8080C0', '606090'\" '$C/$HELPER'")"
 check "no backup copy was left behind" "$(yes_if "[ -z \"\$(find '$C' -name '*.pre-skins-patch' -o -name '*.orig' -o -name '*.rej')\" ]")"
 P status > "$W/out" 2>&1
 check "status says APPLIED and points at the wrapper" "$(yes_if "grep -q '^APPLIED' '$W/out' && grep -q 'daily-wrapper.sh' '$W/out'")"
-P apply > "$W/out" 2>&1
+P apply --wrapped > "$W/out" 2>&1
 check "applying twice is a no-op" "$(yes_if "grep -q 'Already applied' '$W/out'")"
 P revert > "$W/out" 2>&1; rc=$?
 check "revert succeeds" "$(yes_if "[ $rc = 0 ] && grep -q 'patch reversed' '$W/out'")"
 check "and the helper is byte-for-byte the original" "$(yes_if "[ \"\$(SUM '$C/$HELPER')\" = \"\$(SUM '$W/helper.orig')\" ] && [ -z \"\$(cd '$C' && git status --porcelain)\" ]")"
 P revert > "$W/out" 2>&1
 check "reverting twice is a no-op" "$(yes_if "grep -q 'Not applied' '$W/out'")"
-P apply --dry-run > "$W/out" 2>&1
+P apply --wrapped --dry-run > "$W/out" 2>&1
 check "--dry-run changes nothing" "$(yes_if "[ -z \"\$(cd '$C' && git status --porcelain)\" ]")"
+
+echo "== apply asks for confirmation"
+mkrepo
+P apply > "$W/out" 2>&1; rc=$?
+check "apply without --wrapped refuses, changes nothing, and says why" "$(yes_if "[ $rc != 0 ] && grep -q 'Not applied' '$W/out' && grep -q 'daily-wrapper.sh' '$W/out' && grep -q 'apply --wrapped' '$W/out' && [ -z \"\$(cd '$C' && git status --porcelain)\" ]")"
+P apply --wrapped >/dev/null 2>&1
+check "with --wrapped it applies" "$(yes_if "grep -q 'graph_colours.port_in' '$C/$HELPER'")"
 
 echo "== the failure this exists for"
 mkrepo; upstream_elsewhere
-P apply >/dev/null 2>&1
+P apply --wrapped >/dev/null 2>&1
 (cd "$C" && git merge --ff-only upstream) > "$W/out" 2>&1; rc=$?
 check "with the patch applied, a git pull-style merge of an upstream edit STOPS" "$(yes_if "[ $rc != 0 ] && grep -qi 'overwritten' '$W/out'")"
 
 echo "== the wrapper"
 mkrepo; upstream_elsewhere
-P apply >/dev/null 2>&1
+P apply --wrapped >/dev/null 2>&1
 DAILY_SH="$W/daily.sh" LIBRENMS="$C" sh "$WRAP" > "$W/out" 2>&1; rc=$?
 check "the update goes through (exit status 0)" "$(yes_if "[ $rc = 0 ]")"
 check "the helper has upstream's edit" "$(yes_if "grep -q 'upstream edit: a new comment' '$C/$HELPER'")"
@@ -115,17 +122,17 @@ mkrepo; upstream_elsewhere
 DAILY_SH="$W/daily.sh" LIBRENMS="$C" sh "$WRAP" > "$W/out" 2>&1; rc=$?
 check "patch not applied beforehand: the update goes through and it is still not applied" "$(yes_if "[ $rc = 0 ] && ! grep -q 'graph_colours.port_in' '$C/$HELPER' && [ -z \"\$(cd '$C' && git status --porcelain)\" ]")"
 
-mkrepo; P apply >/dev/null 2>&1
+mkrepo; P apply --wrapped >/dev/null 2>&1
 DAILY_SH="$W/daily-fails.sh" LIBRENMS="$C" sh "$WRAP" > "$W/out" 2>&1; rc=$?
 check "when daily.sh fails, the wrapper passes its exit status on (7)" "$(yes_if "[ $rc = 7 ]")"
 check "and the patch is back anyway" "$(yes_if "grep -q 'graph_colours.port_in' '$C/$HELPER'")"
 
-mkrepo; upstream_in_the_patched_region; P apply >/dev/null 2>&1
+mkrepo; upstream_in_the_patched_region; P apply --wrapped >/dev/null 2>&1
 DAILY_SH="$W/daily.sh" LIBRENMS="$C" sh "$WRAP" > "$W/out" 2>&1; rc=$?
 check "upstream rewrote the patched lines: the update still goes through" "$(yes_if "[ $rc = 0 ] && grep -q '#91B141' '$C/$HELPER'")"
 check "the wrapper says the patch could not be re-applied, and what to do" "$(yes_if "grep -q 'could not be re-applied' '$W/out' && grep -q 'patch-core.sh apply' '$W/out'")"
 check "nothing half-patched is left (no marker, no .rej or .orig)" "$(yes_if "! grep -q 'graph_colours.port_in' '$C/$HELPER' && [ -z \"\$(find '$C' -name '*.rej' -o -name '*.orig')\" ] && [ -z \"\$(cd '$C' && git status --porcelain)\" ]")"
-P apply > "$W/out" 2>&1; rc=$?
+P apply --wrapped > "$W/out" 2>&1; rc=$?
 check "apply on a file it no longer fits fails loudly and changes nothing" "$(yes_if "[ $rc != 0 ] && grep -q 'does not apply cleanly' '$W/out' && [ -z \"\$(cd '$C' && git status --porcelain)\" ]")"
 
 echo "== leftovers from the earlier versions"
@@ -133,7 +140,7 @@ mkrepo
 cp "$W/helper.orig" "$C/$HELPER.pre-skins-patch"; echo "stale" >> "$C/$HELPER.pre-skins-patch"
 (cd "$C" && git checkout -q -b upstream main && sed -i '0,/^<?php$/s//<?php\n\/\/ upstream edit/' "$HELPER" && git commit -q -am up && git checkout -q main) >/dev/null 2>&1
 (cd "$C" && git merge -q --ff-only upstream) >/dev/null 2>&1
-P apply >/dev/null 2>&1; P revert >/dev/null 2>&1
+P apply --wrapped >/dev/null 2>&1; P revert >/dev/null 2>&1
 check "a stale *.pre-skins-patch is never restored over the file, and is removed" "$(yes_if "grep -q 'upstream edit' '$C/$HELPER' && [ ! -e '$C/$HELPER.pre-skins-patch' ]")"
 
 mkrepo
@@ -141,7 +148,7 @@ mkrepo
 check "(setup) the old declaration is in place" "$(yes_if "grep -q 'graph_colours.port_in' '$C/$DEFS'")"
 P status > "$W/out" 2>&1
 check "status warns about it" "$(yes_if "grep -q 'WARNING' '$W/out' && grep -q 'old port-key declaration' '$W/out'")"
-P apply > "$W/out" 2>&1; rc=$?
+P apply --wrapped > "$W/out" 2>&1; rc=$?
 check "apply removes it and applies the one-file patch" "$(yes_if "[ $rc = 0 ] && ! grep -q 'graph_colours.port_in' '$C/$DEFS' && [ \"\$(SUM '$C/$DEFS')\" = \"\$(SUM '$W/defs.orig')\" ] && grep -q 'graph_colours.port_in' '$C/$HELPER'")"
 # The incident: the earlier two-file patch was applied, and upstream then edited config_definitions.json.
 mkrepo
@@ -154,7 +161,7 @@ check "the wrapper removes the old declaration first, so the pull goes through" 
 check "and afterwards only the one-file patch is applied" "$(yes_if "! grep -q 'graph_colours.port_in' '$C/$DEFS' && grep -q 'graph_colours.port_in' '$C/$HELPER' && [ \"\$(cd '$C' && git status --porcelain)\" = ' M $HELPER' ]")"
 
 echo "== revert when the patch no longer reverses cleanly"
-mkrepo; P apply >/dev/null 2>&1
+mkrepo; P apply --wrapped >/dev/null 2>&1
 sed -i "s/'D7FFC7', '90B040', '608720'/'D7FFC7', 'AAAAAA', '608720'/" "$C/$HELPER"
 P revert > "$W/out" 2>&1; rc=$?
 check "it falls back to git checkout, and says so" "$(yes_if "[ $rc = 0 ] && grep -q 'restoring the file from git' '$W/out' && [ -z \"\$(cd '$C' && git status --porcelain)\" ]")"
@@ -170,7 +177,7 @@ if docker exec "$APP" true >/dev/null 2>&1; then
   check "without the patch, protoss's port_in / port_out are NOT written (nothing reads them)" "$(yes_if "printf '%s' '$out' | grep -q '\"port_applied\":\[\]' && printf '%s' '$out' | grep -q '\"rows\":\[\]'")"
   probe null > /dev/null
 
-  mkrepo; P apply >/dev/null 2>&1
+  mkrepo; P apply --wrapped >/dev/null 2>&1
   docker cp "$C/$HELPER" "$APP:/opt/librenms/$HELPER" >/dev/null 2>&1
   out="$(probe protoss)"
   check "with the patched helper, both keys are written, though LibreNMS does not declare them" "$(yes_if "printf '%s' '$out' | grep -q '\"port_applied\":\[\"graph_colours.port_in\",\"graph_colours.port_out\"\]'")"

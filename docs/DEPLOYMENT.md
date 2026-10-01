@@ -273,6 +273,22 @@ sudo -u librenms php artisan tinker --execute='echo Xblossia\ThemeSelector\Graph
 `yes` means the wrapper is available. Then pick a skin (Plugins → Theme Selector) and
 load a port graph.
 
+**A skin with no port colours of its own shows another skin's.** A skin without
+`graph_colours.port_in` / `port_out` should draw stock green and lavender. If it shows another
+skin's colours (seen once on a host that had run the old core patch under a Protoss default),
+the config table holds `port_in` / `port_out` rows the plugin isn't tracking, which LibreNMS
+treats as the instance's own setting. Check, then erase them (the plugin's own cleanup does
+the same):
+
+```bash
+php artisan tinker --execute='foreach (["graph_colours.port_in","graph_colours.port_out"] as $k) echo $k." effective=".json_encode(App\Facades\LibrenmsConfig::get($k))." db=".json_encode(App\Models\Config::where("config_name",$k)->value("config_value"))."
+";'
+php artisan tinker --execute='App\Facades\LibrenmsConfig::erase("graph_colours.port_in"); App\Facades\LibrenmsConfig::erase("graph_colours.port_out");'
+```
+
+Only do this if you never set those two keys yourself: from here on a value in the config table
+is read as an admin's choice and drawn as the stock colours for every skin without its own.
+
 ## Legacy: the port-graph core patch (not needed)
 
 **You do not need this section.** It describes an earlier way to the same result,

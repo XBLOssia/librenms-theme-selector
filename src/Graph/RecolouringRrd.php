@@ -11,8 +11,8 @@ use Throwable;
  * graph_colours.port_out just before rrdtool draws (see PortSeries).
  *
  * Only graph() is overridden. Never loaded unless PortSeriesSupport::compatible() said the parent
- * still has the shape this assumes, and only installed on web requests (the ones that draw
- * graphs), by ThemeSelectorProvider. Any failure draws the graph as core built it.
+ * still has the shape this assumes, and only installed (by ThemeSelectorProvider) while the plugin
+ * is enabled and nothing has used the store yet. Any failure draws the graph as core built it.
  */
 class RecolouringRrd extends Rrd
 {

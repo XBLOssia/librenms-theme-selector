@@ -175,6 +175,11 @@ run_with $B "$RP s/--ts-panel-chamfer, 0px))/--ts-panel, 0px))/" "cuts: drop the
 run_with $B "$RG s/calc(100% + 10000px) -10000px/calc(100% + 10000px) -8px/" "cuts: a widget clip that cuts off what hangs out of it"
 RC='/data-ts-orn\]) \.panel {/,/^}/'
 run_with $B "$RC s/calc(100% + 10000px) -10000px/calc(100% + 10px) -10px/" "cuts: a panel clip that cuts off a dropdown hanging out of it"
+RZ='/data-ts-orn\]) \.panel:is(:hover, :has(\.open)) {/,/^}/'
+run_with $B "$RZ s/z-index: 1035/z-index: 1/" "cards: a raised panel that still sits under the sticky navbar"
+run_with $B "$RZ s/z-index: 1035/z-index: 1045/" "cards: a raised panel that covers modals"
+run_with $B 's/\.panel:is(:hover, :has(\.open)) {/.panel:is(:has(.open)) {/' "cards: a panel that is not raised when hovered (its hover card goes under the next panel)"
+run_with $B 's/\.grid-stack \.grid-stack-item:hover {/.grid-stack .grid-stack-itemx:hover {/' "cards: a widget that is not raised when hovered"
 run_with $B "$RC s/calc(100% + 2px) calc(100% + 2px)/100% 100%/" "cuts: a clip notch whose edge lies exactly on the box edge (hairlines at fractional zoom)"
 run_with resources/token-catalog.json '/"--ts-panel-chamfer-bl": {/,/}/ s/"maxPx": 12/"maxPx": 800/' "cuts: no cap on panel cuts"
 run_with $B 's/html.dark .panel\[class\*="tw:rounded"\] {/html.dark .panel[class*="tw:roundedx"] {/' "cuts: radius tokens no longer reach tw:rounded panels"

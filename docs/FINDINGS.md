@@ -37,8 +37,12 @@ of this document is to supply the numbers.
    test** — section 2 keeps the correction and the bad test that caused it.
 4. Graphs have **their own colour system**, unreachable from CSS and keyed off
    a two-value boolean. Graph *chrome* is configurable and themes cleanly; the
-   *data series* often do not, because **5 shared helpers hard-code 40 hex
-   literals and read no config at all** — and 169 graph files delegate to them.
+   *data series* often do not. **5 of the 15 shared helpers read no config
+   (40 hex literals)**, but they are not one problem: `generic_data` (behind
+   `port_bits`) hard-codes its six series colours itself, while the other four
+   take their series colours from variables each *caller* sets (about 150 graph
+   files set them from hex literals). See "Which graphs are actually stuck" and
+   the 2026-10-01 correction.
 5. ~~Some colour is not in a stylesheet at all.~~ **Retracted** — the widget
    title bar *is* themeable, and always was. What is true is narrower and only
    about auditing: its class list lives in a JavaScript string, so a
@@ -62,7 +66,8 @@ measurement is only as good as the last time anyone checked it.
 | Claim | Status | How it broke |
 |---|---|---|
 | "468 distinct first-party colours" | **corrected → 264** | The count included `html/js/`, which this document itself calls vendored. Caught by writing the reproduction command. |
-| "149 graph files hard-code hex" | **corrected → 58 literals in 15 helpers** | The files mostly delegate to shared helpers; the literals live in the helpers. |
+| "149 graph files hard-code hex" | **corrected → 58 literals in 15 helpers, then corrected again (2026-10-01)** | The first correction said the literals live in the helpers. That is true of `generic_data` only. For the other four config-blind helpers (`generic_simplex`, `generic_duplex`, `generic_multi_data`, `generic_multi_bits`) the helper hard-codes just percentile, previous-period and rule lines, and the *series* colours are set by each caller. On upstream master 27820d1, 150 of the 168 graph files that delegate to a config-blind helper set a colour variable from a hex literal. So the original "about 150 files" was closer to the truth for that family than "58 literals" suggested. |
+| "Tokenising 58 literals in 15 files would make essentially every graph in LibreNMS theme-aware" | **retracted (2026-10-01)** | Ten of the fifteen helpers already read `graph_colours`. Of the five that do not, only `generic_data` has hard-coded series fills (6 of its 18 literals). Tokenising the other four helpers' own literals would recolour percentile and previous-period lines, not series; the series live in about 150 callers. |
 | Coverage "100%" | **corrected → 83%** | Revised down twice. First the denominator omitted 123 `styles.css` classes; then substring matching over-counted. |
 | §2: inline `tw:…!` utilities are "unreachable from `custom_css` by any means" | **retracted** | The test redefined `--color-red-500`; LibreNMS prefixes its theme variables, so the name is `--tw-color-red-500`. A typo read as a property of the cascade. |
 | §2b: the widget header colour "is not in a stylesheet at all" | **retracted** | It is themeable, via the element selector or the theme variable — which §16 of every skin here now does. Flagged by a LibreNMS maintainer; our own later work had already disproved it. |
@@ -829,17 +834,41 @@ are a different story, and the split is sharp:
 | | Helpers | Hex literals | Graph files delegating to them |
 |---|---|---|---|
 | Read `graph_colours` config | 10 | 18 | — |
-| **Read no config at all** | **5** | **40** | **169** |
+| **Read no config** | **5** | **40** | **168** (measured on master 27820d1, 2026-10-01) |
 
-The five with no config path whatsoever:
+*(Re-measured 2026-10-01. The earlier text said 169 and counted the five as one
+problem. They are two.)*
 
-| Helper | Literals | Included by | Notable colours |
-|---|---|---|---|
-| `generic_simplex.inc.php` | 5 | 120 | `#ffffff`, `#c5c5c5` |
-| `generic_duplex.inc.php` | 7 | 28 | `#666666`, `#999999` |
-| `generic_data.inc.php` | 18 | 20 | `#90B040`, `#8080C0` |
-| `generic_multi_data.inc.php` | 6 | 1 | `#999999`, `#666666` |
-| `generic_multi_bits.inc.php` | 4 | 0 | `#999999` |
+The five that read no config, and what each one actually hard-codes. "Series" is
+the in/out fill and outline colours; the other kinds are percentile lines
+(`#aa0000`), previous-period lines and rules (`#666666`, `#999999`) and the like:
+
+| Helper | Literals | Included by | Series colours come from | Hard-coded series |
+|---|---|---|---|---|
+| `generic_data.inc.php` | 18 | 20 | **the helper itself** | **6** (`#D7FFC7` `#90B040` `#608720`, `#E0E0FF` `#8080C0` `#606090`) |
+| `generic_duplex.inc.php` | 7 | 28 | caller variables (`$colour_area_in`, …) | 0 |
+| `generic_simplex.inc.php` | 5 | 120 | caller variables (`$colour_area`, …) | 0 (two min/max band fills, `#c5c5c5` and `#ffffffff`) |
+| `generic_multi_data.inc.php` | 6 | 1 | caller variables | 0 |
+| `generic_multi_bits.inc.php` | 4 | 0 | caller variables (nothing includes it) | 0 |
+
+So `generic_data` is a one-file change: its six series lines can read config. The
+other four cannot be fixed in the helper. Their series colours are assigned in each
+caller, e.g. `application/ceph_osd_performance.inc.php` sets `$colour_area_in = 'FF3300'`
+before requiring `generic_duplex`. Of the 168 files that delegate to one of the five,
+150 set colour variables from hex literals (`generic_simplex` 120 of 120,
+`generic_duplex` 28 of 28, `generic_multi_data` 1 of 1, `generic_data` 2 of 20, and in
+those two the helper ignores them). Moving that family onto `graph_colours` means editing
+the callers, which is a different and much larger change than the one-helper fix.
+The ten helpers that read `graph_colours` still keep a few literals of their own
+(zero-line rules such as `HRULE:0#555555`).
+
+Every figure in this section is reproduced by one command against a LibreNMS checkout
+(`--lines` lists each literal with the kind it was classed as, so the classification can
+be checked by eye):
+
+```bash
+python scripts/helper-audit.py /path/to/librenms
+```
 
 `#90B040` and `#8080C0` are the green and lavender on every port traffic graph
 in the application. `port_bits` resolves to `generic_data.inc.php`, which names
@@ -932,7 +961,15 @@ helper that predates the config mechanism and never got converted, and it
 happens to be the one behind the most-used graph in the product.
 
 
-### Correction: it is 58 literals, not 149 files
+### Correction: it is 58 literals, not 149 files *(corrected again, 2026-10-01)*
+
+> **Read this first.** The paragraph below overcorrected. It is right that most of
+> the 1,313 graph files that use a `generic_*` helper hold no colour of their own,
+> and that 58 hex literals live in the 15 helpers. It is wrong to conclude that
+> tokenising those 58 would theme the graphs: for `generic_simplex`, `generic_duplex`
+> and `generic_multi_data` the series colours are set by about 150 callers, so the
+> original "about 150 files hard-code hex" was nearer the truth for that family.
+> Only `generic_data` (6 series literals, 20 callers) is fixable in the helper alone.
 
 An earlier version of this document said 149 graph files hard-code hex, which
 made the cleanup look far larger than it is. That count is real but misleading:
@@ -963,16 +1000,15 @@ it appears three times. The number of *distinct* graph definitions touching any
 grep -rlE 'generic_[a-z_]+\.inc\.php' includes/html/graphs/ --include='*.php'   | grep -vE '/generic_[a-z_]+\.inc\.php$' | wc -l
 ```
 
-**Tokenising 58 literals in 15 files would make essentially every graph in
-LibreNMS theme-aware.** That is an afternoon's mechanical work, not a migration
-of 149 files — and `generic_data.inc.php` alone, at 18 literals, covers the port
-traffic graph that dominates every dashboard.
-
-This is the highest leverage-to-effort item in this entire document.
+~~**Tokenising 58 literals in 15 files would make essentially every graph in
+LibreNMS theme-aware.**~~ **Retracted** (see the note above and the corrections
+ledger). What survives: `generic_data.inc.php` alone, with six series literals, covers
+the port traffic graph that dominates every dashboard and 19 other graph types, and it
+can be changed on its own. That remains the best effort-to-impact item here.
 
 The `graph_colours.*` palette system already exists and 89 graph files use it,
-so the abstraction is proven — it simply was never applied to the shared
-helpers.
+so the abstraction is proven. `generic_data` is the one shared helper that has the
+series colours in its own body and never got converted.
 
 ### Papercut: the value cannot be set via LibreNMS's own CLI
 
@@ -1222,11 +1258,14 @@ pixel-identical, which is what makes them reviewable.
    `input`: two of the nine unpaired `tw:bg-white` uses are QR-code quiet
    zones that must stay white, so the blanket version breaks two-factor
    enrolment.
-3. **Tokenise the 58 hex literals in the 15 shared `generic_*` graph helpers**
-   (§5). This is the best effort-to-impact ratio available: 15 files, one
-   afternoon, and 1,233 graph definitions become theme-aware. Start with
-   `generic_data.inc.php` — 18 literals, and it renders the port traffic graph
-   on every dashboard. The same pass should retire the inline
+3. **Make `generic_data.inc.php` read its six series colours from config**
+   (§5). This is the best effort-to-impact ratio available: one helper, six
+   lines, and it renders `port_bits` plus 19 other graph types.
+   *(Corrected 2026-10-01: this item used to say "tokenise the 58 hex literals
+   in the 15 helpers, and 1,233 graph definitions become theme-aware". Ten of
+   the 15 already read config, and the other four config-blind helpers get their
+   series colours from their callers, so only this one helper is fixable alone.
+   See §5 and the corrections ledger.)* The same pass should retire the inline
    `session('applied_site_style') == 'dark' ? '#x' : '#y'` ternaries so graphs
    have one colour source rather than three.
 4. **Replace the arbitrary-value literals** (`tw:bg-[#337ab7]` etc.) in

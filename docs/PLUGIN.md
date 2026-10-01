@@ -468,7 +468,8 @@ follows a skin for users on the dark theme; a user on Light still gets the
 `graph_colours.*` ramps of their skin, which is harmless but not "stock".
 
 Out of scope: the `generic_data` port-graph patch stays a separate, optional
-core patch. A plugin can't fix config-blind graph helpers.
+core patch. A plugin can't fix `generic_data`, the one graph helper that hard-codes
+its series colours.
 
 ---
 

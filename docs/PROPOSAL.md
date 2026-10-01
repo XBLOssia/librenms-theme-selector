@@ -154,6 +154,13 @@ not any individual value.
    at all** — 40 literals, 169 graph definitions, including every port traffic
    graph in the application.
 
+   > **Correction, 2026-10-01 (the posted text above is unchanged).** "Five read no
+   > config" is true but reads as one problem, and it is two. Only `generic_data`
+   > hard-codes its series colours (6 of its 18 literals) and can be fixed on its own.
+   > The other four take series colours from variables their callers set (about 150
+   > files), and their own literals are percentile, previous-period and rule lines.
+   > See FINDINGS.md §5.
+
 **264 distinct first-party colours.** That isn't a palette; it's accretion.
 Consolidated, it's plausibly 40–60 real tokens.
 
@@ -471,6 +478,10 @@ own rather than all fifteen helpers at once — six lines, the pattern copied
 from a sibling file in the same directory, and it fixes `port_bits`, which is
 the graph most people look at most often. Easy to review, easy to revert, and
 it makes the rest of 0c concrete rather than hypothetical.
+
+> **Correction, 2026-10-01 (the posted text above is unchanged).** "The rest of 0c" is
+> smaller than this implies: there is no second helper like `generic_data`. The other
+> config-blind helpers would need their callers edited, not themselves.
 
 I'm aware [#4863](https://github.com/librenms/librenms/issues/4863) asked for
 custom templates in 2016 and was closed, and that #19029 was closed this year. I

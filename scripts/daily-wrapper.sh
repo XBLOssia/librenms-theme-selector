@@ -20,11 +20,19 @@
 # upstream changed the file, the update has still happened; the wrapper says so on
 # stderr and port graphs go back to stock colours until the patch is regenerated.
 #
-# USE IT INSTEAD OF daily.sh in the cron entry (LibreNMS's is /etc/cron.d/librenms):
+# WHERE IT CAN WORK
+# Only where you decide how daily.sh is started: a cron line you wrote, or a systemd
+# timer of your own, pointing at this script instead of daily.sh:
 #
 #   15 0 * * *  librenms  /path/to/librenms-theme-selector/scripts/daily-wrapper.sh >> /dev/null 2>&1
 #
-# A `./daily.sh` run by hand bypasses it; run the wrapper by hand instead.
+# It CANNOT sit in front of LibreNMS's own scheduler. On installs where
+# librenms-scheduler.timer runs `schedule:run`, daily.sh is started from a tracked
+# file in the checkout (routes/console.php defines the `update` command that runs it);
+# editing that file would recreate the stopped pull, and a systemd drop-in on the
+# scheduler unit cannot single out one task. There, leave the patch off.
+#
+# A `./daily.sh` run by hand bypasses the wrapper; run the wrapper by hand instead.
 #
 # Environment: LIBRENMS (default /opt/librenms), DAILY_SH (default $LIBRENMS/daily.sh).
 set -u
@@ -46,9 +54,9 @@ fi
 
 restore() {
   if [ "$reapply" = 1 ]; then
-    if ! sh "$PATCHER" apply --librenms "$LIBRENMS" >/dev/null 2>&1; then
+    if ! sh "$PATCHER" apply --wrapped --librenms "$LIBRENMS" >/dev/null 2>&1; then
       echo "daily-wrapper: the port-graph patch could not be re-applied (LibreNMS changed generic_data.inc.php?)." >&2
-      echo "daily-wrapper: the update itself ran. Port graphs use stock colours until: $PATCHER apply" >&2
+      echo "daily-wrapper: the update itself ran. Port graphs use stock colours until: $PATCHER apply --wrapped" >&2
     fi
   fi
 }

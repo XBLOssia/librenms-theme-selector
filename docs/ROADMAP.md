@@ -270,7 +270,10 @@ repo). AI tooling is disclosed up front in the post.
 
 Scoped this session, not yet written. `includes/html/graphs/generic_data.inc.php`
 is the highest-value single file in Phase 0c — it is behind `port_bits`, the
-most-viewed graph in the product, and it reads no config at all.
+most-viewed graph in the product, and it reads no config at all. *(Corrected
+2026-10-01: it is also the only config-blind helper that is fixable on its own.
+The other four get their series colours from their callers, so "the same change
+for the other helpers" does not exist.)*
 
 - **Six lines carry the in/out series** — 149–151 and 157–159. Those are the
   ones users see as green and lavender.
@@ -332,7 +335,8 @@ because they belong upstream, not because they're unwanted — see
   |---|---|
   | Graph chrome — background, grid, frame, arrows | **Yes**, via `rrdgraph_def_text_dark`. Done, on *every* graph including port graphs. |
   | Series on config-reading helpers (10 of 15) | **Yes**, via `graph_colours.*`. Done. |
-  | Series on the 5 config-blind helpers, incl. `port_bits` | **No.** 40 literals, zero config reads. |
+  | Series in `generic_data` (behind `port_bits` and 19 more graph types) | **No.** Six series literals in the helper itself, zero config reads. |
+  | Series in `generic_simplex`/`duplex`/`multi_data`/`multi_bits` | **Not through the helper.** Their own literals are percentile, previous-period and rule lines; the series colours are set by about 150 callers. *(Corrected 2026-10-01: this row used to lump all five helpers together as "40 literals".)* |
 
   CSS can't reach any of it — RRDtool renders server-side — but "unthemeable"
   was too strong twice over. Chrome themes everywhere, and two thirds of the

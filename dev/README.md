@@ -90,6 +90,35 @@ out the window, and only the test of the limit itself bursts one admin. The two 
 suites can't run side by side: they share the database, the default skin, the graph
 colours and the skins directory.
 
+## The port-graph change to LibreNMS, as a diff and as a test
+
+`dev/port-colours-diff.py` prints the change (two files: the six series lines of
+`generic_data.inc.php` read `graph_colours.port_in.0..2` and `.port_out.0..2`, and the
+two palettes are declared in `config_definitions.json` with the old literals as their
+defaults) against any LibreNMS checkout. It never writes inside the checkout.
+
+```bash
+python dev/port-colours-diff.py /path/to/librenms                 # the diff
+python dev/port-colours-diff.py /path/to/librenms --out /tmp/new  # also write the two changed files
+sh dev/test-port-colours.sh                                       # prove it on the dev stack (WSL/Linux)
+python scripts/helper-audit.py /path/to/librenms                  # which helpers hard-code what
+```
+
+`test-port-colours.sh` swaps the changed files into the dev container, draws `port_bits`
+over a fixed window before and after, checks the hashes are equal with default config,
+that a configured palette changes the graph, and restores the originals.
+
+**Checking that a graph is unchanged, on any install.** Open a port graph in the
+browser, copy its request as cURL (developer tools, Network), pin `from=` and `to=` in the
+URL to fixed numbers so the data window cannot move, and hash the response before and
+after the change:
+
+```bash
+curl -s '<the copied URL, with from= and to= pinned>' -H 'Cookie: ...' | sha256sum
+```
+
+Equal hashes with the same bytes means the change draws exactly what it drew before.
+
 ## Resetting the plugin install
 
 `vendor/` is part of the container, not a volume. Recreating the container

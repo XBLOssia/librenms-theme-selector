@@ -266,6 +266,41 @@ never arbitrary CSS, because arbitrary CSS enables exfiltration via
 Venue is the forum's Projects category (GitHub Discussions is disabled on the
 repo). AI tooling is disclosed up front in the post.
 
+### Upstream: the port series change (decided 2026-10-01: leave it alone, revisit on a trigger)
+
+The one-helper change below is **written and proven but deliberately not submitted**. The
+plugin recolours the port series itself (`docs/PLUGIN.md`, "Port traffic series without a
+core patch"), in web and console processes, so nothing we want is blocked. What it would still
+earn us is small: no string-matching on core's six literals, and a native fix for any context
+the wrapper cannot reach. Against that, it costs review effort and goodwill with maintainers
+who have asked for plain, hand-written, visibly useful changes, and it would not let us delete
+the wrapper for years (the plugin must keep working on LibreNMS releases without it).
+
+**A "nice to have". What would make it a "need to have"** (check these when updating prod, and
+whenever this is revisited; any one is a reason to reopen it):
+
+1. **The wrapper stops working on a LibreNMS release.** `PortSeriesSupport::compatible()` answers
+   `no` (the command is in `docs/DEPLOYMENT.md`), `dev/test-port-recolour.sh` fails against the
+   new release, or `laravel.log` shows `ThemeSelector: port graph colours not installed`. Twice,
+   or once if the cause is structural (core resolving the RRD store before the plugin boots, a
+   changed `Rrd::graph` signature).
+2. **Core changes those lines anyway.** An upstream commit touching the six literals in
+   `generic_data.inc.php` or the `Rrd::graph` method means the matcher is about to go stale, and
+   a small related change is easier to land then.
+3. **Maintainers signal appetite** for moving graph colours into config (a reply, an issue, a
+   Discord remark), or ask what would help theming. The first ask there is still dropping the `!`
+   from inline colour utilities (FINDINGS "What would actually help", item 1).
+4. **A context the wrapper cannot reach** is found: port graphs that follow the default in some
+   process but not another, reported by a user.
+5. **The maintenance cost rises**: more than a day, in total, spent keeping the wrapper working.
+
+**If it is reopened:** regenerate and re-prove it with `dev/port-colours-diff.py` and
+`dev/test-port-colours.sh`, re-audit with `scripts/helper-audit.py` (the helper's shape on the
+then-current master), and follow the rule in the project notes: every word that goes upstream is
+written by a person, the description is a few plain sentences, the images and the diff carry the
+evidence, and it says only what the facts support (one helper; the other four take their colours
+from callers; nothing changes by default).
+
 ### Ready to write: the Phase 0c patch
 
 Scoped this session, not yet written. `includes/html/graphs/generic_data.inc.php`

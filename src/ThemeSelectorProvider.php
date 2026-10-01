@@ -68,8 +68,11 @@ class ThemeSelectorProvider extends ServiceProvider
             $this->commands([PublishCommand::class, ValidateCommand::class]);
         } else {
             $this->publishSkins();
-            $this->recolourPortSeries();
         }
+
+        // On web requests and in console processes alike: alert emails and chat messages draw
+        // graphs from the alert process, which has no session and so uses the instance default.
+        $this->recolourPortSeries();
 
         $this->loadRoutesFrom(dirname(__DIR__) . '/routes/web.php');
         $this->loadViewsFrom(dirname(__DIR__) . '/resources/views', self::PLUGIN_NAME);
@@ -88,15 +91,23 @@ class ThemeSelectorProvider extends ServiceProvider
      * Let the port traffic series follow graph_colours.port_in/port_out without editing core.
      *
      * generic_data.inc.php hard-codes those six colours, so RecolouringRrd rewrites exactly those
-     * options just before rrdtool runs. Installed on web requests only (they draw the graphs), and
-     * only if reflection says core's RRD store still has the shape the subclass assumes: a
-     * mismatched override would be an uncatchable fatal, so otherwise we leave graphs as core
-     * draws them. See docs/PLUGIN.md.
+     * options just before rrdtool runs. Installed wherever the plugin boots, web or console: web
+     * requests draw graphs for users, and the alert process draws them for emails and chat
+     * messages (those use the instance default, which is what the config holds). Only if reflection
+     * says core's RRD store still has the shape the subclass assumes (a mismatched override would
+     * be an uncatchable fatal), and not if something has already resolved the store (its state
+     * isn't ours to replace); in both cases graphs are drawn as core draws them. See
+     * docs/PLUGIN.md.
      */
     private function recolourPortSeries(): void
     {
         try {
             if (! PortSeriesSupport::compatible()) {
+                return;
+            }
+            if ($this->app->resolved(PortSeriesSupport::STORE)) {
+                Log::info('ThemeSelector: port graph colours not installed: the RRD store was already in use');
+
                 return;
             }
             // Only replace core's own store: if something else already wrapped it, leave that alone.

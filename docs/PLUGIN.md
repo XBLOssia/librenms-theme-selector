@@ -489,14 +489,30 @@ container binding, so the plugin can wrap it:
   can extend (not final, `graph(array): string` public, no constructor arguments). A
   subclass whose parent changed shape would be an uncatchable fatal on every request, so
   if the check fails the subclass is never loaded.
-- It is installed on web requests only, by `ThemeSelectorProvider::boot()` and only when
-  the plugin is enabled; pollers and the CLI are untouched.
+- It is installed by `ThemeSelectorProvider::boot()` while the plugin is enabled, on web
+  requests and in console processes alike. Web requests draw graphs for users; the alert
+  process draws them for emails and chat messages (`Util/Mail.php`, `Transport/Telegram.php`),
+  with no session, so those use the instance default, which is what the config holds. If
+  something has already used the store when the plugin boots, it is not replaced (that
+  state isn't ours) and a line is logged.
 - A palette that is not three six-digit hex colours is ignored for that direction.
 
 Nothing in LibreNMS is edited, so `daily.sh` has nothing to trip over. Tested on the dev
 stack with an unmodified helper (`dev/test-port-recolour.sh`): a skin's six colours are in
-the drawing and the stock ones are not, per user, under an instance default, and back to
-stock when it is cleared. The core patch (`scripts/patch-core.sh`) is no longer needed.
+the drawing and the stock ones are not, per user, under an instance default, from a
+legacy-style CLI process (as `alerts.php` runs), and back to stock when the default is
+cleared.
+
+### The upstream change: decided to leave it alone, for now
+
+We drafted a one-helper change to LibreNMS (read the six colours from declared
+`graph_colours.port_in` / `port_out`, defaults equal to today's literals, byte-identical
+output). It was **not submitted**: the plugin no longer needs it, and it would cost review
+effort and goodwill for a change nobody sees by default (murrant has rejected relocation
+without payoff before: "you are just moving the garbage around", librenms/librenms#20594).
+The tools to regenerate and prove it are kept (`dev/port-colours-diff.py`,
+`dev/test-port-colours.sh`, `scripts/helper-audit.py`). The decision and what would change
+it are recorded in [ROADMAP.md](ROADMAP.md), "Upstream: the port series change". The core patch (`scripts/patch-core.sh`) is no longer needed.
 
 Out of scope: the other config-blind helpers (`generic_simplex`, `generic_duplex`,
 `generic_multi_data`, `generic_multi_bits`) take their series colours from variables each

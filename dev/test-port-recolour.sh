@@ -60,6 +60,19 @@ print(sum(1 for c in sys.argv[2:] if c.upper() in present))
 PY
 }
 
+# Render port_bits in a legacy-style CLI process (includes/init.php, as alerts.php does), the way
+# an alert email or chat message gets its graph: no session, so the instance default applies.
+cli_svg() {
+  $D sh -c 'cat > /tmp/rc-cli.php && chmod 644 /tmp/rc-cli.php' <<PHPEOF
+<?php
+\$init_modules = ['laravel'];
+chdir('/opt/librenms');
+require '/opt/librenms/includes/init.php';
+echo LibreNMS\Util\Graph::getImageData(['type' => 'port_bits', 'id' => $PID, 'from' => $FROM, 'to' => $LAST, 'width' => 500, 'height' => 200, 'graph_type' => 'svg']);
+PHPEOF
+  $D gosu librenms php /tmp/rc-cli.php
+}
+
 STOCK="D7FFC7 90B040 608720 E0E0FF 8080C0 606090"
 PROTOSS="9CF7DC 3AD6A8 218C6E FFE7A8 E3B341 95741F"
 TERRAN="9CF2B4 46C96B 26823E FFD978 E0AA1E 926C12"
@@ -87,8 +100,14 @@ choose dev-admin none;  svg dev-admin > "$T/a.svg"
 choose dev-user "";     svg dev-user  > "$T/u.svg"
 check "a user who chose stock still gets stock under a protoss default" "$([ "$(has "$T/a.svg" $STOCK)" = 6 ] && echo ok || echo no)"
 check "a user following the default gets protoss's colours" "$([ "$(has "$T/u.svg" $PROTOSS)" = 6 ] && echo ok || echo no)"
+echo "== outside a web request (alert emails and chat messages are drawn by the alert process)"
+cli_svg > "$T/cli-protoss.svg"
+check "a CLI process under a protoss default draws protoss's six colours" "$([ "$(has "$T/cli-protoss.svg" $PROTOSS)" = 6 ] && echo ok || echo no)"
+check "and none of the stock series colours" "$([ "$(has "$T/cli-protoss.svg" $STOCK)" = 0 ] && echo ok || echo no)"
 set_default ""
 choose dev-admin ""
+cli_svg > "$T/cli-stock.svg"
+check "with no default a CLI process draws stock" "$([ "$(has "$T/cli-stock.svg" $STOCK)" = 6 ] && echo ok || echo no)"
 svg dev-user > "$T/after.svg"
 check "clearing the default puts the following user back on stock" "$([ "$(has "$T/after.svg" $STOCK)" = 6 ] && echo ok || echo no)"
 

@@ -257,7 +257,7 @@ persistent config.
 
 The series colours of port traffic graphs (`port_bits` and 19 other graph types) are
 hard-coded in `includes/html/graphs/generic_data.inc.php`. The plugin recolours them
-itself: on web requests it wraps LibreNMS's RRD store and rewrites exactly those six
+itself: in web and console processes it wraps LibreNMS's RRD store and rewrites exactly those six
 options just before rrdtool draws, from the skin's `graph_colours.port_in` / `port_out`.
 **Nothing in LibreNMS is edited**, so nothing here can interfere with `daily.sh`, on a
 cron install or on one where LibreNMS's own scheduler runs it. A reflection check
@@ -272,6 +272,11 @@ sudo -u librenms php artisan tinker --execute='echo Xblossia\ThemeSelector\Graph
 
 `yes` means the wrapper is available. Then pick a skin (Plugins → Theme Selector) and
 load a port graph.
+
+Run it again after a LibreNMS update. `no`, or a line `ThemeSelector: port graph colours not
+installed` in `storage/logs/laravel.log`, means core changed its RRD store: port series are on
+stock colours (nothing else is affected) until the plugin is updated, and that is one of the
+conditions listed in `docs/ROADMAP.md` for reopening the upstream change.
 
 **A skin with no port colours of its own shows another skin's.** A skin without
 `graph_colours.port_in` / `port_out` should draw stock green and lavender. If it shows another

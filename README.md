@@ -125,7 +125,7 @@ LibreNMS), and stores each user's choice in `users_prefs`. It survives
 
 > **Port traffic graphs too, still without touching core.** LibreNMS hard-codes the six
 > series colours of its port traffic graphs (`generic_data.inc.php`) and reads no config
-> for them. The plugin recolours them itself: on web requests it wraps LibreNMS's RRD
+> for them. The plugin recolours them itself: in web and console processes it wraps LibreNMS's RRD
 > store and rewrites exactly those six options just before rrdtool draws, behind a
 > reflection check that refuses to install if core's store has changed shape. If core
 > ever changes those lines the series fall back to stock colours. See

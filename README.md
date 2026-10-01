@@ -123,15 +123,14 @@ LibreNMS), and stores each user's choice in `users_prefs`. It survives
 > memory for that one request. The instance default's palette is what
 > LibreNMS stores, for graphs no logged-in user asked for.
 
-> **One optional exception, off by default.** `scripts/patch-core.sh` can patch one
-> core file (`generic_data.inc.php`) so port traffic graphs read their colours from
-> config instead of six hard-coded hexes. Because it is a tracked file, a patched copy
-> can make `daily.sh`'s `git pull` stop with "local changes would be overwritten", so
-> `apply` refuses unless you confirm with `--wrapped` that `daily.sh` is started through
-> `scripts/daily-wrapper.sh`. That is only possible where you own the cron entry or
-> timer; **on a standard install, where LibreNMS's own `librenms-scheduler.timer` runs
-> `daily.sh`, leave the patch off.** Without it, port graphs stay stock
-> green-and-lavender while everything else themes. See
+> **Port traffic graphs too, still without touching core.** LibreNMS hard-codes the six
+> series colours of its port traffic graphs (`generic_data.inc.php`) and reads no config
+> for them. The plugin recolours them itself: on web requests it wraps LibreNMS's RRD
+> store and rewrites exactly those six options just before rrdtool draws, behind a
+> reflection check that refuses to install if core's store has changed shape. If core
+> ever changes those lines the series fall back to stock colours. See
+> [docs/PLUGIN.md](docs/PLUGIN.md). `scripts/patch-core.sh`, an earlier core patch for the
+> same job, is no longer needed and is kept only for hosts that applied it; see
 > [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ---
@@ -308,8 +307,8 @@ scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/make-demo-graphs.sh generate the mockup's graphs (needs rrdtool)
 scripts/capture-mockups.sh  screenshot the mockup per skin, headlessly
-scripts/daily-wrapper.sh    daily.sh with the core patch out of the way (only where you start daily.sh; see DEPLOYMENT.md)
-scripts/patch-core.sh       optional: let port graphs read their colours
+scripts/daily-wrapper.sh    legacy: daily.sh with the old core patch out of the way (see DEPLOYMENT.md)
+scripts/patch-core.sh       legacy, not needed: the old core patch for port graph colours
 patches/                    that patch, as a reviewable unified diff
 docs/img/                   the screenshots above
 docs/PLUGIN.md              plugin design, decisions and phases

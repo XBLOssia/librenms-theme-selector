@@ -10,6 +10,8 @@ use LibreNMS\Interfaces\Plugins\PluginManagerInterface;
 use Throwable;
 use Xblossia\ThemeSelector\Console\PublishCommand;
 use Xblossia\ThemeSelector\Console\ValidateCommand;
+use Xblossia\ThemeSelector\Graph\PortSeriesSupport;
+use Xblossia\ThemeSelector\Graph\RecolouringRrd;
 use Xblossia\ThemeSelector\Hooks\Menu;
 use Xblossia\ThemeSelector\Http\Middleware\GraphColours;
 use Xblossia\ThemeSelector\Skin\SkinCompiler;
@@ -66,6 +68,7 @@ class ThemeSelectorProvider extends ServiceProvider
             $this->commands([PublishCommand::class, ValidateCommand::class]);
         } else {
             $this->publishSkins();
+            $this->recolourPortSeries();
         }
 
         $this->loadRoutesFrom(dirname(__DIR__) . '/routes/web.php');
@@ -79,6 +82,30 @@ class ThemeSelectorProvider extends ServiceProvider
         // Graph images are drawn server-side from config, so they follow the
         // user's skin through a per-request override on the graph route.
         $this->app['router']->pushMiddlewareToGroup('web', GraphColours::class);
+    }
+
+    /**
+     * Let the port traffic series follow graph_colours.port_in/port_out without editing core.
+     *
+     * generic_data.inc.php hard-codes those six colours, so RecolouringRrd rewrites exactly those
+     * options just before rrdtool runs. Installed on web requests only (they draw the graphs), and
+     * only if reflection says core's RRD store still has the shape the subclass assumes: a
+     * mismatched override would be an uncatchable fatal, so otherwise we leave graphs as core
+     * draws them. See docs/PLUGIN.md.
+     */
+    private function recolourPortSeries(): void
+    {
+        try {
+            if (! PortSeriesSupport::compatible()) {
+                return;
+            }
+            // Only replace core's own store: if something else already wrapped it, leave that alone.
+            $this->app->extend(PortSeriesSupport::STORE, fn ($store) => $store::class === PortSeriesSupport::STORE ? new RecolouringRrd() : $store);
+            // A facade caches the instance it first resolved; make it resolve the extended one.
+            \Illuminate\Support\Facades\Facade::clearResolvedInstance(PortSeriesSupport::STORE);
+        } catch (Throwable $e) {
+            Log::warning('ThemeSelector: port graph colours not installed: ' . $e->getMessage());
+        }
     }
 
     /**

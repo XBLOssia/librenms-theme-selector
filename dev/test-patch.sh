@@ -12,7 +12,8 @@
 # /tmp and runs the scripts there, including the failure this exists for (a `git pull`
 # that stops because upstream edited the patched file). Part 2 needs the dev stack: it
 # swaps the patched helper into the container for a moment, checks what the plugin
-# writes with and without it, and restores the original file.
+# writes with a stock and with a patched helper (the same keys: the store honours them), and
+# restores the original file.
 set -u
 
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
@@ -166,7 +167,7 @@ sed -i "s/'D7FFC7', '90B040', '608720'/'D7FFC7', 'AAAAAA', '608720'/" "$C/$HELPE
 P revert > "$W/out" 2>&1; rc=$?
 check "it falls back to git checkout, and says so" "$(yes_if "[ $rc = 0 ] && grep -q 'restoring the file from git' '$W/out' && [ -z \"\$(cd '$C' && git status --porcelain)\" ]")"
 
-echo "== the plugin writes the port keys only when the patched helper is in place"
+echo "== the plugin writes the port keys with a stock helper (the store recolours them) and with the patched one"
 if docker exec "$APP" true >/dev/null 2>&1; then
   docker cp "$ROOT/dev/probe-palette.php" "$APP:/tmp/probe-palette.php" >/dev/null 2>&1
   probe() { # skin -> the PROBE line
@@ -174,7 +175,7 @@ if docker exec "$APP" true >/dev/null 2>&1; then
   }
   probe null > /dev/null
   out="$(probe protoss)"
-  check "without the patch, protoss's port_in / port_out are NOT written (nothing reads them)" "$(yes_if "printf '%s' '$out' | grep -q '\"port_applied\":\[\]' && printf '%s' '$out' | grep -q '\"rows\":\[\]'")"
+  check "with a stock helper, both keys are written too: RecolouringRrd is what honours them" "$(yes_if "printf '%s' '$out' | grep -q '\"port_applied\":\[\"graph_colours.port_in\",\"graph_colours.port_out\"\]' && printf '%s' '$out' | grep -q '9CF7DC'")"
   probe null > /dev/null
 
   mkrepo; P apply --wrapped >/dev/null 2>&1

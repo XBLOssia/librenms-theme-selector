@@ -236,9 +236,10 @@ Graph responses carry `Cache-Control: no-cache, private` and no validators, so
 browsers refetch on every load: a skin switch shows on the next graph load with
 no cache to clear.
 
-- `graph_colours.port_in` / `port_out` are skipped unless the port-graph patch
-  below is in place (the plugin checks the helper). Without it port traffic series
-  keep their fixed colours under every skin; the chrome around them still follows.
+- `graph_colours.port_in` / `port_out` (the port traffic series) are recoloured by the
+  plugin itself, with no change to LibreNMS: see "Port traffic series" below. If core
+  ever changes the lines it matches, those series fall back to stock colours and the
+  chrome around them still follows the skin.
 - Graph chrome uses the `*_dark` settings, so it only follows a skin for users
   on the dark theme.
 - The `graph_colours.*` ramps and the `*_dark` keys are the only settings the
@@ -252,15 +253,35 @@ persistent config.
 
 ---
 
-## Optional: the port-graph core patch
+## Port traffic series
 
-**This is the only thing in this repo that touches a LibreNMS core file, and
-the safe default is not to apply it.** Without it, everything themes except the
-series colours of port traffic graphs, which stay stock green-and-lavender. Because
-the file is tracked by git, a patched copy can stop LibreNMS updating (below), so
-it is only for hosts where you control how `daily.sh` is started. **If LibreNMS's
-own scheduler runs `daily.sh` on your host (the `librenms-scheduler.timer` systemd
-unit, the standard install), leave the patch off.**
+The series colours of port traffic graphs (`port_bits` and 19 other graph types) are
+hard-coded in `includes/html/graphs/generic_data.inc.php`. The plugin recolours them
+itself: on web requests it wraps LibreNMS's RRD store and rewrites exactly those six
+options just before rrdtool draws, from the skin's `graph_colours.port_in` / `port_out`.
+**Nothing in LibreNMS is edited**, so nothing here can interfere with `daily.sh`, on a
+cron install or on one where LibreNMS's own scheduler runs it. A reflection check
+refuses to install the wrapper if core's RRD store has changed shape, and if core changes
+the six lines the series simply draw in stock colours. Design and tests: `docs/PLUGIN.md`.
+
+Nothing to do after `plugin:add` or an update. To check on a host:
+
+```bash
+sudo -u librenms php artisan tinker --execute='echo Xblossia\ThemeSelector\Graph\PortSeriesSupport::compatible() ? "yes" : "no";'
+```
+
+`yes` means the wrapper is available. Then pick a skin (Plugins → Theme Selector) and
+load a port graph.
+
+## Legacy: the port-graph core patch (not needed)
+
+**You do not need this section.** It describes an earlier way to the same result,
+`scripts/patch-core.sh`, which edits a LibreNMS core file. It is kept for hosts that
+applied it, and to get off it (below). Because the file is tracked by git, a patched copy
+can stop LibreNMS updating, so **if you applied the patch, revert it** (see "If the patch is
+already on a host"); the plugin's own recolouring does the same job. The rest of this
+section is about that patch. **If LibreNMS's own scheduler runs `daily.sh` on your host
+(the `librenms-scheduler.timer` systemd unit, the standard install), never apply it.**
 
 ### Why
 

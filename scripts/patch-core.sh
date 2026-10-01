@@ -1,4 +1,8 @@
 #!/bin/sh
+# LEGACY - NOT NEEDED. The plugin now recolours the port series itself, with no edit to
+# LibreNMS (src/Graph/RecolouringRrd.php; docs/PLUGIN.md). This script is kept for hosts
+# that applied the patch, and to revert it.
+#
 # Apply or revert the optional core patch that lets port graphs read their
 # series colours from config.
 #
@@ -62,7 +66,7 @@ DRY=0
 WRAPPED=0
 
 usage() {
-  sed -n '2,50p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,54p' "$0" | sed 's/^# \{0,1\}//'
   exit "${1:-0}"
 }
 

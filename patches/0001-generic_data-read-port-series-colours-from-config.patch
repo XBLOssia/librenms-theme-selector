@@ -15,12 +15,17 @@ The file's other twelve literals - percentile rules, port-speed lines and
 prediction overlays - are deliberately untouched. They are arguably meant
 to be fixed, and leaving them out keeps the diff to one concern.
 
-Also declares both keys in config_definitions.json. lnms config:set validates
-every key against that file and refuses anything undeclared, and the only
-wildcard defined is alert.macros.rule.*, so the keys have to be named.
+The keys are NOT declared in config_definitions.json: lnms config:set refuses
+undeclared keys, but LibrenmsConfig::persist() stores them and every later
+process reads them back from the config table, which is how the Theme Selector
+plugin sets them. Declaring them would mean patching a second tracked file, and
+config_definitions.json changes upstream far more often than this helper does.
 
-NOTE: this is a LOCAL, TEMPORARY patch to two core files. daily.sh reverts
-both on update. See scripts/patch-core.sh and docs/DEPLOYMENT.md.
+NOTE: this is a LOCAL, TEMPORARY patch to one core file. If upstream changes the
+same file, daily.sh's git pull stops with "local changes would be overwritten"
+until the patch is reverted: run daily.sh through scripts/daily-wrapper.sh, which
+reverts the patch, updates, and re-applies it. See scripts/patch-core.sh and
+docs/DEPLOYMENT.md.
 ---
 --- a/includes/html/graphs/generic_data.inc.php
 +++ b/includes/html/graphs/generic_data.inc.php
@@ -64,30 +69,3 @@ both on update. See scripts/patch-core.sh and docs/DEPLOYMENT.md.
  $rrd_options[] = 'GPRINT:out' . $format . ':AVERAGE:%6.' . $float_precision . 'lf%s';
  $rrd_options[] = 'GPRINT:out' . $format . '_max:MAX:%6.' . $float_precision . 'lf%s';
  $rrd_options[] = 'GPRINT:percentile_out:%6.' . $float_precision . 'lf%s\\n';
---- a/resources/definitions/config_definitions.json
-+++ b/resources/definitions/config_definitions.json
-@@ -2814,8 +2814,24 @@
-                 "401F10"
-             ],
-             "type": "array"
-         },
-+        "graph_colours.port_in": {
-+            "default": [
-+                "D7FFC7",
-+                "90B040",
-+                "608720"
-+            ],
-+            "type": "array"
-+        },
-+        "graph_colours.port_out": {
-+            "default": [
-+                "E0E0FF",
-+                "8080C0",
-+                "606090"
-+            ],
-+            "type": "array"
-+        },
-         "graph_colours.psychedelic": {
-             "default": [
-                 "CC7CCC",
-                 "D0558F",

@@ -123,12 +123,15 @@ LibreNMS), and stores each user's choice in `users_prefs`. It survives
 > memory for that one request. The instance default's palette is what
 > LibreNMS stores, for graphs no logged-in user asked for.
 
-> **One optional exception.** `scripts/patch-core.sh` patches two core files
-> so port traffic graphs read their colours from config instead of six
-> hard-coded hexes. It is opt-in, byte-identical with no config set, fully
-> reversible, and `daily.sh` reverts it on every LibreNMS update, so it has to
-> be re-applied. Without it, port graphs stay stock green-and-lavender while
-> everything else themes. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+> **One optional exception.** `scripts/patch-core.sh` patches one core file
+> (`generic_data.inc.php`) so port traffic graphs read their colours from config
+> instead of six hard-coded hexes. It is opt-in, byte-identical with no config
+> set, and fully reversible. Because it is a tracked file, run LibreNMS's
+> `daily.sh` through `scripts/daily-wrapper.sh` (revert, update, re-apply), or a
+> `git pull` that finds upstream changes to that file will stop with "local
+> changes would be overwritten". Without the patch, port graphs stay stock
+> green-and-lavender while everything else themes. See
+> [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ---
 
@@ -304,6 +307,7 @@ scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/make-demo-graphs.sh generate the mockup's graphs (needs rrdtool)
 scripts/capture-mockups.sh  screenshot the mockup per skin, headlessly
+scripts/daily-wrapper.sh    daily.sh with the core patch out of the way (see DEPLOYMENT.md)
 scripts/patch-core.sh       optional: let port graphs read their colours
 patches/                    that patch, as a reviewable unified diff
 docs/img/                   the screenshots above

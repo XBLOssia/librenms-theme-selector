@@ -262,7 +262,7 @@ examples/minimal/            the smallest complete skin
 tests/                       php tests/run.php: validator, installer, fuzz; mutate.sh
 harness/                     preview pages, colorway, leaks.html
 dev/                         Docker instance, end-to-end tests, test.sh
-scripts/                     patch-core.sh, coverage, fonts, token docs/catalog, pack-skin.py
+scripts/                     patch-core.sh, daily-wrapper.sh, coverage, fonts, token docs/catalog, pack-skin.py
 ```
 
 ---
@@ -355,8 +355,9 @@ pending.** On the `dev/` instance:
   recording each key's original state. Switching and clearing restore those
   states exactly: tested with a hand-set `graph_colours.pinks` override, which
   survived two default changes and came back when the default was cleared.
-  Keys LibreNMS doesn't declare (`port_in`/`port_out` without the core patch)
-  are skipped.
+  `port_in`/`port_out` (which LibreNMS doesn't declare) are written only when the
+  optional core patch is in place, and are stored with `persist()` without a
+  definitions entry; without the patch they are skipped.
 - *Every stylesheet link* carries a `?v=<mtime>` cache-buster, which fixes
   the hard-refresh problem the `custom_css` setup had.
 

@@ -67,7 +67,7 @@ stock under any default, and that nothing leaks into the persistent config.
 ```bash
 sh dev/test.sh            # PHP lint, unit tests (1,085 checks), token catalog check
 sh dev/test.sh mutate     # break each defence in turn; every one must be caught
-sh dev/test.sh live       # end to end against this instance: graphs, then uploads
+sh dev/test.sh live       # end to end against this instance: the core patch tooling, graphs, then uploads
 sh dev/test.sh all
 ```
 

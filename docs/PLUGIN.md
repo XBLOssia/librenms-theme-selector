@@ -355,9 +355,9 @@ pending.** On the `dev/` instance:
   recording each key's original state. Switching and clearing restore those
   states exactly: tested with a hand-set `graph_colours.pinks` override, which
   survived two default changes and came back when the default was cleared.
-  `port_in`/`port_out` (which LibreNMS doesn't declare) are written only when the
-  optional core patch is in place, and are stored with `persist()` without a
-  definitions entry; without the patch they are skipped.
+  `port_in`/`port_out` (which LibreNMS doesn't declare) are written whenever
+  something will honour them (`RecolouringRrd`, below, or a helper that reads them),
+  and are stored with `persist()` without a definitions entry.
 - *Every stylesheet link* carries a `?v=<mtime>` cache-buster, which fixes
   the hard-refresh problem the `custom_css` setup had.
 
@@ -463,13 +463,44 @@ The same 20 checks pass with the route and config caches built, as on a
 production host. Graph responses are `Cache-Control: no-cache, private` with
 no validators, so browsers refetch and a skin switch shows on the next load.
 
-Known limits: port traffic series need the optional core patch; chrome only
+Known limits: port traffic series are recoloured by string-matching six options
+(below), so they fall back to stock colours if core changes those lines; chrome only
 follows a skin for users on the dark theme; a user on Light still gets the
 `graph_colours.*` ramps of their skin, which is harmless but not "stock".
 
-Out of scope: the `generic_data` port-graph patch stays a separate, optional
-core patch. A plugin can't fix `generic_data`, the one graph helper that hard-codes
-its series colours.
+### Port traffic series without a core patch
+
+`includes/html/graphs/generic_data.inc.php` (port_bits and 19 other graph types)
+hard-codes its six in/out series colours and reads no config. An earlier version of this
+document said a plugin can't reach them; that was never tested, and it is wrong. Every
+graph is drawn by `Rrd::graph($rrd_options)` (`LibreNMS/Util/Graph.php`), and `Rrd` is a
+container binding, so the plugin can wrap it:
+
+- `Graph/RecolouringRrd` extends core's `LibreNMS\Data\Store\Rrd`, overrides only
+  `graph()`, and rewrites the six options (`AREA:inbits_max#D7FFC7`, `AREA:inbits#90B040`,
+  `LINE:inbits#608720`, and the `dout` three) from `graph_colours.port_in` / `port_out`
+  just before rrdtool runs. Because it runs after the per-request override, each user's
+  graphs follow their own skin.
+- `Graph/PortSeries` does the rewriting and nothing else. An option is only changed when
+  its colour is still the stock literal for its role, so a caller's own colour is never
+  touched, a helper that already reads the palette is left alone, and if core changes
+  those lines nothing matches and the graph is drawn in stock colours.
+- `Graph/PortSeriesSupport` checks by reflection that core's `Rrd` is still a class this
+  can extend (not final, `graph(array): string` public, no constructor arguments). A
+  subclass whose parent changed shape would be an uncatchable fatal on every request, so
+  if the check fails the subclass is never loaded.
+- It is installed on web requests only, by `ThemeSelectorProvider::boot()` and only when
+  the plugin is enabled; pollers and the CLI are untouched.
+- A palette that is not three six-digit hex colours is ignored for that direction.
+
+Nothing in LibreNMS is edited, so `daily.sh` has nothing to trip over. Tested on the dev
+stack with an unmodified helper (`dev/test-port-recolour.sh`): a skin's six colours are in
+the drawing and the stock ones are not, per user, under an instance default, and back to
+stock when it is cleared. The core patch (`scripts/patch-core.sh`) is no longer needed.
+
+Out of scope: the other config-blind helpers (`generic_simplex`, `generic_duplex`,
+`generic_multi_data`, `generic_multi_bits`) take their series colours from variables each
+caller sets, not from the helper, so there is no single place to rewrite them.
 
 ---
 

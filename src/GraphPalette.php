@@ -4,6 +4,7 @@ namespace Xblossia\ThemeSelector;
 
 use App\Facades\LibrenmsConfig;
 use App\Models\Config as ConfigModel;
+use Xblossia\ThemeSelector\Graph\PortSeriesSupport;
 
 /**
  * A skin's graph palette, and how it reaches LibreNMS's graph code.
@@ -27,18 +28,19 @@ use App\Models\Config as ConfigModel;
 class GraphPalette
 {
     /**
-     * The port traffic series, which only the optional core patch makes anything read, with the
-     * colours generic_data.inc.php hard-codes (so stock output is what they fall back to).
-     * LibreNMS does not declare these keys, so `lnms config:set` refuses them, but persist()
-     * stores them and every later process reads them back; the plugin therefore writes them
-     * whenever the patched helper is in place, without a definitions entry.
+     * The port traffic series, with the colours generic_data.inc.php hard-codes (so stock output
+     * is what they fall back to). LibreNMS reads no such keys itself, so the plugin writes them
+     * when something will honour them: RecolouringRrd rewrites the series just before rrdtool
+     * runs, or the optional core patch makes the helper read them. LibreNMS does not declare
+     * the keys, so `lnms config:set` refuses them, but persist() stores them and every later
+     * process reads them back; no definitions entry is needed.
      */
     private const PORT_STOCK = [
         'graph_colours.port_in' => ['D7FFC7', '90B040', '608720'],
         'graph_colours.port_out' => ['E0E0FF', '8080C0', '606090'],
     ];
 
-    private ?bool $portPatched = null;
+    private ?bool $portHonoured = null;
 
     public function __construct(
         private readonly SkinRepository $skins,
@@ -48,8 +50,7 @@ class GraphPalette
 
     /**
      * The skin's palette limited to keys LibreNMS will use: the ones it declares, and the
-     * graph_colours.port_in/port_out pair when the optional core patch (which reads them) is
-     * in place.
+     * graph_colours.port_in/port_out pair when something honours them (see PORT_STOCK).
      *
      * @return array<string, string|array<int, string>>
      */
@@ -63,18 +64,19 @@ class GraphPalette
 
         return array_filter(
             $this->skins->graphPalette($skinId),
-            fn ($key) => array_key_exists($key, $definitions) || (isset(self::PORT_STOCK[$key]) && $this->portSeriesPatched()),
+            fn ($key) => array_key_exists($key, $definitions) || (isset(self::PORT_STOCK[$key]) && $this->portSeriesHonoured()),
             ARRAY_FILTER_USE_KEY,
         );
     }
 
     /**
-     * Whether includes/html/graphs/generic_data.inc.php reads the port series colours from
-     * config (scripts/patch-core.sh). Read once per process; a missing file means "no".
+     * Whether port series colours set in config will be used: the store can recolour them, or
+     * includes/html/graphs/generic_data.inc.php reads them itself (the optional core patch, or
+     * a LibreNMS that has adopted the keys). Read once per process.
      */
-    private function portSeriesPatched(): bool
+    private function portSeriesHonoured(): bool
     {
-        return $this->portPatched ??= str_contains(
+        return $this->portHonoured ??= PortSeriesSupport::compatible() || str_contains(
             (string) @file_get_contents(base_path('includes/html/graphs/generic_data.inc.php')),
             'graph_colours.port_in',
         );

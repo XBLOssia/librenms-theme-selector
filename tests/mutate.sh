@@ -180,6 +180,17 @@ run_with $B "$RZ s/z-index: 1035/z-index: 1/" "cards: a raised panel that still 
 run_with $B "$RZ s/z-index: 1035/z-index: 1045/" "cards: a raised panel that covers modals"
 run_with $B 's/\.panel:is(:hover, :has(\.open)) {/.panel:is(:has(.open)) {/' "cards: a panel that is not raised when hovered (its hover card goes under the next panel)"
 run_with $B 's/\.grid-stack \.grid-stack-item:hover {/.grid-stack .grid-stack-itemx:hover {/' "cards: a widget that is not raised when hovered"
+PS=src/Graph/PortSeries.php
+PU=src/Graph/PortSeriesSupport.php
+run_with $PS 's# || strtoupper($m\[4\]) !== self::STOCK\[$direction\]\[$role\]##' "port colours: recolour any colour, not only the stock literal"
+run_with $PS "s#if (\$m\[1\] === 'LINE' && \$max) {#if (false) {#" "port colours: recolour the outline of the _max series"
+run_with $PS "s#(\$max ? 0 : 1)#(\$max ? 1 : 0)#" "port colours: swap the max fill and the area fill"
+run_with $PS 's#/^\[0-9A-Fa-f\]{6}$/#/./#' "port colours: accept any text as a colour"
+run_with $PS 's#if (count($palette) < 3) {#if (false) {#' "port colours: accept a palette with fewer than three tones"
+run_with $PS "s#'~^(AREA|LINE)#'~(AREA|LINE)#" "port colours: match an option that does not start with AREA/LINE"
+run_with $PU "s#return \$return instanceof ReflectionNamedType && \$return->getName() === 'string' && ! \$return->allowsNull();#return true;#" "port store guard: ignore the return type of graph()"
+run_with $PU 's#\$graph->isFinal() || ##' "port store guard: subclass a final graph()"
+run_with $PU 's#if ($constructor !== null && $constructor->getNumberOfRequiredParameters() > 0) {#if (false) {#' "port store guard: subclass a store whose constructor needs arguments"
 run_with $B "$RC s/calc(100% + 2px) calc(100% + 2px)/100% 100%/" "cuts: a clip notch whose edge lies exactly on the box edge (hairlines at fractional zoom)"
 run_with resources/token-catalog.json '/"--ts-panel-chamfer-bl": {/,/}/ s/"maxPx": 12/"maxPx": 800/' "cuts: no cap on panel cuts"
 run_with $B 's/html.dark .panel\[class\*="tw:rounded"\] {/html.dark .panel[class*="tw:roundedx"] {/' "cuts: radius tokens no longer reach tw:rounded panels"

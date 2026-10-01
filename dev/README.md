@@ -67,7 +67,7 @@ stock under any default, and that nothing leaks into the persistent config.
 ```bash
 sh dev/test.sh            # PHP lint, unit tests (1,085 checks), token catalog check
 sh dev/test.sh mutate     # break each defence in turn; every one must be caught
-sh dev/test.sh live       # end to end against this instance: the core patch tooling, graphs, then uploads
+sh dev/test.sh live       # end to end against this instance: the legacy patch tooling, graphs, port colours, then uploads
 sh dev/test.sh all
 ```
 
@@ -89,6 +89,13 @@ it creates (`dev-up1` to `dev-up7`), each with a bucket of its own, instead of s
 out the window, and only the test of the limit itself bursts one admin. The two live
 suites can't run side by side: they share the database, the default skin, the graph
 colours and the skins directory.
+
+## Port series colours without a core patch
+
+`sh dev/test-port-recolour.sh` (WSL/Linux, stack up) draws `port_bits` as SVG under different skins
+and defaults on an **unmodified** LibreNMS and checks which colours are in the drawing: the
+plugin's `RecolouringRrd` is what puts a skin's six series colours there. See
+`docs/PLUGIN.md`, "Port traffic series without a core patch".
 
 ## The port-graph change to LibreNMS, as a diff and as a test
 

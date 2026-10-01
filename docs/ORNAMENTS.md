@@ -181,6 +181,12 @@ texture.
 * **Nothing that hangs out is cut off.** The margin is 10000px, so a dropdown that opens
   past a panel's edge, or a fixed-position dialog inside one, is not clipped; only the
   cut triangles are. (Checked in a browser: both still receive clicks on a clipped panel.)
+* **Cards that open inside a panel stay on top.** A panel is a stacking context (isolation and
+  clip-path), and LibreNMS renders hover cards, menus and popups inside the element that owns
+  them, so without more, every later panel would paint over a card opened in an earlier one
+  (the device hover card on the device page did exactly that). While the pointer is over a
+  panel or widget, or the panel holds an open menu, it is raised to `z-index: 1035`: above the
+  sticky navbar (1030), below modals (1040 and up).
 * **The notch is grown 2px off the box edges.** Each notch is the cut triangle plus 2px on
   the two sides that lie along the box edges (the hypotenuse stays on the same line), and
   the zero-width slit that joins it to the outside runs 2px outside the box. Reason: with

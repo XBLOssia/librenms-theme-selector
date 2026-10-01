@@ -62,6 +62,12 @@ function test_ornaments(): void
             'filter: drop-shadow(0 0 8px var(--ts-frame-glow))',
             'animation: ts-breathe var(--ts-frame-breathe) ease-in-out infinite',
         ],
+        "$gate .panel:is(:hover, :has(.open))" => [
+            'z-index: 1035',
+        ],
+        "$gate .grid-stack .grid-stack-item:hover" => [
+            'z-index: 1035',
+        ],
         "$gate .panel > .panel-heading" => [
             'isolation: isolate',
         ],
@@ -415,6 +421,15 @@ function test_ornaments(): void
     T::ok('the panel clip-path is the same fixed polygon, over the panel tokens', in_array('clip-path: ' . $polygonFor('panel'), $panelDecls, true));
     T::ok('a panel clip-path is only in that one declaration', count(array_filter($panelDecls, fn ($d) => str_starts_with($d, 'clip-path:'))) === 1);
     T::ok('the clip margin is large enough that a dropdown or a fixed dialog inside a panel is not cut off', in_array('clip-path: ' . $polygonFor('panel'), $panelDecls, true) && str_starts_with($polygonFor('panel'), 'polygon(-10000px -10000px, calc(100% + 10000px) -10000px, ') && str_contains($polygonFor('panel'), 'calc(100% + 10000px) calc(100% + 10000px), -10000px calc(100% + 10000px)'));
+
+    // A panel and a widget are stacking contexts, so a hover card or menu inside one is trapped
+    // under every later panel unless the panel that holds it is raised while it is open.
+    T::group('ornaments: a card opened inside a panel is not trapped under the next one');
+    foreach (["$gate .panel:is(:hover, :has(.open))", "$gate .grid-stack .grid-stack-item:hover"] as $sel) {
+        $z = array_values(array_filter($rules[$sel] ?? [], fn ($d) => str_starts_with($d, 'z-index:')));
+        T::ok("$sel is raised above the sticky navbar (1030) and below modals (1040)", count($z) === 1 && preg_match('/^z-index: (\d+)$/', $z[0], $zm) === 1 && (int) $zm[1] > 1030 && (int) $zm[1] < 1040, json_encode($z));
+    }
+    T::ok('the panel itself is positioned, so its z-index applies', in_array('position: relative', $panelDecls, true));
 
     // The panel's ::after draws only the edge lines of the cut (the clip makes the cut).
     $panelAfter = $rules["$gate .panel::after"] ?? [];

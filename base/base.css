@@ -625,6 +625,18 @@ html.dark:has(link[data-ts-orn]) .panel::before {
   filter: drop-shadow(0 0 8px var(--ts-frame-glow));
   animation: ts-breathe var(--ts-frame-breathe) ease-in-out infinite;
 }
+/* A panel (or a dashboard widget) is a stacking context here (isolation and clip-path), and
+ * LibreNMS draws its hover cards, menus and popups inside the element that owns them
+ * (position: fixed, z-index 9999, but only within that panel). Left alone, every later panel
+ * paints over a card opened in an earlier one. So the panel under the pointer, or holding an
+ * open menu, is raised for as long as that is so: above its neighbours and the sticky navbar
+ * (1030), below modals (1040 and up). */
+html.dark:has(link[data-ts-orn]) .panel:is(:hover, :has(.open)) {
+  z-index: 1035;
+}
+html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item:hover {
+  z-index: 1035;
+}
 /* Panel headings: a marker on the left edge and a strip across the heading,
  * both painted under the heading's text (the heading is isolated so that -1
  * puts them above its background and below its content). */

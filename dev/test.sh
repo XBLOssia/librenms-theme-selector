@@ -47,6 +47,7 @@ mutate() {
 
 live() {
   echo "== end to end, against $APP"
+  TS_CONTAINER="$APP" sh "$ROOT/dev/test-patch.sh"
   docker exec "$APP" sh /plugin/dev/test-graphs.sh
   docker exec "$APP" sh /plugin/dev/test-upload.sh
 }

@@ -1,0 +1,35 @@
+From: librenms-theme-selector <https://github.com/XBLOssia/librenms-theme-selector>
+Subject: [PATCH] (legacy) declare graph_colours.port_in / .port_out in config_definitions.json
+
+Only for undoing what the earlier TWO-file core patch did: patch-core.sh applies this
+in reverse when it finds the declaration. The plugin no longer needs it (it stores
+the keys with LibrenmsConfig::persist()), and leaving it in place makes a daily.sh
+git pull stop whenever upstream edits this file.
+---
+--- a/resources/definitions/config_definitions.json
++++ b/resources/definitions/config_definitions.json
+@@ -2814,8 +2814,24 @@
+                 "401F10"
+             ],
+             "type": "array"
+         },
++        "graph_colours.port_in": {
++            "default": [
++                "D7FFC7",
++                "90B040",
++                "608720"
++            ],
++            "type": "array"
++        },
++        "graph_colours.port_out": {
++            "default": [
++                "E0E0FF",
++                "8080C0",
++                "606090"
++            ],
++            "type": "array"
++        },
+         "graph_colours.psychedelic": {
+             "default": [
+                 "CC7CCC",
+                 "D0558F",

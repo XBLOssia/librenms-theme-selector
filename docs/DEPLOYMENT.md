@@ -237,8 +237,8 @@ browsers refetch on every load: a skin switch shows on the next graph load with
 no cache to clear.
 
 - `graph_colours.port_in` / `port_out` are skipped unless the port-graph patch
-  below has declared them. Without it port traffic series keep their fixed
-  colours under every skin; the chrome around them still follows.
+  below is in place (the plugin checks the helper). Without it port traffic series
+  keep their fixed colours under every skin; the chrome around them still follows.
 - Graph chrome uses the `*_dark` settings, so it only follows a skin for users
   on the dark theme.
 - The `graph_colours.*` ramps and the `*_dark` keys are the only settings the
@@ -255,7 +255,10 @@ persistent config.
 ## Optional: the port-graph core patch
 
 **This is the only thing in this repo that touches a LibreNMS core file.** It
-is opt-in, separate from the plugin, and never run automatically.
+is opt-in, separate from the plugin, and never run automatically. It patches
+**one** file, and because that is a tracked file it comes with a rule for
+updating: **run LibreNMS's `daily.sh` through `scripts/daily-wrapper.sh`**
+(below). If you skip that rule, the patch can stop LibreNMS updating.
 
 ### Why
 
@@ -271,10 +274,14 @@ it is only the series that are stuck.
 | File | Change |
 |---|---|
 | `includes/html/graphs/generic_data.inc.php` | reads `graph_colours.port_in` / `.port_out`, defaulting to the values it previously hard-coded |
-| `resources/definitions/config_definitions.json` | declares those two keys |
 
-The second is not optional: LibreNMS validates config keys against the
-definitions file, and the plugin skips keys it doesn't declare.
+That is all. Earlier versions also patched `resources/definitions/config_definitions.json`
+to declare the two keys. They don't need declaring: `lnms config:set` refuses a key
+LibreNMS doesn't declare, but the plugin stores them with `LibrenmsConfig::persist()`
+and every later process reads them back from the `config` table (checked on LibreNMS
+26.9.1). The plugin writes the two keys whenever it sees the patched helper, and skips
+them when it doesn't. `config_definitions.json` changes upstream far more often than
+the helper does, so leaving it alone removes most of the exposure described below.
 
 **With no config set, output is byte-identical.** Verified rather than
 asserted: the same graph URL, with `from`/`to` pinned so the data window is
@@ -288,23 +295,92 @@ patching.
 ```
 
 After applying, re-save the instance default (Plugins → Theme Selector) so the
-plugin writes the two port keys now that they exist.
+plugin writes the two port keys. `apply` dry-runs first, so a version drift fails
+loudly instead of scattering `.rej` files through core. `revert` reverses the patch
+itself; it never copies a saved file back (that would be stale after an update), and
+falls back to `git checkout` only if the patch no longer reverses cleanly.
 
-`apply` dry-runs first, so a version drift fails loudly instead of scattering
-`.rej` files through core. It keeps a pristine `*.pre-skins-patch` copy of each
-file, and `revert` prefers that copy over reversing the diff.
+### The catch: a patched file can stop `daily.sh`
 
-### The catch: `daily.sh` reverts it
+`daily.sh` updates LibreNMS with `git pull`. It does **not** quietly put a patched file
+back to stock. If upstream has also changed the patched file, the pull stops with
+`Your local changes to the following files would be overwritten by merge`, and LibreNMS
+stops updating, security fixes included, until someone notices. It worked for nine days
+on the first host this was used on, and then upstream touched a patched file.
 
-`daily.sh` restores tracked files, so **both patched files go back to stock on
-every update**. The config values survive (they are database rows) but stop
-being read. Re-apply after each update; the script is idempotent, so this is
-safe to automate:
+So don't leave the patch applied across an update. `scripts/daily-wrapper.sh` runs
+`daily.sh` with the patch out of the way:
+
+1. reverses the patch (and the old `config_definitions.json` declaration, if an
+   earlier version of the patch left one);
+2. runs `daily.sh` with the same arguments;
+3. re-applies the patch afterwards, from an `EXIT` trap, so that happens even if
+   `daily.sh` fails.
+
+It exits with `daily.sh`'s status, leaves the patch off if it was off to begin with,
+and if upstream has since changed the patched lines it says so on stderr (the update has
+still happened; port graphs use stock colours until the patch is regenerated). Use it in
+place of `daily.sh` in the cron entry, as the `librenms` user:
 
 ```bash
-# /etc/cron.d/librenms-theme-selector-patch  - after daily.sh has run
-30 1 * * *  root  /path/to/librenms-theme-selector/scripts/patch-core.sh apply >/dev/null 2>&1
+# /etc/cron.d/librenms  - replace the daily.sh line
+15 0 * * *  librenms  /opt/librenms/vendor/xblossia/librenms-theme-selector/scripts/daily-wrapper.sh >> /dev/null 2>&1
 ```
+
+A `./daily.sh` run by hand bypasses it; run the wrapper by hand instead. If your
+`/etc/cron.d/librenms` is managed and gets overwritten, remove its `daily.sh` line and put
+the wrapper in a cron file of its own.
+
+### If updates are already stuck
+
+If `daily.sh` has been stopping on `Your local changes ... would be overwritten`, put the
+patched files back to stock and let it run. As `librenms` in `/opt/librenms`:
+
+```bash
+git status --short       # expect M on generic_data.inc.php and/or config_definitions.json
+git checkout -- includes/html/graphs/generic_data.inc.php resources/definitions/config_definitions.json
+./daily.sh               # or wait for the nightly run
+```
+
+Then update the plugin, switch the cron entry to the wrapper, and apply the one-file patch:
+
+```bash
+./lnms plugin:add xblossia/librenms-theme-selector dev-main
+vendor/xblossia/librenms-theme-selector/scripts/patch-core.sh apply
+```
+
+`apply` also removes the old declaration from `config_definitions.json` if it is still
+there. Note that `revert` from versions before this one copied a saved `*.pre-skins-patch`
+file over the target, which is stale after an update and would undo upstream's changes;
+this version removes those files and never restores them.
+
+### What LibreNMS's validate page says (and what to do about each)
+
+`/validate` (or `./validate.php`) reports four things after installing the plugin and the
+patch. Some are expected; one is a real problem. From a production host:
+
+| Message | Meaning | Action |
+|---|---|---|
+| **WARN: Your database schema has extra migrations** (the plugin's four) | LibreNMS compares the `migrations` table with its own migration files and does not know about a plugin's. The text about switching from the daily to the stable release does not apply. | Cosmetic. Nothing to do; it stays for as long as the plugin is installed. |
+| **WARN: Your local git contains modified files**: `composer.json`, `composer.lock` | `lnms plugin:add` runs `composer require`, which edits both. `daily.sh` resets them and re-requires every plugin (`composer.plugins.json`), so they don't stop updates. | Expected. |
+| **...and** `includes/html/graphs/generic_data.inc.php`, `resources/definitions/config_definitions.json` | The core patch. `config_definitions.json` is the old two-file patch's second file, and **it is what stops `daily.sh`** when upstream edits it. | `generic_data.inc.php` stays listed while the one-file patch is applied; that is expected, and `daily-wrapper.sh` is what keeps it from blocking updates. `config_definitions.json` should not be listed once you have followed "If updates are already stuck". |
+| **FAIL: files owned by a different user than `librenms`**: `/opt/librenms/minimal.zip` | A stray file, almost certainly the zip from an earlier `pack-skin.py examples/minimal` run in that directory. It is not part of LibreNMS and nothing uses it, but validate says it "will stop you updating automatically". | `ls -l /opt/librenms/minimal.zip`, then remove it (`sudo rm`) or `sudo chown librenms:librenms` it. Run `pack-skin.py` from a scratch directory, not from `/opt/librenms`. |
+
+Do **not** use the `./scripts/github-remove` that the "modified files" warning suggests:
+it is for undoing a pull-request checkout and discards local changes wholesale, `composer.json`
+and `composer.lock` included. The targeted `git checkout --` of the two patched files, above, is
+what is meant. And run `patch-core.sh` as `librenms`: run as root it still puts the file's owner
+back, but a root-owned file under `/opt/librenms` is exactly what the FAIL row is about.
+
+### Getting off the patch
+
+Best: have LibreNMS read the colours itself. `generic_data.inc.php` would read
+`graph_colours.port_in` / `.port_out`, defaulting to today's values (byte-identical with
+no config), the way its other palettes already read `graph_colours.*`; the plugin then
+only sets config and nothing is patched. That is a change to upstream, which is yours to
+propose (the draft in [PROPOSAL.md](PROPOSAL.md) predates this and covers more files).
+Failing that, the patch plus the wrapper is safe; the last resort is dropping the port
+series, which CSS can't recolour (they are server-side images).
 
 ---
 

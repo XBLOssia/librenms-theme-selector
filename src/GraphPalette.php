@@ -26,6 +26,20 @@ use App\Models\Config as ConfigModel;
  */
 class GraphPalette
 {
+    /**
+     * The port traffic series, which only the optional core patch makes anything read, with the
+     * colours generic_data.inc.php hard-codes (so stock output is what they fall back to).
+     * LibreNMS does not declare these keys, so `lnms config:set` refuses them, but persist()
+     * stores them and every later process reads them back; the plugin therefore writes them
+     * whenever the patched helper is in place, without a definitions entry.
+     */
+    private const PORT_STOCK = [
+        'graph_colours.port_in' => ['D7FFC7', '90B040', '608720'],
+        'graph_colours.port_out' => ['E0E0FF', '8080C0', '606090'],
+    ];
+
+    private ?bool $portPatched = null;
+
     public function __construct(
         private readonly SkinRepository $skins,
         private readonly Settings $settings,
@@ -33,9 +47,9 @@ class GraphPalette
     }
 
     /**
-     * The skin's palette limited to keys this LibreNMS declares (the
-     * graph_colours.port_in/port_out pair only exists with the optional core
-     * patch).
+     * The skin's palette limited to keys LibreNMS will use: the ones it declares, and the
+     * graph_colours.port_in/port_out pair when the optional core patch (which reads them) is
+     * in place.
      *
      * @return array<string, string|array<int, string>>
      */
@@ -49,8 +63,20 @@ class GraphPalette
 
         return array_filter(
             $this->skins->graphPalette($skinId),
-            fn ($key) => array_key_exists($key, $definitions),
+            fn ($key) => array_key_exists($key, $definitions) || (isset(self::PORT_STOCK[$key]) && $this->portSeriesPatched()),
             ARRAY_FILTER_USE_KEY,
+        );
+    }
+
+    /**
+     * Whether includes/html/graphs/generic_data.inc.php reads the port series colours from
+     * config (scripts/patch-core.sh). Read once per process; a missing file means "no".
+     */
+    private function portSeriesPatched(): bool
+    {
+        return $this->portPatched ??= str_contains(
+            (string) @file_get_contents(base_path('includes/html/graphs/generic_data.inc.php')),
+            'graph_colours.port_in',
         );
     }
 
@@ -139,6 +165,6 @@ class GraphPalette
             return $original['value'];
         }
 
-        return LibrenmsConfig::getDefinitions()[$key]['default'] ?? null;
+        return LibrenmsConfig::getDefinitions()[$key]['default'] ?? self::PORT_STOCK[$key] ?? null;
     }
 }

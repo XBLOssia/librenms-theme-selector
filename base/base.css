@@ -462,10 +462,10 @@ html.dark body::before {
 }
 @keyframes ts-rain {
   from {
-    transform: translateY(0);
+    transform: translateY(calc(var(--ts-rain-tile) * -1));
   }
   to {
-    transform: translateY(calc(var(--ts-rain-tile) * -1));
+    transform: translateY(0);
   }
 }
 @media (prefers-reduced-motion: reduce) {

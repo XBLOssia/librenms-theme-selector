@@ -571,7 +571,7 @@ function test_ornaments(): void
     T::ok('the layer is exactly this rule, every declaration written out (behind everything, click-through, empty, moved by transform)', $layer === $wantLayer, json_encode($layer));
     // With a background on <html> as well, the body's would paint over the layer (z-index -1) wherever the body is.
     T::ok('<html> has no background of its own, so the body\'s is the canvas\'s and the layer sits on it', (bool) preg_match('/\nhtml\.dark \{([^{}]*font-family: var\(--ts-root-font-family\)[^{}]*)\}/', $css, $hm) && ! str_contains($hm[1], 'background'), $hm[1] ?? 'no root rule');
-    T::ok('the keyframes move transform by one tile and nothing else', (bool) preg_match('/@keyframes ts-rain \{\s*from \{\s*transform: translateY\(0\);\s*\}\s*to \{\s*transform: translateY\(calc\(var\(--ts-rain-tile\) \* -1\)\);\s*\}\s*\}/', $css));
+    T::ok('the keyframes move transform down by one tile (from a tile above to rest) and nothing else', (bool) preg_match('/@keyframes ts-rain \{\s*from \{\s*transform: translateY\(calc\(var\(--ts-rain-tile\) \* -1\)\);\s*\}\s*to \{\s*transform: translateY\(0\);\s*\}\s*\}/', $css));
     T::ok('a reduced-motion rule stops it', (bool) preg_match('/@media \(prefers-reduced-motion: reduce\) \{\s*html\.dark body::before \{\s*animation: none;\s*\}\s*\}/', $css));
     T::ok('every rain token is off by default', str_contains($css, "  --ts-rain-image: none;\n") && str_contains($css, "  --ts-rain-tile: initial;\n") && str_contains($css, "  --ts-rain-period: initial;\n"));
     T::ok('the layer has no other token: --ts-rain-image, -tile and -period only', array_values(array_filter($cat->names(), fn ($n) => str_starts_with($n, '--ts-rain-'))) === ['--ts-rain-image', '--ts-rain-period', '--ts-rain-tile']);

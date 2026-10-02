@@ -251,8 +251,9 @@ sends a skin for *each* mode and lets the browser pick:
 - **The base has a light twin.** `base-light.css` is `base.css` with every `html.dark` selector
   swapped for `html:not(.dark)` (`Modes::lightBase`; the ornament gate looks for the light slot's
   own mark, `data-ts-orn-light`, so one slot's ornaments don't switch on the other's; and the
-  blocks fenced `ts:dark-only`, the dark map's inverted tiles and black attribution bar, are
-  left out, so a light page keeps LibreNMS's own map), with
+  blocks fenced `ts:dark-only`, the dark map's black attribution bar, are left out; the map's
+  tile filter is a token, `--ts-map-tile-filter`, inverted by default in the dark base and `none`
+  by default in the twin, so each skin chooses its own map in either mode), with
   `base/light.css` appended: the light-only mapping of LibreNMS's stock Tailwind palette (grays,
   blue, status colours) onto the skin's roles, plus two small rules. Tests pin both: the twin is
   *only* those substitutions, and `light.css` can set Tailwind colour variables and exactly two
@@ -522,7 +523,7 @@ gave:
 Verification at the time: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
 breaks each defence and requires a failing test (46 caught, 7 documented as
-redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,319 checks and
+redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,325 checks and
 159 mutations caught; `sh dev/test.sh all` prints the current figures.)
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See

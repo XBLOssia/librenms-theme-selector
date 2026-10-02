@@ -193,7 +193,12 @@ texture.
   the clip edge exactly on the border's outer edge, a border snapped to a device pixel and
   an unsnapped clip disagree at fractional zoom levels (100%, 110%, 125% and 150% in one
   browser, not at 90% or 175%) and leave a one-pixel hairline of border running out to the
-  old square corner. A corner with no cut loses only a 2px sliver outside itself.
+  old square corner. The growth is `min(cut * 1000, 2px)` per corner, so a corner with no cut
+  grows nothing and loses nothing, not even the sliver outside it: the bars of a frame ornament
+  jut out through an uncut corner, and a 2px notch there used to bite a triangle out of them.
+* **A cut's edge line is over the frame bars.** On a widget the line is a background layer, and
+  the four lines are the first (topmost) layers, so a bar of the frame ends under the line
+  instead of running over it and poking out of the cut.
 * **The cut edge gets a line.** The panel's `::after` draws it above the content, on the
   panel's own corners (it is exactly the border box for the usual 1px border), so the
   line runs from the left border to the bottom border and stops. For a widget it is one

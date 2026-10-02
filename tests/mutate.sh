@@ -151,7 +151,7 @@ run_with $B "$RH s/z-index: -1;/z-index: 2;/" "ornaments: raise the heading mark
 run_with $B "$RA s/pointer-events: none;/pointer-events: auto;/" "ornaments: let the heading strip take clicks"
 run_with $B "$RN s/content: \"\";/content: \"Session expired\";/" "ornaments: give the navbar top strip text"
 run_with $B "$RB s/bottom: -8px;/bottom: -80px;/" "ornaments: let the navbar bottom strip hang 80px"
-run_with $B "$RW s/background-size: 32px 32px,/background-size: 300px 300px,/" "ornaments: make a widget corner slot 300px"
+run_with $B "$RW s/32px 32px, 32px 32px/300px 300px, 300px 300px/" "ornaments: make a widget corner slot 300px"
 
 RC='/data-ts-orn\]) \.btn {/,/^}/'
 run_with src/Skin/TokenFile.php "s#&& ! preg_match('/^\[0-9\]{1,2}#\&\& false \&\& ! preg_match('/^[0-9]{1,2}#" "chamfer: accept % and em sizes"
@@ -191,7 +191,10 @@ run_with $PS "s#'~^(AREA|LINE)#'~(AREA|LINE)#" "port colours: match an option th
 run_with $PU "s#return \$return instanceof ReflectionNamedType && \$return->getName() === 'string' && ! \$return->allowsNull();#return true;#" "port store guard: ignore the return type of graph()"
 run_with $PU 's#\$graph->isFinal() || ##' "port store guard: subclass a final graph()"
 run_with $PU 's#if ($constructor !== null && $constructor->getNumberOfRequiredParameters() > 0) {#if (false) {#' "port store guard: subclass a store whose constructor needs arguments"
-run_with $B "$RC s/calc(100% + 2px) calc(100% + 2px)/100% 100%/" "cuts: a clip notch whose edge lies exactly on the box edge (hairlines at fractional zoom)"
+run_with $B "$RC s#min(calc(var(--ts-panel-chamfer-[a-z]*, var(--ts-panel-chamfer)) \* 1000), 2px)#0px#g" "cuts: a clip notch whose edge lies exactly on the box edge (hairlines at fractional zoom)"
+run_with $B "$RC s#min(calc(var(--ts-panel-chamfer-[a-z]*, var(--ts-panel-chamfer)) \* 1000), 2px)#2px#g" "cuts: a corner with no cut still notches its outside (bites the bars that jut out of it)"
+run_with $B "$RG s#min(calc(var(--ts-widget-chamfer-[a-z]*, var(--ts-widget-chamfer)) \* 1000), 2px)#2px#g" "cuts: the same on widgets"
+run_with $B "$RG s#background-image: linear-gradient(to top right#background-image: var(--ts-widget-frame-tl), linear-gradient(to top right#" "cuts: a frame bar drawn above the edge line of a cut (it pokes out of the cut)"
 run_with resources/token-catalog.json '/"--ts-panel-chamfer-bl": {/,/}/ s/"maxPx": 12/"maxPx": 800/' "cuts: no cap on panel cuts"
 run_with $B 's/html.dark .panel\[class\*="tw:rounded"\] {/html.dark .panel[class*="tw:roundedx"] {/' "cuts: radius tokens no longer reach tw:rounded panels"
 

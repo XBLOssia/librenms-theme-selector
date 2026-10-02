@@ -172,7 +172,19 @@ host's nginx config has not been checked.
   LICENSE.txt      optional licence notice (stored, shown to admins, never served)
   textures/        optional .png tiles (cleaned and embedded; never served as files)
   graph.conf       optional graph palette (the format is docs/AUTHORING.md, "graph.conf")
+  features.json    BUNDLED skins only: {"ornaments": true, "effects": ["white-rabbit"]}
 ```
+
+`features.json` is read from the package by `SkinRepository::features()` (never from the web
+root or an upload) and only for a bundled skin; `Features::parse` honours two keys and ignores the
+rest. `ornaments` gives a bundled skin the ornament layer an upload always gets (the
+`data-ts-orn` mark on its stylesheet links). `effects` names fixed pieces of page markup in
+`resources/effects/` that `SkinInjector` pushes into the layout's `scripts` stack (`Effects`): today
+only `white-rabbit`, which Digital Rain uses. On one device-page load in ten (rolled in PHP) a
+small rabbit shows in the bottom-right corner for about a second and fades, by CSS animation
+alone, with no script and no request. An uploaded skin can ask for neither: the manifest refuses
+the keys and the zip allowlist refuses the file. That difference is tracked in
+[ROADMAP.md](ROADMAP.md), "Bundled-only features".
 
 ### The token file
 
@@ -249,6 +261,7 @@ src/
   Skin/                      the upload validator: zip reader, token-file parser,
                              value grammar, font/graph/manifest checks, output guard
   SkinInstaller, SkinRegistry, SkinRepository, SkinPublisher, DefaultSkin
+  Features, Effects          what a bundled skin may ask for (features.json) and the page effects
   Settings, InstallException
   GraphPalette, GraphColours (middleware), SkinResolver, SkinInjector
   Graph/                     port series recolouring: RecolouringRrd, PortSeries, PortSeriesSupport
@@ -257,6 +270,7 @@ src/
 routes/web.php
 resources/views/             the picker and admin page
 resources/token-catalog.json which tokens exist / which uploads may set (generated)
+resources/effects/           reviewed page-effect markup (white-rabbit.html)
 database/migrations/         settings and uploaded-skin tables
 base/base.css                the interpretation layer's stylesheet
 skins/<id>/                  bundled skins: skin.css, skin.json, graph.conf, fonts/, textures/
@@ -424,8 +438,8 @@ gave:
 Verification at the time: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
 breaks each defence and requires a failing test (46 caught, 7 documented as
-redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 1,952 checks and
-107 mutations caught; `sh dev/test.sh all` prints the current figures.)
+redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,090 checks and
+127 mutations caught; `sh dev/test.sh all` prints the current figures.)
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See
 [SECURITY.md](SECURITY.md) for the controls and, as important, what is not

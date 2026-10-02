@@ -79,6 +79,27 @@ class SkinRepository
     }
 
     /**
+     * What a bundled skin asks of the plugin besides its stylesheet (Features). Always none for
+     * an uploaded skin or an unknown id; read from the package, not the web root.
+     *
+     * @return array{ornaments: bool, effects: string[]}
+     */
+    public function features(string $id): array
+    {
+        if (! self::isValidId($id) || ! $this->isBundled($id)) {
+            return Features::parse(null);
+        }
+
+        return Features::parse(@file_get_contents("$this->packageSkinsDir/$id/features.json") ?: null);
+    }
+
+    /** Does the ornament layer in base.css apply to this skin: always for an upload, by request for a bundled skin. */
+    public function usesOrnaments(string $id): bool
+    {
+        return $this->isUploaded($id) || $this->features($id)['ornaments'];
+    }
+
+    /**
      * @return array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, modes: string[]}> by id, sorted by name
      */
     public function all(): array

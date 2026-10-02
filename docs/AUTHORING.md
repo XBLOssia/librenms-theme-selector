@@ -295,6 +295,22 @@ names `--ts-widget-frame-tl` ... `--ts-widget-frame-left`, plus
 overhang). A widget's title bar covers its top edge; paint the bar itself through
 `--ts-widget-bar-bg`, which takes layered gradients.
 
+**A drifting page layer.** One fixed layer behind the whole page can scroll a tile of your
+texture downward, for rain, snow, a star field:
+
+```css
+--tx-rain: url("textures/rain.png");
+--ts-rain-image: var(--tx-rain);
+--ts-rain-tile: 256px;      /* the tile's size: whole px, 64px to 512px */
+--ts-rain-period: 36s;      /* one tile passes in this long: 2s to 60s */
+```
+
+Make the tile seamless top to bottom (its last row must continue its first) or a join will
+scroll past. The layer sits behind every panel, so it shows where the page does: leave some of
+the panel background translucent if you want it to show through. It can't be clicked, it stops
+for visitors whose system asks for reduced motion, and a skin that doesn't set a period has no
+layer at all.
+
 ## graph.conf
 
 Optional. Graph images are drawn by the server, so this is separate from the

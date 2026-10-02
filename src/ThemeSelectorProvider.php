@@ -27,6 +27,7 @@ class ThemeSelectorProvider extends ServiceProvider
         $this->app->singleton(Settings::class);
         $this->app->singleton(GraphPalette::class);
         $this->app->singleton(SkinResolver::class);
+        $this->app->singleton(Effects::class, fn () => new Effects($root . '/resources/effects'));
         $this->app->singleton(SkinRegistry::class);
         $this->app->singleton(DefaultSkin::class);
         $this->app->singleton(SkinRepository::class, fn ($app) => new SkinRepository(

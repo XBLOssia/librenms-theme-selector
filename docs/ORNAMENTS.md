@@ -25,8 +25,10 @@ for them: gradients, colours, bounded lengths.
 4. **No text**: `content` is empty and fixed. A layer can't show a message.
 5. **Fixed geometry.** Position, inset, size of the layer and of each slot are
    constants in `base.css`. No token feeds any of them.
-6. **Only for installed skins.** The plugin marks an uploaded skin's stylesheet
-   links `data-ts-orn`, and the rules are keyed on that. The bundled skins keep
+6. **Only for installed skins, and bundled skins that ask.** The plugin marks an
+   uploaded skin's stylesheet links `data-ts-orn`, and the rules are keyed on that.
+   A bundled skin gets the mark only if its `features.json` says
+   `{"ornaments": true}` (Digital Rain does); the first three bundled skins keep
    their own mechanism and are unaffected.
 7. **Pinned by a test.** `tests/OrnamentTest.php` compares each rule in
    `base.css` that carries the gate with its reviewed text, declaration by
@@ -224,6 +226,33 @@ token sets now reach panels and widgets that carry any `tw:rounded-*` class, fro
 a re-opened `utilities` layer, the same way the `bg-white!` colours are handled.
 This applies to every skin, bundled ones too: the device header takes the skin's
 radius instead of a fixed 16px.
+
+## Phase F (built): a drifting page layer
+
+One layer sits behind the whole page: a fixed, empty, click-through `body::before` at `z-index: -1`
+(under every panel and every word) that moves by `transform` alone, one tile per period, so the
+loop has no seam and the cost is the compositor's, not a repaint. Unlike the layers above it is
+**not** gated on `data-ts-orn`: it is off until a skin sets a period, so every skin can use it.
+
+| Skin gives | Range | Fixed in base.css |
+|---|---|---|
+| `--ts-rain-image`: a gradient or a bundled texture | any `image` value (no URL but a declared texture) | where it is painted (`background-image`, repeated) |
+| `--ts-rain-tile`: the size of one tile | a whole number of px, 64px to 512px (never %, em, `calc()`, `var()`) | the square size, and the layer's height (viewport plus one tile) |
+| `--ts-rain-period`: how long one tile takes to pass | 2s to 60s | the keyframes (`transform` only), `linear infinite` |
+
+Rules, as for the other layers:
+
+* The tile must be periodic in both directions (its top edge continues its bottom edge), or a seam
+  scrolls past once per period. `scripts/make-rain.py` builds Digital Rain's tile that way.
+* Off until set: `--ts-rain-tile` and `--ts-rain-period` default to `initial`, which makes the
+  declarations that read them invalid at computed-value time, so there is no animation (and
+  nothing painted) for a skin that doesn't use them. Off under `prefers-reduced-motion` (the tile
+  then just sits still).
+* **No background on `<html>`.** With one on both `<html>` and `<body>`, the body's paints over a
+  `z-index: -1` layer wherever the body exists. With none, the body's background becomes the
+  canvas's, which is what the layer sits on. A test pins this.
+* The tile size is capped because it sizes a fixed layer. A percentage would size it by the viewport
+  and a huge tile would allocate a huge texture.
 
 ## Roadmap to parity with the bundled skins
 

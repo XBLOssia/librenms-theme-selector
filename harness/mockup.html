@@ -98,11 +98,13 @@
 </style>
 
 <!-- THE SKIN: base.css, then the skin's token file, exactly as the plugin loads
-     them. Pick with ?skin=terran|protoss|zerg, or use the switcher.
+     them. Pick with ?skin=terran|protoss|zerg|digital-rain, or use the switcher.
        ?skin=example    examples/minimal: the 20 core roles and nothing else
        ?skin=defaults   base.css alone, no token file -->
 <script>
-  var SKINS = ['terran', 'protoss', 'zerg'];
+  var SKINS = ['terran', 'protoss', 'zerg', 'digital-rain'];
+  // Bundled skins whose features.json asks for the ornament layer: the plugin marks their link data-ts-orn.
+  var ORNAMENTS = ['digital-rain'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'terran').toLowerCase();
   var special = skin === 'example' || skin === 'defaults';
   if (!special && SKINS.indexOf(skin) === -1) skin = 'terran';
@@ -112,7 +114,7 @@
                : skin === 'defaults' ? null
                : '../skins/' + skin + '/skin.css';
   document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
-                 (skinHref ? '<link id="skin-css" rel="stylesheet" href="' + skinHref + bust + '">' : ''));
+                 (skinHref ? '<link id="skin-css" rel="stylesheet"' + (ORNAMENTS.indexOf(skin) !== -1 ? ' data-ts-orn' : '') + ' href="' + skinHref + bust + '">' : ''));
   // A url() in a custom property is resolved against the stylesheet that USES the variable
   // (base.css), not the one that declares it, so a skin's --tx-<name>: url("textures/<name>.png")
   // would point into base/. The plugin embeds textures as data: URLs when it publishes; here, point

@@ -59,6 +59,9 @@ html.dark {
   --ts-body-bg-size: auto;
   --ts-body-bg-position: 0% 0%;
   --ts-body-bg-repeat: repeat;
+  --ts-rain-image: none;
+  --ts-rain-tile: initial;
+  --ts-rain-period: initial;
   --ts-link-hover-fg: color-mix(in srgb, var(--ts-link) 70%, #fff);
   --ts-navbar-bg-image: linear-gradient(180deg, var(--ts-surface-raised) 0%, var(--ts-surface) 100%);
   --ts-navbar-border-bottom: 1px solid var(--ts-border);
@@ -415,8 +418,10 @@ html.dark {
   --ts-widget-alert-label-font-weight: 700;
 }
 
+/* No background on <html>: with none, the body's background (colour and image) becomes the
+ * canvas's and covers the whole window, which is the layer the rain (z-index -1) sits on. A
+ * background on both would paint the body's over the rain wherever the body exists. */
 html.dark {
-  background-color: var(--ts-bg);
   color: var(--ts-text);
   font-family: var(--ts-root-font-family);
 }
@@ -431,6 +436,42 @@ html.dark body {
   background-position: var(--ts-body-bg-position);
   background-repeat: var(--ts-body-bg-repeat);
   background-attachment: fixed;
+}
+/* A drifting page layer ("rain"): one tile of a skin's image, behind everything, scrolling
+ * down by exactly one tile every period, so the loop has no seam. The mechanics are fixed here;
+ * a skin gives paint only: --ts-rain-image (a gradient or a texture), --ts-rain-tile (its size in
+ * px, 64 to 512) and --ts-rain-period (2s to 60s). It is a fixed, empty, click-through layer at
+ * z-index -1 (under every panel and every word) that moves by transform alone, so it costs the
+ * compositor, not a repaint. With no period set, the animation is invalid and the layer is still;
+ * with no image or tile there is nothing to see. Off under reduced motion (the tile then just
+ * sits there). docs/ORNAMENTS.md, "Phase F". */
+html.dark body::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(100% + var(--ts-rain-tile));
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--ts-rain-image);
+  background-size: var(--ts-rain-tile) var(--ts-rain-tile);
+  background-repeat: repeat;
+  will-change: transform;
+  animation: ts-rain var(--ts-rain-period) linear infinite;
+}
+@keyframes ts-rain {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(var(--ts-rain-tile) * -1));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.dark body::before {
+    animation: none;
+  }
 }
 html.dark a {
   color: var(--ts-link);

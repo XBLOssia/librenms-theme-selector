@@ -1,0 +1,191 @@
+/*
+ * Digital Rain: phosphor green on black, monospace, scanlines and torn corners, with a slow
+ * drift of falling glyphs behind the page.
+ *
+ * Every token here is one an uploaded skin may set (the same file validates as an upload), plus the
+ * page layer: the glyphs are skins/digital-rain/textures/rain.png, computed by scripts/make-rain.py.
+ * The type is Share Tech Mono when it is available and the system monospace otherwise.
+ * Dark mode only.
+ */
+html.dark {
+  /* Palette */
+  --p-black: #010a03;
+  --p-surface: #02140b;
+  --p-raised: #062a14;
+  --p-hover: #0a3d1d;
+  --p-line: #0f5a26;
+  --p-line-strong: #1f9a45;
+  --p-phosphor: #00ff41;
+  --p-head: #d6ffe0;
+  --p-text: #9dffb5;
+  --p-dim: #5fd982;
+  --p-mute: #4cc470;
+  --p-bright: #e6ffee;
+  --p-link: #7dffa0;
+  --p-red: #ff3b5c;
+  --p-amber: #ffd23f;
+  --p-cyan: #2fd6ff;
+  --p-font: "Share Tech Mono", ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+  /* Scanlines: a faint line every 3px. */
+  --p-scan: repeating-linear-gradient(0deg, rgba(0, 255, 65, .045) 0, rgba(0, 255, 65, .045) 1px, transparent 1px, transparent 3px);
+  /* Glitch: the glow of a phosphor, fringed one pixel red on the left and cyan on the right. */
+  --p-glitch: 1px 0 rgba(255, 59, 92, .6), -1px 0 rgba(47, 214, 255, .6), 0 0 8px rgba(0, 255, 65, .55);
+  --tx-rain: url("textures/rain.png");
+
+  /* Core roles */
+  --ts-bg: var(--p-black);
+  --ts-surface: var(--p-surface);
+  --ts-surface-raised: var(--p-raised);
+  --ts-surface-hover: var(--p-hover);
+  --ts-border: var(--p-line);
+  --ts-text: var(--p-text);
+  --ts-text-dim: var(--p-dim);
+  --ts-text-mute: var(--p-mute);
+  --ts-text-bright: var(--p-bright);
+  --ts-accent: var(--p-phosphor);
+  --ts-link: var(--p-link);
+  --ts-highlight: var(--p-phosphor);
+  --ts-success: #00c832;
+  --ts-warning: var(--p-amber);
+  --ts-danger: var(--p-red);
+  --ts-info: var(--p-cyan);
+  --ts-danger-text: #ff8fa3;
+  --ts-font-display: var(--p-font);
+  --ts-font-mono: var(--p-font);
+  --ts-font-code: var(--p-font);
+  --ts-radius-sm: 0;
+
+  /* The page: scanlines over black, and the rain drifting down behind it all. One tile of the
+     glyphs is 256px; it scrolls its own height every 36s (about 7px a second): slow enough to
+     sit behind text, and still when the visitor asks for reduced motion. */
+  --ts-body-bg-image: var(--p-scan);
+  --ts-rain-image: var(--tx-rain);
+  --ts-rain-tile: 256px;
+  --ts-rain-period: 36s;
+
+  /* Type: monospace everywhere, in capitals where it is chrome */
+  --ts-root-font-family: var(--p-font);
+  --ts-body-font-family: var(--p-font);
+  --ts-input-font-family: var(--p-font);
+  --ts-tab-font-family: var(--p-font);
+  --ts-navbar-brand-font-weight: 400;
+  --ts-navbar-link-font-size: 14px;
+  --ts-navbar-link-letter-spacing: .08em;
+  --ts-panel-heading-font-weight: 400;
+  --ts-panel-heading-letter-spacing: .1em;
+  --ts-widget-title-font-weight: 400;
+  --ts-widget-title-letter-spacing: .1em;
+  --ts-table-head-letter-spacing: .1em;
+  --ts-tab-font-size: 13px;
+  --ts-tab-letter-spacing: .1em;
+  --ts-tab-text-transform: uppercase;
+  --ts-btn-letter-spacing: .08em;
+  --ts-btn-font-size: 13px;
+  --ts-dropdown-item-font-weight: 400;
+
+  /* The phosphor glow, fringed */
+  --ts-navbar-brand-text-shadow: var(--p-glitch);
+  --ts-panel-heading-text-shadow: var(--p-glitch);
+  --ts-link-hover-text-shadow: 0 0 8px rgba(0, 255, 65, .7);
+  --ts-device-down-text-shadow: 0 0 8px rgba(255, 59, 92, .7);
+
+  /* Flat, black, square, with a torn corner (top right and bottom left) */
+  --ts-shadow: none;
+  --ts-recess: none;
+  --ts-bevel: none;
+  --ts-navbar-bg-image: none;
+  --ts-navbar-border-bottom: 1px solid var(--p-line);
+  --ts-navbar-shadow: 0 0 14px rgba(0, 255, 65, .22);
+  --ts-navbar-link-hover-shadow: inset 0 -2px 0 0 var(--p-phosphor);
+  --ts-panel-bg-image: var(--p-scan);
+  --ts-widget-bg-image: var(--p-scan);
+  --ts-panel-border: 1px solid var(--p-line);
+  --ts-panel-heading-border-bottom: 1px solid var(--p-line);
+  --ts-widget-border: 1px solid var(--p-line);
+  --ts-btn-chamfer: 0px;
+  --ts-btn-chamfer-tr: 6px;
+  --ts-btn-chamfer-bl: 6px;
+  --ts-label-chamfer: 0px;
+  --ts-label-chamfer-tr: 4px;
+  --ts-label-chamfer-bl: 4px;
+  --ts-badge-chamfer: 0px;
+  --ts-badge-chamfer-tr: 4px;
+  --ts-badge-chamfer-bl: 4px;
+  --ts-panel-chamfer: 0px;
+  --ts-panel-chamfer-tr: 12px;
+  --ts-panel-chamfer-bl: 12px;
+  --ts-panel-cut-stroke: rgba(0, 255, 65, .65);
+  --ts-widget-chamfer: 0px;
+  --ts-widget-chamfer-tr: 12px;
+  --ts-widget-chamfer-bl: 12px;
+  --ts-widget-cut-stroke: rgba(0, 255, 65, .65);
+  --ts-modal-border: 1px solid var(--p-line-strong);
+  --ts-modal-border-top: 2px solid var(--p-phosphor);
+  --ts-modal-shadow: 0 0 24px rgba(0, 255, 65, .25);
+  --ts-navbar-dropdown-border: 1px solid var(--p-line-strong);
+  --ts-navbar-dropdown-border-top: 1px solid var(--p-line-strong);
+  --ts-alert-badge-border-radius: 0;
+  --ts-well-border-radius: 0;
+  --ts-well-border: 1px solid var(--p-line);
+  --ts-alert-border-width: 1px 1px 1px 4px;
+  --ts-label-success-bg: #006b1c;
+  --ts-label-danger-bg: #b3203d;
+  --ts-badge-alert: #b3203d;
+  --ts-progress: var(--p-phosphor);
+  --ts-progress-glow-shadow: 0 0 8px rgba(0, 255, 65, .7);
+
+  /* Ornaments. Corner brackets, like a terminal's selection frame, a block cursor on each panel
+     heading, scanlines across it, and two strips on the navbar. The glow and the slow fade are
+     the phosphor settling; every period is over 2s and there is no flashing. */
+  --ts-frame-tl: linear-gradient(180deg, var(--p-phosphor) 0, var(--p-phosphor) 2px, transparent 2px), linear-gradient(90deg, var(--p-phosphor) 0, var(--p-phosphor) 2px, transparent 2px);
+  --ts-frame-br: linear-gradient(0deg, var(--p-phosphor) 0, var(--p-phosphor) 2px, transparent 2px), linear-gradient(270deg, var(--p-phosphor) 0, var(--p-phosphor) 2px, transparent 2px);
+  --ts-frame-glow: rgba(0, 255, 65, .55);
+  --ts-frame-breathe: 8s;
+  --ts-heading-marker: linear-gradient(90deg, var(--p-phosphor) 0, var(--p-phosphor) 100%);
+  --ts-heading-marker-size: 6px 100%;
+  --ts-heading-marker-position: left top;
+  --ts-heading-marker-glow: rgba(0, 255, 65, .7);
+  --ts-heading-marker-breathe: 3s;
+  --ts-heading-strip: var(--p-scan);
+  --ts-heading-strip-opacity: .9;
+  --ts-navbar-strip-top: linear-gradient(90deg, var(--p-phosphor) 0, var(--p-phosphor) 220px, transparent 220px);
+  --ts-navbar-strip-top-size: 100% 2px;
+  --ts-navbar-strip-bottom: repeating-linear-gradient(90deg, var(--p-phosphor) 0, var(--p-phosphor) 3px, transparent 3px, transparent 9px);
+  --ts-navbar-strip-bottom-size: 100% 2px;
+  --ts-navbar-strip-bottom-opacity: .7;
+  --ts-navbar-strip-bottom-breathe: 9s;
+  --ts-breathe-low: .4;
+  --ts-breathe-high: 1;
+  --ts-alert-glow-period: 3s;
+  --ts-alert-glow-low: rgba(255, 59, 92, .45);
+  --ts-alert-glow-high: rgba(255, 59, 92, .9);
+
+  /* Tables and controls: black, with the line carrying the structure */
+  --ts-table-border: var(--p-line);
+  --ts-table-head-bg: var(--p-raised);
+  --ts-table-head-border-bottom: 1px solid var(--p-line-strong);
+  --ts-table-stripe-odd-bg: var(--p-surface);
+  --ts-table-stripe-even-bg: var(--p-black);
+  --ts-table-row-hover-bg: var(--p-hover);
+  --ts-table-row-hover-shadow: inset 3px 0 0 0 var(--p-phosphor);
+  --ts-table-bg: var(--p-surface);
+  --ts-input-bg: var(--p-black);
+  --ts-input-border: 1px solid var(--p-line-strong);
+  --ts-input-border-top-color: var(--p-line-strong);
+  --ts-input-shadow: none;
+  --ts-input-focus-shadow: 0 0 0 2px var(--p-phosphor);
+  --ts-addon-border: var(--p-line-strong);
+  --ts-btn-default-border: var(--p-line-strong);
+  --ts-btn-default-hover-shadow: 0 0 8px rgba(0, 255, 65, .45);
+  --ts-btn-primary-bg: #006b1c;
+  --ts-btn-primary-border: var(--p-phosphor);
+  --ts-btn-primary-shadow: none;
+  --ts-btn-warning-shadow: none;
+  --ts-btn-hover-filter: brightness(1.15);
+  --ts-lnms-btn-primary-bg: #006b1c;
+  --ts-lnms-btn-primary-border: var(--p-phosphor);
+  --ts-pagemenu-active-shadow: inset 0 -2px 0 0 var(--p-phosphor);
+  --ts-tab-active-border: var(--p-line-strong);
+  --ts-tab-active-border-top: 2px solid var(--p-phosphor);
+  --ts-tab-active-border-bottom-color: var(--p-surface);
+}

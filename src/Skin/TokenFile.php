@@ -385,6 +385,14 @@ final class TokenFile
                     $failed = true;
                     continue;
                 }
+                // The page layer's tile: a whole number of px from 64 to 512. Never %, em, calc() or var():
+                // it sizes a fixed layer, and a percentage would size it by the viewport.
+                if (in_array('tile', $this->catalog->kinds($name), true)
+                    && ! preg_match('/^(?:6[4-9]|[7-9][0-9]|[1-4][0-9]{2}|50[0-9]|51[0-2])px$/D', trim($raw))) {
+                    $report->error($where, 'must be a whole size in px from 64px to 512px, for example 256px');
+                    $failed = true;
+                    continue;
+                }
                 // Motion and glow for the ornament layers: a period of 2s to 60s, a fade depth
                 // of .3 to 1, or one literal colour. Nothing else, and never a var(): a
                 // palette value could carry a comma and with it a second, enormous shadow.

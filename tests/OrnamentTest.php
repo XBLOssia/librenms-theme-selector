@@ -551,9 +551,44 @@ function test_ornaments(): void
         css_bad("a widget cut stroke of $bad", dark('--ts-bg: #000;', '--p-c: #000;', "--ts-widget-cut-stroke: $bad;"), 'plain colour');
     }
 
-    T::group('ornaments: the bundled skins are untouched');
-    foreach (glob(__DIR__ . '/../skins/*/skin.css') ?: [] as $file) {
-        $text = (string) file_get_contents($file);
-        T::ok(basename(dirname($file)) . ' sets no frame token', ! str_contains($text, '--ts-frame-') && ! str_contains($text, '--ts-panel-radius-'));
+    T::group('ornaments: the first three bundled skins are untouched');
+    foreach (['terran', 'protoss', 'zerg'] as $id) {
+        $text = (string) file_get_contents(__DIR__ . "/../skins/$id/skin.css");
+        T::ok("$id sets no frame token", ! str_contains($text, '--ts-frame-') && ! str_contains($text, '--ts-panel-radius-'));
     }
+
+    // Phase F: a drifting page layer ("rain"). Its mechanics are fixed in base.css; a skin gives an image,
+    // a tile size and a period, and nothing else reaches it.
+    T::group('page layer: a drifting tile behind the page');
+    T::ok('exactly one rule styles body::before', substr_count($css, 'body::before') === 2, (string) substr_count($css, 'body::before')); // the rule and the reduced-motion rule
+    $layer = [];
+    if (preg_match('/\nhtml\.dark body::before \{([^{}]*)\}/', $css, $m)) {
+        $layer = array_values(array_filter(array_map(fn ($d) => trim(preg_replace('/\s+/', ' ', $d)), explode(';', $m[1]))));
+    }
+    $wantLayer = ['content: ""', 'position: fixed', 'left: 0', 'top: 0', 'width: 100%', 'height: calc(100% + var(--ts-rain-tile))', 'z-index: -1', 'pointer-events: none',
+        'background-image: var(--ts-rain-image)', 'background-size: var(--ts-rain-tile) var(--ts-rain-tile)', 'background-repeat: repeat', 'will-change: transform',
+        'animation: ts-rain var(--ts-rain-period) linear infinite'];
+    T::ok('the layer is exactly this rule, every declaration written out (behind everything, click-through, empty, moved by transform)', $layer === $wantLayer, json_encode($layer));
+    // With a background on <html> as well, the body's would paint over the layer (z-index -1) wherever the body is.
+    T::ok('<html> has no background of its own, so the body\'s is the canvas\'s and the layer sits on it', (bool) preg_match('/\nhtml\.dark \{([^{}]*font-family: var\(--ts-root-font-family\)[^{}]*)\}/', $css, $hm) && ! str_contains($hm[1], 'background'), $hm[1] ?? 'no root rule');
+    T::ok('the keyframes move transform by one tile and nothing else', (bool) preg_match('/@keyframes ts-rain \{\s*from \{\s*transform: translateY\(0\);\s*\}\s*to \{\s*transform: translateY\(calc\(var\(--ts-rain-tile\) \* -1\)\);\s*\}\s*\}/', $css));
+    T::ok('a reduced-motion rule stops it', (bool) preg_match('/@media \(prefers-reduced-motion: reduce\) \{\s*html\.dark body::before \{\s*animation: none;\s*\}\s*\}/', $css));
+    T::ok('every rain token is off by default', str_contains($css, "  --ts-rain-image: none;\n") && str_contains($css, "  --ts-rain-tile: initial;\n") && str_contains($css, "  --ts-rain-period: initial;\n"));
+    T::ok('the layer has no other token: --ts-rain-image, -tile and -period only', array_values(array_filter($cat->names(), fn ($n) => str_starts_with($n, '--ts-rain-'))) === ['--ts-rain-image', '--ts-rain-period', '--ts-rain-tile']);
+    foreach (['--ts-rain-image' => ['image'], '--ts-rain-tile' => ['length', 'tile'], '--ts-rain-period' => ['period']] as $t => $kinds) {
+        T::ok("$t is settable by upload and is a " . implode('+', $kinds), $cat->has($t) && ! $cat->isStructural($t) && $cat->kinds($t) === $kinds, json_encode($cat->kinds($t)));
+    }
+    T::ok('the tile is at most 512px', $cat->maxPx('--ts-rain-tile') === 512);
+    css_good('a rain layer', dark('--ts-bg: #000;', '--ts-rain-image: linear-gradient(180deg, transparent, rgba(0, 255, 65, .2));', '--ts-rain-tile: 256px;', '--ts-rain-period: 40s;'));
+    css_good('a rain layer through the palette', dark('--ts-bg: #000;', '--p-g: linear-gradient(180deg, transparent, #0f0);', '--ts-rain-image: var(--p-g);', '--ts-rain-tile: 64px;', '--ts-rain-period: 60s;'));
+    foreach (['64px', '256px', '512px'] as $good) {
+        css_good("a rain tile of $good", dark('--ts-bg: #000;', "--ts-rain-tile: $good;"));
+    }
+    foreach (['63px', '513px', '600px', '5000px', '64.5px', '50%', '10em', '4rem', '256', '0', '0px', '-256px', 'calc(100px * 2)', 'var(--p-t)', '256px 256px', 'auto'] as $bad) {
+        css_bad("a rain tile of $bad", dark('--ts-bg: #000;', '--p-t: 256px;', "--ts-rain-tile: $bad;"), 'from 64px to 512px');
+    }
+    foreach (['1s', '1.9s', '61s', '100ms', '0s', '-30s', 'infinite', 'var(--p-t)', '30'] as $bad) {
+        css_bad("a rain period of $bad", dark('--ts-bg: #000;', '--p-t: 30s;', "--ts-rain-period: $bad;"), 'period of 2s to 60s');
+    }
+    css_bad('a rain image from a url', dark('--ts-bg: #000;', '--ts-rain-image: url(a.png);'), 'url');
 }

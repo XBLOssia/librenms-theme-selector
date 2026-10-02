@@ -2201,6 +2201,28 @@
    "maxPx": 64,
    "structural": false
   },
+  "--ts-rain-image": {
+   "kinds": [
+    "image"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-rain-period": {
+   "kinds": [
+    "period"
+   ],
+   "maxPx": 800,
+   "structural": false
+  },
+  "--ts-rain-tile": {
+   "kinds": [
+    "length",
+    "tile"
+   ],
+   "maxPx": 512,
+   "structural": false
+  },
   "--ts-recess": {
    "kinds": [
     "shadow"

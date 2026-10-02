@@ -60,7 +60,7 @@ function test_zip(): void
         "skin.css\0.php", 'skin.css.php', 'skin.php', 'a.php', 'index.php', '.htaccess', 'fonts/.htaccess',
         'fonts/x.php', 'fonts/x.woff2.php', 'fonts/x.php.woff2', 'fonts/x.svg', 'fonts/x.ttf', 'fonts/x.html',
         'fonts/sub/x.woff2', 'fonts/x', 'fonts/.woff2', 'SKIN.CSS', 'Skin.css', 'skin.CSS', 'skin.json.bak',
-        'readme.txt', 'LICENSE', 'nested.zip', "skin.css\n", "skin.css ", " skin.css", "fonts/a.woff2\n",
+        'readme.txt', 'LICENSE', 'nested.zip', 'features.json', "skin.css\n", "skin.css ", " skin.css", "fonts/a.woff2\n",
         'skin.css:hidden', 'skin.css::$DATA', 'CON', "sk\u{0131}n.css", 'fonts/' . str_repeat('a', 70) . '.woff2', 'other/', 'fonts//a.woff2',
         './skin.css', 'fonts/./a.woff2', 'C:evil.css', '~/x', '%2e%2e/x', 'skin%2ecss',
     ];

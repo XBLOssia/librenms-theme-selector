@@ -68,14 +68,19 @@ KINDS['ratio-clip'] = 'ratio'
 # the one shape base.css writes (a fixed keyframe name and easing with the
 # period as the only token), and `filter` except in the one fixed drop-shadow
 # whose colour is the only token. A skin supplies a period or a plain colour.
-ANIMATION_SHAPE = re.compile(r'^ts-(breathe|glow) var\((--ts-[\w-]+)\) ease-in-out infinite$')
+ANIMATION_SHAPE = re.compile(r'^ts-(breathe|glow) var\((--ts-[\w-]+)\) ease-in-out infinite$|^ts-rain var\((--ts-[\w-]+)\) linear infinite$')
+# The page layer ("rain", docs/ORNAMENTS.md Phase F): its height and its keyframe shift are the one
+# tile size, so those two exact shapes are a "tile" (a whole number of px from 64 to 512: TokenFile).
+RAIN_HEIGHT = 'calc(100% + var(--ts-rain-tile))'
+RAIN_SHIFT = 'translateY(calc(var(--ts-rain-tile) * -1))'
+KINDS['rain-length'] = 'tile'
 GLOW_SHAPE = re.compile(r'^drop-shadow\(0 0 8px var\((--ts-[\w-]+)\)\)$')
 KINDS['motion-layer'] = 'period'
 KINDS['glow-filter'] = 'glowcolor'
 # Tokens the keyframes read, which need a stricter grammar than their property's.
 # A page background is drawn at the size of the texture it tiles (up to 256px, or 2x that to show
 # a 2x image at half size), so its size and position may exceed the general 64px cap.
-TOKEN_MAX = [(re.compile(r'^--ts-body-bg-(size|position)$'), 512)]
+TOKEN_MAX = [(re.compile(r'^--ts-body-bg-(size|position)$'), 512), (re.compile(r'^--ts-rain-tile$'), 512)]
 TOKEN_KINDS = [(re.compile(r'^--ts-(panel|widget)-chamfer(-tl|-tr|-br|-bl)?$'), 'chamfer'),
                (re.compile(r'^--ts-(panel|widget)-chamfer-rise$'), 'ratio'),
                (re.compile(r'^--ts-(panel-cut-(fill|stroke)|widget-cut-stroke)$'), 'glowcolor'),
@@ -132,7 +137,7 @@ KINDS['filter'] = 'filter'
 TAILWIND_COLOUR = re.compile(r'^--tw-color-')
 
 # how large a px length may be in a token of each kind
-MAX_PX = {'period': 800, 'level': 800, 'glowcolor': 800, 'ratio': 800, 'chamfer': 800, 'shadow': 100, 'border': 24, 'length': 64, 'motion': 800, 'filter': 800,
+MAX_PX = {'period': 800, 'tile': 800, 'level': 800, 'glowcolor': 800, 'ratio': 800, 'chamfer': 800, 'shadow': 100, 'border': 24, 'length': 64, 'motion': 800, 'filter': 800,
           'color': 800, 'image': 800, 'font': 800, 'text': 800}
 
 
@@ -170,6 +175,8 @@ def build():
             prop = 'chamfer-clip'
         elif prop == 'animation' and ANIMATION_SHAPE.match(flat):
             prop = 'motion-layer'
+        elif (prop == 'height' and flat == RAIN_HEIGHT) or (prop == 'transform' and flat == RAIN_SHIFT):
+            prop = 'rain-length'
         elif prop == 'filter' and GLOW_SHAPE.match(flat):
             prop = 'glow-filter'
         for name in re.findall(r'var\((--ts-[\w-]+)', val):

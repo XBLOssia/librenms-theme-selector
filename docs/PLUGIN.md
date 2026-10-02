@@ -27,7 +27,7 @@ Settled 2026-09-25.
 |---|---|
 | Skin format | **Shared base stylesheet + per-skin token files.** The base maps LibreNMS components onto custom properties; a skin supplies values. |
 | Light mode | **Skins may support both modes.** The format allows a light and a dark token set; the current three stay dark-only for now. |
-| Graph colours | **Instance-wide in v1, per-user as a later phase** once per-request config override is proven. |
+| Graph colours | **Per user, and the instance default for everything else.** Built in two steps (the default's palette is written to config; each user's own is applied in memory for their graph requests, Phase 5); the port traffic series are recoloured by the plugin's own wrapper, see "Port traffic series without a core patch". |
 | Custom skin upload | **Zip bundle** — manifest, token file, optional fonts, optional graph palette. Validated before install. |
 | Names | Package `xblossia/librenms-theme-selector`. Display name **Theme Selector for LibreNMS**; short name **Theme Selector**, `ThemeSelector` where spaces aren't allowed (plugin name, PHP namespace). |
 | Admin permission | **LibreNMS's own `admin` role** (`can:admin`), not `plugin.admin` or a plugin-specific permission. One less knob. |
@@ -171,7 +171,7 @@ host's nginx config has not been checked.
   fonts/           optional .woff2 files
   LICENSE.txt      optional licence notice (stored, shown to admins, never served)
   textures/        optional .png tiles (cleaned and embedded; never served as files)
-  graph.json       optional graph palette (instance-wide in v1)
+  graph.conf       optional graph palette (the format is docs/AUTHORING.md, "graph.conf")
 ```
 
 ### The token file
@@ -249,7 +249,9 @@ src/
   Skin/                      the upload validator: zip reader, token-file parser,
                              value grammar, font/graph/manifest checks, output guard
   SkinInstaller, SkinRegistry, SkinRepository, SkinPublisher, DefaultSkin
+  Settings, InstallException
   GraphPalette, GraphColours (middleware), SkinResolver, SkinInjector
+  Graph/                     port series recolouring: RecolouringRrd, PortSeries, PortSeriesSupport
   Http/Controllers/PickerController.php
   Console/                   theme-selector:publish, theme-selector:validate
 routes/web.php
@@ -257,12 +259,12 @@ resources/views/             the picker and admin page
 resources/token-catalog.json which tokens exist / which uploads may set (generated)
 database/migrations/         settings and uploaded-skin tables
 base/base.css                the interpretation layer's stylesheet
-skins/<id>/                  bundled skins: skin.css, skin.json, graph.conf, fonts/
+skins/<id>/                  bundled skins: skin.css, skin.json, graph.conf, fonts/, textures/
 examples/minimal/            the smallest complete skin
 tests/                       php tests/run.php: validator, installer, fuzz; mutate.sh
 harness/                     preview pages, colorway, leaks.html
 dev/                         Docker instance, end-to-end tests, test.sh
-scripts/                     patch-core.sh, daily-wrapper.sh, coverage, fonts, token docs/catalog, pack-skin.py
+scripts/                     coverage, fonts, textures, token docs/catalog, pack-skin.py, audits; legacy patch-core.sh, daily-wrapper.sh
 ```
 
 ---
@@ -278,9 +280,9 @@ shows one) and surviving a real `daily.sh` run (the Docker image has no git
 checkout to update); both are checked during the production migration.
 
 **1 — Base + tokens. Equivalence done 2026-09-28; the tooling was retired
-2026-09-29.** `base/base.css` (47KB,
-shared) plus a `skin.css` of 18-19KB per skin, down from ~70KB standalone
-(sizes before 1b).
+2026-09-29.** `base/base.css` (47KB at the
+time, shared; now about 90KB with everything added since) plus a `skin.css` of 18-19KB per skin,
+down from ~70KB standalone (sizes before 1b).
 Verified two ways (both checks compared against the original standalone skins,
 which were deleted on 2026-09-29 once production had migrated and `base.css` had
 legitimately diverged from them; `harness/leaks.html` is the check that
@@ -299,7 +301,7 @@ Where a skin never declared a property that another skin did, its token file
 now carries the stock value explicitly (measured from the original in the
 harness, or read from stock CSS for elements the harness doesn't render).
 
-**1b — Token API. Done 2026-09-28.** Every one of the 301 tokens now has a
+**1b — Token API. Done 2026-09-28.** Every one of the 301 tokens (396 now, 31 of them structural) has a
 default, in a block at the top of `base.css`; `skin.css` loads after it, so a
 skin sets only what it changes. Defaults, by source:
 
@@ -321,8 +323,8 @@ skin sets only what it changes. Defaults, by source:
 Tokens were renamed from generated names to `component-part-property`
 (`--ts-navbar-default-navbar-nav-li-a-hover-bg` → `--ts-navbar-link-hover-bg`).
 Every bundled-skin token equal to its default was dropped: Terran 207 tokens
-(12KB), Protoss 246 (15KB), Zerg 239 (16KB); `base.css` is 60KB with the
-defaults. Both equivalence checks still pass with 0 differences.
+(12KB), Protoss 246 (15KB), Zerg 239 (16KB); `base.css` was 60KB with the
+defaults (about 90KB now). Both equivalence checks still pass with 0 differences.
 
 `docs/TOKENS.md` is the token reference, generated from `base.css` by
 `scripts/gen-token-docs.py`.
@@ -399,8 +401,8 @@ of stock rules and pages with no harness equivalent. `leaks.html` skips state
 selectors; a live-page pass on the pages a host actually uses is still the
 final check.
 
-**3 — Admin upload and delete. Done 2026-09-29** on the `dev/` instance;
-not yet on the production host. The design decision that shaped it: an upload
+**3 — Admin upload and delete. Done 2026-09-29** on the `dev/` instance, and in use on the
+production host since (an uploaded skin is installed there). The design decision that shaped it: an upload
 is attacker-controlled input under a web root that runs PHP, so **nothing
 uploaded is ever served**. The bundle is parsed and validated, and the
 stylesheet is regenerated from the parse; fonts become base64 inside it. That
@@ -410,7 +412,7 @@ gave:
   checked headers, bounded inflation);
 - a token-file grammar of one block type (`html.dark { custom properties }`)
   plus `@font-face`, with every value tokenised against a short allowlist;
-- a catalog of 305 tokens derived from `base.css`, 36 of them *structural*
+- a catalog of 305 tokens (then; 396 now) derived from `base.css`, 36 of them *structural* (31 now)
   (position, size, generated text, clip-path, animation) and bundled-only, so an
   upload can't paint a fake message or hide a control;
 - an independent output guard, a registry table (the row is what makes a
@@ -419,10 +421,11 @@ gave:
   and `?theme-selector=off` as an escape hatch;
 - `lnms theme-selector:validate` and `scripts/pack-skin.py` for skin authors.
 
-Verification: 1,178 unit checks (hostile archives, a large CSS injection
+Verification at the time: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
 breaks each defence and requires a failing test (46 caught, 7 documented as
-redundant layers, 0 missed) and an end-to-end script against the real routes.
+redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 1,952 checks and
+107 mutations caught; `sh dev/test.sh all` prints the current figures.)
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See
 [SECURITY.md](SECURITY.md) for the controls and, as important, what is not
@@ -439,8 +442,8 @@ throwaway container.
 **4 — Light variants.** Scoping approach from the harness prototype; a light
 token set for at least one bundled skin.
 
-**5 — Per-user graph colours. Done 2026-09-28** on the `dev/` instance; not
-yet on the production host. Smaller than planned: graph images come from
+**5 — Per-user graph colours. Done 2026-09-28** on the `dev/` instance, and confirmed on the
+production host (see above). Smaller than planned: graph images come from
 `/graph` (which `graph.php` is rewritten to), a normal `web`-group route that
 carries the user's session, and the graph code reads its colours from config at
 render time. A middleware in the `web` group (`GraphColours`) sets the palette
@@ -494,7 +497,9 @@ container binding, so the plugin can wrap it:
   process draws them for emails and chat messages (`Util/Mail.php`, `Transport/Telegram.php`),
   with no session, so those use the instance default, which is what the config holds. If
   something has already used the store when the plugin boots, it is not replaced (that
-  state isn't ours) and a line is logged.
+  state isn't ours) and an `info`-level line is logged (hidden at LibreNMS's default level).
+  If core's store has changed shape, nothing is installed and nothing is logged; the
+  `PortSeriesSupport::compatible()` check in `docs/DEPLOYMENT.md` is how to tell.
 - A palette that is not three six-digit hex colours is ignored for that direction.
 
 Nothing in LibreNMS is edited, so `daily.sh` has nothing to trip over. Tested on the dev

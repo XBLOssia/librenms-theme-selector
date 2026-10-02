@@ -50,16 +50,17 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 1,896 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (91 flaws caught, 7 documented as
+`php tests/run.php` runs 1,952 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (107 flaws caught, 7 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
+(Counts as of 2026-10-02; `sh dev/test.sh all` prints the current ones.)
 Run all of it with `sh dev/test.sh all`.
 
 ### The archive
 
 | Attack | Control | Tested by |
 |---|---|---|
-| Zip-slip (`../evil.php`, absolute paths, backslashes, drive letters, NUL) | Nothing is extracted and no path is built from an entry name. Entry names must match an exact allowlist (`skin.json`, `skin.css`, `graph.conf`, `LICENSE.txt`, `fonts/<slug>.woff2\|woff`, `textures/<slug>.png`), matched with `\z` so a trailing newline can't slip through | `ZipTest` (48 hostile names), mutation "match with `$`" |
+| Zip-slip (`../evil.php`, absolute paths, backslashes, drive letters, NUL) | Nothing is extracted and no path is built from an entry name. Entry names must match an exact allowlist (`skin.json`, `skin.css`, `graph.conf`, `LICENSE.txt`, `fonts/<slug>.woff2\|woff`, `textures/<slug>.png`), matched with `\z` so a trailing newline can't slip through | `ZipTest` (46 hostile names), mutation "match with `$`" |
 | A `.php`, `.htaccess`, `.svg`, nested zip or anything else in the bundle | Any entry outside the allowlist rejects the *whole* bundle, not just that entry | `ZipTest`, `evil-php-entry`, `evil-htaccess`, `evil-nested-zip` |
 | Symlink or device entries | Unix mode bits checked; only regular files and directories | `ZipTest`, mutation "accept symlink entries" |
 | Decompression bomb | Inflation counts output as it is produced and stops at the declared size; declared sizes are capped per file and in total | `ZipTest` (40 MB bomb stopped with < 20 MB memory), mutation "no cap while inflating" |
@@ -81,7 +82,7 @@ Run all of it with `sh dev/test.sh all`.
 | Huge values to cover the page (giant shadow blur, enormous padding) | Numeric bounds per token kind (shadows 100 px, borders 24 px, lengths 64 px, everything else 800 px; filters, durations and percentages bounded) | `CssTest` (`test_values`), mutations |
 | Getting round a token's cap through the palette | A palette entry used by a token is checked against that token's cap, transitively | `CssTest`, mutation "let the palette bypass a token's cap" |
 | Filters that hide controls (`blur`, `opacity`, `drop-shadow`) | Only `brightness contrast saturate sepia hue-rotate invert grayscale`, each with one bounded argument | `CssTest` |
-| Anything the parser lets through by mistake | `OutputGuard` re-checks the finished text with no knowledge of how it was produced: ASCII only, exactly one `html.dark` block, one `@font-face` per font, exactly one `url(` per font and each a base64 `data:` font URL, no angle brackets, backslashes or scriptable schemes | `CssTest` (guard cases), mutation "guard: ignore stray url(" |
+| Anything the parser lets through by mistake | `OutputGuard` re-checks the finished text with no knowledge of how it was produced: ASCII only, exactly one `html.dark` block, one `@font-face` per font, exactly one `url(` per font and each a base64 `data:` font URL (plus the `data:image/png` URLs of textures, below), no angle brackets, backslashes or scriptable schemes | `CssTest` (guard cases), mutation "guard: ignore stray url(" |
 | The output as a whole | A mutation **fuzzer** (thousands of corrupted and injected variants per run) checks that whatever is accepted satisfies the invariants above | `FuzzTest` |
 
 ### Textures
@@ -123,6 +124,7 @@ Full description and roadmap: [ORNAMENTS.md](ORNAMENTS.md).
 
 | Attack | Control | Tested by |
 |---|---|---|
+| A raised panel covering something | A panel (or widget) under the pointer, or holding an open menu, is raised to a fixed `z-index: 1035` written in `base.css`, so a card opened inside it is not trapped under the next panel; no token reaches `z-index`, and it stays below modals (1040+) | `OrnamentTest`, mutations "a raised panel that still sits under the sticky navbar", "that covers modals", "not raised when hovered" |
 | Covering data with decoration | The layer is at `z-index: -1` inside an isolated stacking context: painted under the panel's content, so opaque content hides it. No token reaches `z-index` | `OrnamentTest` (rule pinned declaration by declaration), mutation "raise the layer above content" |
 | Reaching into the panel | `clip-path` ring: 24px inside the edge, 8px outside, written in `base.css` | `OrnamentTest`, mutation "drop the safe-zone ring" |
 | An invisible click target | `pointer-events: none` | `OrnamentTest`, mutation "let the layer take clicks" |
@@ -183,7 +185,7 @@ back from the database before it is written to config. (`MiscTest`, mutation
 | Trusting the client's claims | The uploaded file's name and declared type are never used; the content is read from PHP's temp file and never moved or opened by path | `test-upload.sh` (uploaded as `evil.php`, `image/png`: installs, nothing named that exists) |
 | Injection through displayed text | Names, descriptions and authors are restricted to plain printable text *and* escaped on output; anything from the bundle that appears in an error message goes through `Report::quote` | `MiscTest`, `test-upload.sh` |
 | A skin that makes pages unusable | Installing changes nobody's view; a user (or admin) opts in. `?theme-selector=off` on any page shows it with no skin | `test-upload.sh` |
-| Untraceable changes | Every rejected upload, install, replacement and removal is logged with the user, IP and the bundle's SHA-256 | (log lines) |
+| Untraceable changes | Every rejected upload, install, replacement and removal is logged at warning level (LibreNMS's default, so it needs no configuration) to `logs/librenms.log`, with the user, IP and the bundle's SHA-256 | `test-upload.sh` (reads the log of a stock instance) |
 
 ---
 
@@ -228,10 +230,12 @@ Say these plainly rather than imply they are handled.
 
 ## Operating it
 
-- `html/css/custom/theme-selector/` must be writable by the web server user;
-  `lnms theme-selector:publish` checks that.
+- `html/css/custom/theme-selector/` must be writable by the web server user (the plugin
+  republishes it on web requests after an update); `lnms theme-selector:publish` checks that
+  the user running it can write there, which on a standard install is the same `librenms`
+  user php-fpm runs as.
 - Check a bundle without installing it: `lnms theme-selector:validate my-skin.zip`.
 - To remove everything the plugin added: see DEPLOYMENT.md, "Uninstall".
-- Look for `ThemeSelector:` lines in `storage/logs/librenms.log`.
+- Look for `ThemeSelector:` lines in `/opt/librenms/logs/librenms.log`.
 - Limits are constants in `src/Skin/Limits.php`; the bundle format is
   `docs/AUTHORING.md`.

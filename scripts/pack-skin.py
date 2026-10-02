@@ -5,7 +5,7 @@
 
 The directory holds exactly:
 
-    skin.json     required   id, name, description, author, version, license
+    skin.json     required   id and name are required; description, author, version, license are optional
     skin.css      required   html.dark { --ts-*: ...; --p-*: ...; } and @font-face
     graph.conf    optional   graph colour palette
     LICENSE.txt   optional   licence notice for the fonts (stored and shown to admins, never served)

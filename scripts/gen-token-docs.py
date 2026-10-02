@@ -4,9 +4,10 @@ The defaults block at the top of base.css is the token list: every --ts-*
 token a skin may set, its group and its default. The rules below it say where
 each token is used. Re-run after changing base.css:
 
-    python scripts/gen-token-docs.py
+    python scripts/gen-token-docs.py            # write docs/TOKENS.md
+    python scripts/gen-token-docs.py --check    # exit 1 if docs/TOKENS.md is out of date (dev/test.sh runs it)
 """
-import collections, os, re
+import collections, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 base = open(os.path.join(ROOT, 'base', 'base.css'), encoding='utf-8').read()
@@ -39,7 +40,9 @@ CORE = {
 start = base.index('html.dark {')
 end = base.index('\n}', start)
 defaults_block = base[start:end]
-rules = base[end:]
+# Comments in the rules are not selectors: without this, the text of a comment that precedes a
+# rule is read as that rule's selector.
+rules = re.sub(r'/\*.*?\*/', '', base[end:], flags=re.S)
 
 groups = collections.OrderedDict()
 group = None
@@ -172,5 +175,13 @@ for g, items in groups.items():
     out.append('')
 
 path = os.path.join(ROOT, 'docs', 'TOKENS.md')
-open(path, 'w', encoding='utf-8', newline='\n').write('\n'.join(out))
-print(f'wrote {path}: {total} tokens in {len(groups)} groups')
+text = '\n'.join(out)
+if '--check' in sys.argv:
+    have = open(path, encoding='utf-8', newline='').read() if os.path.exists(path) else ''
+    if have.replace('\r\n', '\n') != text:
+        print('docs/TOKENS.md is out of date: run python scripts/gen-token-docs.py')
+        sys.exit(1)
+    print('docs/TOKENS.md is current')
+else:
+    open(path, 'w', encoding='utf-8', newline='\n').write(text)
+    print(f'wrote {path}: {total} tokens in {len(groups)} groups')

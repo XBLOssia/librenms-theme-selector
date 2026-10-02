@@ -10,9 +10,20 @@ blocks and 3 tables all survived Discourse's markdown intact.
 
 Everything above `### A theme system for LibreNMS` was internal and not posted.
 
+> **Corrections, 2026-10-02 (the posted text below is unchanged).** Re-measured against
+> LibreNMS 26.9.1; see FINDINGS.md "Re-measured on 2026-10-02" for the full list. What differs
+> from what was posted: "1,233 graph definitions" (twice) is **1,313**; "595 uses" of `tw:`
+> colour utilities is 596; "264 distinct first-party colours" is 265 (269 on master);
+> `device_bits` renders through `generic_multi_seperated.inc.php`, not
+> `generic_multi_bits_separated.inc.php` (both read `graph_colours`);
+> the `tw:bg-white!` "on the date-range field … `show.blade.php:53`" is on the popup
+> (`popup.blade.php:14`), while `show.blade.php:53` carries `tw:dark:bg-white!`; and Phase 0d's
+> contextual-row fix, #20594, **merged 2026-09-29**. Everything else measured here reproduces.
+
 **Venue:** [community.librenms.org → Projects](https://community.librenms.org/c/projects)
 — GitHub Discussions is disabled on the repo (404), and Feature Requests has
-1,198 topics with little maintainer traffic. Projects has 73 and is described as
+1,200 topics (1,198 when this was written) with little maintainer traffic. Projects has 74
+(73 then; the extra one is the proposal thread) and is described as
 "a space for discussing ongoing development work and initiatives", which is
 exactly what this is.
 
@@ -529,8 +540,12 @@ this comes from using it rather than theorising about it.
   post. It does appear in `DEPLOYMENT.md` and `ROADMAP.md`, which is a
   deliberate call — a device count without a hostname is scale, not a target.
 
-**Sequencing** — steps 1 and 2 are done; the thread is open and awaiting a
-reply. Nothing below should move until someone responds:
+**Sequencing** — *(updated 2026-10-02)* steps 1 and 2 are done. The thread was answered on
+2026-09-22/23 (installable themes are not wanted; built-in colour schemes might be; "please stop
+pasting AI text"), 0d went up alone as #20594 and merged on 2026-09-29, and the upstream port
+series change (0c) was written, proven and **deliberately not submitted** (ROADMAP.md, "Upstream:
+the port series change", has the reasons and what would reopen it). The list below is the original
+plan, kept as it was:
 
 1. Discord first, using the opener above.
 2. Post to Projects once someone's said "sure, write it up".
@@ -545,10 +560,10 @@ reply. Nothing below should move until someone responds:
    `!important` nothing depends on, not as unblocking anything.
 5. **0b is withdrawn.** The premise was wrong — the widget header is themeable.
    Do not open it.
-6. **0c** (graph helpers, 15 files) is scoped but unwritten — see
-   [ROADMAP.md](ROADMAP.md) "Ready to write". Start with
-   `generic_data.inc.php` alone if a 15-file PR is too much at once: six lines,
-   and it fixes the most-viewed graph in the product.
+6. **0c** (graph helpers, 15 files) *(updated: only `generic_data.inc.php` is fixable in the
+   helper; the other four config-blind helpers take their colours from about 150 callers, and the
+   one-helper change is written but not submitted — see
+   [ROADMAP.md](ROADMAP.md))*. Six lines, and it fixes the most-viewed graph in the product.
 7. Don't write a line of Phase 1 until question 2 gets an answer. The token
    contract is the part that's expensive to get wrong.
 
@@ -560,4 +575,6 @@ definitions above, re-check this list; it does not update itself.
 If **0d** — four contrast values in the stock dark theme, nothing to do with
 theming — is rejected, stop and ask why before writing anything else. A no on
 the most trivially correct change in the set is an answer about the direction,
-not about the patch.
+not about the patch. *(It was accepted and merged, as #20594, after cutting it back to the
+eight values and calling it a quick fix; a first version that moved rules between files was
+rejected as "moving the garbage around".)*

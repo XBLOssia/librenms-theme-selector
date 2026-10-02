@@ -108,7 +108,7 @@ class PickerController extends Controller
         $compiled = $path ? $compiler->compileZip($path, $report) : null;
 
         if ($compiled === null) {
-            Log::notice('ThemeSelector: skin upload rejected', [
+            Log::warning('ThemeSelector: skin upload rejected', [
                 'user' => $user->username ?? $user->user_id,
                 'ip' => $request->ip(),
                 'sha256' => $hash,
@@ -128,7 +128,7 @@ class PickerController extends Controller
             return back()->withErrors(['bundle' => 'Installing failed; see the LibreNMS log.']);
         }
 
-        Log::notice('ThemeSelector: skin ' . ($replaced ? 'replaced' : 'installed'), [
+        Log::warning('ThemeSelector: skin ' . ($replaced ? 'replaced' : 'installed'), [
             'skin' => $compiled->id(),
             'user' => $user->username ?? $user->user_id,
             'ip' => $request->ip(),
@@ -158,7 +158,7 @@ class PickerController extends Controller
             return back()->withErrors(['bundle' => 'Removing failed; see the LibreNMS log.']);
         }
 
-        Log::notice('ThemeSelector: skin removed', [
+        Log::warning('ThemeSelector: skin removed', [
             'skin' => $id,
             'user' => $request->user()->username ?? $request->user()->user_id,
             'ip' => $request->ip(),

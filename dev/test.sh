@@ -1,7 +1,7 @@
 #!/bin/sh
 # Run the tests, safely.
 #
-#   sh dev/test.sh            unit tests, PHP lint, token catalog check   (default)
+#   sh dev/test.sh            unit tests, PHP lint, token catalog and TOKENS.md checks   (default)
 #   sh dev/test.sh mutate     break each defence in turn; each must be caught
 #   sh dev/test.sh live       end-to-end against the running dev instance
 #   sh dev/test.sh all        unit, then mutation and live at the same time
@@ -37,6 +37,7 @@ unit() {
     [ $bad = 0 ] && echo "lint: clean"
     php /plugin/tests/run.php
     python3 /plugin/scripts/gen-token-catalog.py --check
+    python3 /plugin/scripts/gen-token-docs.py --check
   '
 }
 

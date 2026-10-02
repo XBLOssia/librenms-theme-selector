@@ -4,7 +4,17 @@ StarCraft-inspired skins for [LibreNMS](https://github.com/librenms/librenms).
 
 Three skins: **Terran**, **Protoss** and **Zerg**.
 
-All artwork is original CSS — gradients, shadows and generated geometry. No
+Each user picks their own skin, admins set the instance default and can upload
+skins of their own (a validated `.zip`, see [docs/AUTHORING.md](docs/AUTHORING.md)),
+and graphs follow the skin too, down to the colours of the port traffic series.
+Skins can carry a repeating texture, cut corners and frame ornaments
+([docs/ORNAMENTS.md](docs/ORNAMENTS.md), [docs/TEXTURES.md](docs/TEXTURES.md)).
+It needs PHP 8.2 or newer and a LibreNMS with the package plugin system.
+
+All artwork is original: CSS (gradients, shadows, generated geometry) and one
+small PNG texture per skin (diamond plate, crystal, creep) that
+[scripts/make-textures.py](scripts/make-textures.py) and
+[scripts/make-creep.py](scripts/make-creep.py) compute from fixed numbers. No
 Blizzard assets are used or redistributed. These are "inspired by" skins, not
 asset ports.
 
@@ -18,8 +28,8 @@ asset ports.
 | **Protoss** | Chamfered, gold-bracketed | Void blue + keratinous gold, psionic flame | Cinzel + Rajdhani |
 | **Zerg** | Asymmetric, grown, uneven | Creep purple + bone, ichor green, ember orange | Metamorphous + Chakra Petch |
 
-All three are installed and verified on a production instance. They cover
-**92 of 92** components LibreNMS's dark theme styles, and **179 of 218** once
+All three were installed and verified on a production instance (2026-09-29).
+They cover **92 of 92** components LibreNMS's dark theme styles, and **179 of 218** once
 you also count the `styles.css` classes the dark theme never touches — most of
 the remainder being dead Observium-era classes. A full survey of
 `styles.css` finds 127 rules — 671 lines — that nothing in LibreNMS can match
@@ -32,12 +42,16 @@ the remainder being dead Observium-era classes. A full survey of
 Coverage counts selectors answered, not whether it looks right — and it does
 not count the inline `tw:` utilities at all, which is where several real bugs
 lived. The real test is [the live audit](#auditing-a-live-instance), which all
-three skins currently pass with zero findings on `/`, `/devices`,
-`/alert-rules`, `/eventlog` and the graph pages.
+three skins pass with zero findings on `/`, `/devices`, `/alert-rules`,
+`/eventlog` and a device's graph page. (Re-run on 2026-10-02 against a stock
+LibreNMS 26.9.1.1 dev instance, whose tables hold few rows, so row-level states
+are lightly exercised; run it on your own data too.)
 
 [docs/ROADMAP.md](docs/ROADMAP.md) has the backlog and open decisions.
 
-Verified against LibreNMS master @ `63e0394` (2026-09-17).
+Selectors verified against LibreNMS master @ `63e0394` (2026-09-17). Coverage
+(92/92, 179/218), the live audit, install, uninstall and graph colours were re-run
+on a stock 26.9.1.1 on 2026-10-02.
 
 ---
 
@@ -47,18 +61,20 @@ Each is the same LibreNMS dashboard, same markup, same data — only the skin
 differs.
 
 ### Terran
-Gunmetal plating, hazard yellow, green phosphor readouts. Square and riveted.
+Gunmetal plating, hazard yellow, green phosphor readouts, on a diamond-plate
+floor. Square and riveted.
 
 ![The Terran skin on a LibreNMS dashboard](docs/img/dashboard-terran.png)
 
 ### Protoss
-Void blue and keratinous gold, chamfered corners, psionic teal.
+Void blue and keratinous gold, chamfered corners, psionic teal, over crystal
+facets.
 
 ![The Protoss skin on a LibreNMS dashboard](docs/img/dashboard-protoss.png)
 
 ### Zerg
-Creep purple and bone, acid green against ember and magenta. Asymmetric,
-uneven, grown rather than built.
+Creep purple and bone, acid green against ember and magenta, on veined creep.
+Asymmetric, uneven, grown rather than built.
 
 ![The Zerg skin on a LibreNMS dashboard](docs/img/dashboard-zerg.png)
 
@@ -78,7 +94,10 @@ python -m http.server 8777
 ```
 
 Deterministic by construction — fixed window size, fixed device scale factor,
-fixed epoch in the synthetic data — so re-running does not churn the repo.
+fixed epoch in the synthetic data — so re-running the capture with the same browser
+gives identical files (checked 2026-10-02). The demo graphs are byte-identical only on the
+same rrdtool build: another version or font stack draws the same picture with
+different bytes, so regenerating them (not the screenshots) can touch the repo.
 
 ---
 
@@ -92,6 +111,7 @@ php scripts/composer_wrapper.php config --global repositories.theme-selector vcs
 ./lnms plugin:add xblossia/librenms-theme-selector dev-main
 ./lnms migrate --force
 php artisan route:cache
+./lnms theme-selector:publish
 ```
 
 Then **Plugins → Theme Selector**: each user picks a skin for themselves, and
@@ -112,9 +132,12 @@ Updates, uninstalling and troubleshooting: **[docs/DEPLOYMENT.md](docs/DEPLOYMEN
 
 ### Safety
 
-No LibreNMS core file is modified. The plugin adds one table of its own,
-copies static files into `html/css/custom/theme-selector/` (gitignored by
-LibreNMS), and stores each user's choice in `users_prefs`. It survives
+No LibreNMS core file is modified. The plugin adds two tables of its own (the
+instance default, and uploaded skins), copies static files into
+`html/css/custom/theme-selector/` (gitignored by LibreNMS), and stores each user's
+choice in `users_prefs`. Only when an admin sets an instance default does it write
+graph-colour rows (`graph_colours.*`, `rrdgraph_def_text*_dark`) into LibreNMS's
+config, after recording what they were so it can put them back. It survives
 `daily.sh`, which reinstalls plugins after every update and never runs
 `git clean`.
 
@@ -131,7 +154,8 @@ LibreNMS), and stores each user's choice in `users_prefs`. It survives
 > ever changes those lines the series fall back to stock colours. See
 > [docs/PLUGIN.md](docs/PLUGIN.md). `scripts/patch-core.sh`, an earlier core patch for the
 > same job, is no longer needed and is kept only for hosts that applied it; see
-> [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+> [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), which also covers updates, uninstalling
+> (tested on a clean install) and troubleshooting.
 
 ---
 
@@ -150,8 +174,8 @@ keeps a private `--p-*` palette its tokens refer to.
 
 ### Typography
 
-Terran uses two voices: `--tn-font-chrome` (condensed caps) for the frame —
-navbar, panel headers, table headers, buttons — and `--tn-font-data`
+Terran uses two voices: `--p-font-chrome` (condensed caps) for the frame —
+navbar, panel headers, table headers, buttons — and `--p-font-data`
 (monospace) for the readouts — device hostnames, table body cells, status
 labels and badges. Body cells also get tabular figures so uptimes and counters
 align down the column.
@@ -221,7 +245,8 @@ python -m http.server 8777
 ```
 
 Switch skins with `?skin=terran` / `?skin=protoss` / `?skin=zerg`, or the
-buttons at the top of the page. `harness/colorway.html` renders a skin's full
+buttons at the top of the page. (A skin's texture renders only on `mockup.html`;
+the other pages load `skin.css` as it is.) `harness/colorway.html` renders a skin's full
 token set and graph ramps.
 
 ### The dashboard mockup
@@ -279,41 +304,49 @@ redistributed here.
 
 ```
 composer.json               the LibreNMS package plugin (xblossia/librenms-theme-selector)
-src/                        plugin code: provider, picker, publisher, installer, graph palette
-src/Skin/                   the upload validator: zip reader, token-file parser, value grammar
+src/                        plugin code: provider, picker, publisher, installer, graph palette, settings
+src/Graph/                  port traffic series recolouring: RecolouringRrd, PortSeries, PortSeriesSupport
+src/Skin/                   the upload validator: zip reader, token-file parser, value grammar, PNG texture reader
 routes/, resources/views/   the Theme Selector page
 resources/token-catalog.json  which tokens exist, and which uploads may set (generated)
-database/migrations/        the plugin's settings and uploaded-skin tables
-tests/                      php tests/run.php: validator, installer, fuzzing; mutate.sh
+database/migrations/        the plugin's two tables (settings, uploaded skins) and their later columns
+tests/                      php tests/run.php: validator, installer, ornaments, port series, fuzzing; mutate.sh
 base/base.css               the base stylesheet: token defaults + every rule
 skins/<name>/skin.css       a skin: token values, private palette, @font-face
 skins/<name>/skin.json      manifest: name, description, modes
 skins/<name>/graph.conf     graph palette, applied when it's the instance default
 skins/<name>/fonts/         bundled OFL webfonts + licence notices
+skins/<name>/textures/      the skin's repeating PNG tile (generated; skins/zerg/TEXTURES.md says how)
 skins/<name>/FONTS.md       typography rationale and how to swap faces
-examples/minimal/           a skin that sets only the 20 core roles
+examples/minimal/           the smallest complete skin (sets only the 20 core roles)
 harness/index.html          static preview, real LibreNMS CSS, real DOM
 harness/mockup.html         full dashboard mockup, invented data
 harness/leaks.html          stock backgrounds still showing through, and contrast
 harness/graphs/             rrdtool graphs rendered from a synthetic RRD
 harness/colorway.html       a skin's tokens and graph ramps, rendered
 harness/audit.js            live-page contrast + stock-colour audit
-dev/                        Docker LibreNMS for developing the plugin
+harness/sync-css.sh         vendor LibreNMS's stylesheets for the harness (gitignored)
+dev/                        Docker LibreNMS for developing the plugin, and its live tests
 scripts/gen-token-docs.py   regenerate docs/TOKENS.md from base.css
 scripts/gen-token-catalog.py  derive the token catalog (settable vs structural) from base.css
 scripts/pack-skin.py        zip a skin folder for upload
-examples/minimal/           the smallest complete skin (20 values)
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
+scripts/make-textures.py    compute the plate, crystal and tile textures
+scripts/make-creep.py       compute the Zerg creep texture
 scripts/coverage.sh         report which components no skin has styled yet
+scripts/dead-css.py         find styles.css rules nothing can match (docs/data/ holds the list)
+scripts/helper-audit.py     which graph helpers hard-code colours (FINDINGS section 5)
 scripts/make-demo-graphs.sh generate the mockup's graphs (needs rrdtool)
 scripts/capture-mockups.sh  screenshot the mockup per skin, headlessly
 scripts/daily-wrapper.sh    legacy: daily.sh with the old core patch out of the way (see DEPLOYMENT.md)
 scripts/patch-core.sh       legacy, not needed: the old core patch for port graph colours
-patches/                    that patch, as a reviewable unified diff
+patches/                    that patch (and the older two-file declaration it removes), as unified diffs
 docs/img/                   the screenshots above
 docs/PLUGIN.md              plugin design, decisions and phases
 docs/TOKENS.md              token reference (generated)
 docs/AUTHORING.md           writing a skin: files, rules, fonts, graph colours
+docs/ORNAMENTS.md           frame ornaments, cut corners, motion: the rules and the reasons
+docs/TEXTURES.md            repeating textures: format, limits, how the tiles are made
 docs/SECURITY.md            uploaded skins: threat model, controls, what isn't defended
 docs/DEPLOYMENT.md          install, updates, migration, uninstall, rollback
 docs/FINDINGS.md            what building these surfaced about theming LibreNMS
@@ -330,8 +363,8 @@ Two carve-outs:
 - The bundled webfonts under `skins/*/fonts/` are **SIL Open Font License
   1.1**, with the upstream notice included beside the font files in each
   directory.
-- The patch under `patches/` is **GPLv3**, matching LibreNMS, which it is a
-  diff against and a small amount of which it quotes as context.
+- The patches under `patches/` (legacy, see above) are **GPLv3**, matching LibreNMS,
+  which they are diffs against and a small amount of which they quote as context.
 
 No LibreNMS source is otherwise redistributed here. The harness needs several
 of its stylesheets to render anything realistic, and those are fetched at

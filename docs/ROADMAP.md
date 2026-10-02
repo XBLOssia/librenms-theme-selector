@@ -2,7 +2,9 @@
 
 Where the project actually stands, and what to pick up next.
 
-Last updated 2026-09-21, against LibreNMS master @ `63e0394`.
+Last updated 2026-10-02. Surveyed against LibreNMS master @ `63e0394` (2026-09-17); coverage, the
+live audit and the install were re-run on release 26.9.1 (the `26.9.1.1` dev image) on 2026-10-02, and
+the numbers in FINDINGS.md were re-measured (see "Re-measured on 2026-10-02" there).
 
 ---
 
@@ -31,14 +33,14 @@ several rounds:
 
 - **A — `tw_dark.css` (92):** components upstream gives dark-mode treatment.
   All three skins cover 92/92.
-- **B — `styles.css` (123):** colour-bearing classes `tw_dark.css` *never*
-  overrides, so they render identically in light and dark. Skins cover 92/123.
+- **B — `styles.css` (126; 123 when first measured):** colour-bearing classes `tw_dark.css` *never*
+  overrides, so they render identically in light and dark. Skins cover 87/126.
 
 Measuring against A alone reported **100%** while the navbar search dropdown was
 `#fff`, device-overview rows were `#f9f9f9`, and the availability map boxes were
 stock Bootstrap. `scripts/coverage.sh` now reports both.
 
-The ~31 still uncovered in B are overwhelmingly dead Observium-era classes
+The 39 still uncovered in B are overwhelmingly dead Observium-era classes
 (`.datacell`, `.shadetabs`, `.dropdown_3columns`). That was first judged from
 `resources/views` alone; a full survey across every emitter (FINDINGS section 7)
 confirms the pattern and finds 127 dead rules in `styles.css`, 671 lines.
@@ -86,11 +88,13 @@ and it found things the harness structurally could not:
   they are in neither denominator. Chasing these overturned the central claim
   of FINDINGS §2 — they are reachable after all, via the prefixed theme
   variables. Skins now remap core's dark ramps; see §16 of any skin.
-- **Port graph *series***, which no skin can theme. The chrome themes fine, and
-  the split is by graph **type**, not by page — see Not planned below.
+- **Port graph *series***, which CSS can't theme (LibreNMS hard-codes them in the
+  helper). The chrome themes fine, and the split is by graph **type**, not by page — see Not
+  planned below. The plugin now recolours the six series itself, with no core patch
+  (`docs/PLUGIN.md`).
 
-Still worth a look when convenient: the rule builder (`query-builder` is
-unstyled upstream), a datetimepicker, and the narrow/mobile layout.
+Still worth a look when convenient: the rule builder (`base.css` now has a rule for its group
+headers, not the rest), a datetimepicker (no rule), and the narrow/mobile layout.
 
 The harness itself got closer to the real thing in the process: it now vendors
 the Vite bundle (`html/build/assets/app-*.css`) instead of the standalone
@@ -120,8 +124,8 @@ instance rather than the harness:
   use, so source order lets custom_css retune the filter per skin.
 
 Still stock because `tw_dark.css` never styled them, so they are outside the
-coverage denominator: `query-builder` (alert rules), `bootstrap-datetimepicker`,
-`bootstrap-switch`.
+coverage denominator: `query-builder` (alert rules; only its group headers have a rule now) and
+`bootstrap-datetimepicker`. (`bootstrap-switch` has rules in `base.css` now.)
 
 ---
 
@@ -148,7 +152,7 @@ disabled before calling anything an upstream bug.**
 
 `/graphs` earns its place the same way, and later. It is the only page that
 pairs `tw:dark:bg-white!` with a dark `tw:dark:text-gray-800`
-(`graphs/show.blade.php:53`), so a skin that repaints the background without
+(`graphs/show.blade.php:53` and `components/date-range-picker.blade.php:20`), so a skin that repaints the background without
 also setting the text lands at 1.19:1 — worse than the white box it replaced.
 That regression shipped in `d266a63`, survived every audit round, and was
 reported by a user rather than caught here, because no page on this list
@@ -240,18 +244,25 @@ synthetic RRD. `./scripts/capture-mockups.sh` regenerates them deterministically
 It is public now, so it can no longer be quietly revised; corrections have to
 be replies.
 
+**Superseded 2026-09-22:** two maintainers said installable themes are not wanted ("LibreNMS isn't
+Wordpress"); what they would welcome is selectable built-in colour schemes in the codebase, after
+the legacy-colour cleanup, in small hand-written pull requests (PROPOSAL.md has the dated note).
+Phases 0-2 below stand; Phases 3-4 are kept as drafted for the record.
+
 Drafted — see [PROPOSAL.md](PROPOSAL.md). Scoped to a phased
 **theme system**: admin installs a theme from a validated JSON manifest, users
 select it, custom themes are deletable and built-ins protected. Five phases,
 each independently shippable:
 
 - **0** — **three** small fixes, no theme system required: drop the `!` from
-  22 inline colour utilities (0a), tokenise the 58 graph-helper literals (0c),
-  fix contextual row contrast (0d). *0b — the widget header class — is
+  22 inline colour utilities (0a), tokenise the 58 graph-helper literals (0c; only
+  `generic_data` is fixable in the helper, see FINDINGS §5), fix contextual row contrast (0d,
+  **merged 2026-09-29 as #20594**). *0b — the widget header class — is
   withdrawn; its premise was wrong.* 0a is also weaker than first drafted: the
   utilities are reachable via the prefixed theme variables, so the argument is
-  "requires two undocumented Tailwind facts", not "impossible". **0c is the
-  strongest of the three** and has a scoped patch already written.
+  "requires two undocumented Tailwind facts", not "impossible". 0c was the
+  strongest of the three on paper: its one-helper change is written and proven, and deliberately
+  not submitted (below).
 - **1** — define the token contract from the 603 literals in `styles.css` +
   `tw_dark.css`. Pixel-identical. This list *is* the theming API.
 - **2** — one palette source for both CSS and graphs.
@@ -301,9 +312,9 @@ written by a person, the description is a few plain sentences, the images and th
 evidence, and it says only what the facts support (one helper; the other four take their colours
 from callers; nothing changes by default).
 
-### Ready to write: the Phase 0c patch
+### The Phase 0c change (written and proven; not submitted, see above)
 
-Scoped this session, not yet written. `includes/html/graphs/generic_data.inc.php`
+`includes/html/graphs/generic_data.inc.php`
 is the highest-value single file in Phase 0c — it is behind `port_bits`, the
 most-viewed graph in the product, and it reads no config at all. *(Corrected
 2026-10-01: it is also the only config-blind helper that is fixable on its own.
@@ -344,9 +355,10 @@ Still open:
 - Don't write a line of Phase 1 until the token contract question gets an
   answer — that list becomes the theming API and is the expensive thing to get
   wrong.
-- **Phase 0c has a patch already scoped but unwritten** (see "Ready to write"
-  above). It is running locally on the production instance; that is a
-  downstream hack, not a submission. Write the real thing when 0c is welcome.
+- **Phase 0c** is written and proven (`dev/port-colours-diff.py` prints it,
+  `dev/test-port-colours.sh` proves it byte-identical) and deliberately not submitted: the plugin
+  recolours the port series itself now, and the old local core patch (`patches/`, legacy) is not
+  needed. The conditions that would reopen it are listed above.
 
 ---
 
@@ -370,7 +382,7 @@ because they belong upstream, not because they're unwanted — see
   |---|---|
   | Graph chrome — background, grid, frame, arrows | **Yes**, via `rrdgraph_def_text_dark`. Done, on *every* graph including port graphs. |
   | Series on config-reading helpers (10 of 15) | **Yes**, via `graph_colours.*`. Done. |
-  | Series in `generic_data` (behind `port_bits` and 19 more graph types) | **No.** Six series literals in the helper itself, zero config reads. |
+  | Series in `generic_data` (behind `port_bits` and 19 more graph types) | **No, in stock core:** six series literals in the helper itself, zero config reads. **Yes with the plugin,** which rewrites them just before rrdtool runs (`docs/PLUGIN.md`). |
   | Series in `generic_simplex`/`duplex`/`multi_data`/`multi_bits` | **Not through the helper.** Their own literals are percentile, previous-period and rule lines; the series colours are set by about 150 callers. *(Corrected 2026-10-01: this row used to lump all five helpers together as "40 literals".)* |
 
   CSS can't reach any of it — RRDtool renders server-side — but "unthemeable"
@@ -386,14 +398,16 @@ because they belong upstream, not because they're unwanted — see
   | `type` | Helper | Dominant colours |
   |---|---|---|
   | `port_bits` | `generic_data` | `#0f1a2e` (ours) · `#90b040` `#8080c0` (stock) |
-  | `device_bits` | `generic_multi_bits_separated` | `#3fb8f5` `#3ad6a8` `#2cb08a` `#218c6e` (all ours) |
+  | `device_bits` | `generic_multi_seperated` | `#3fb8f5` `#3ad6a8` `#2cb08a` `#218c6e` (all ours) |
 
-  Fixing it downstream would mean patching a core file that `daily.sh` reverts,
-  so it stays out of scope *here* — but it is Phase 0c of the proposal, and the
-  patch is now scoped (see below).
+  Fixing it in core is Phase 0c of the proposal (written, not submitted; see above).
+  Downstream, the plugin recolours the six series itself without touching core: patching the
+  file would be reverted by, or block, `daily.sh`.
 
-- **Supporting LibreNMS older than current master.** Selectors are verified
-  against `63e0394` only.
+- **Supporting LibreNMS older than current master.** Selectors were verified against `63e0394`;
+  the stylesheets are byte-identical on release 26.9.1 (which the dev tests run against). Master's
+  `tw_dark.css` has since changed (#20594) and its Blade-dependent counts have grown, so check the
+  skins against a master checkout before claiming it.
 
 - **Arbitrary-CSS theme upload.** Not planned anywhere, including upstream. A
   theme should be a validated token manifest; arbitrary CSS enables

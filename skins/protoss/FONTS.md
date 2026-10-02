@@ -2,7 +2,8 @@
 
 **The fonts ship with the skin. There is nothing to install.**
 
-Copy the `protoss/` directory and the typography works. No system fonts to
+The fonts sit inside the skin folder, so nothing is fetched at run time. (The folder alone does not
+apply a skin: it needs the plugin and `base/base.css`, see the README.) No system fonts to
 chase, no Google Fonts request, nothing for the end user to do.
 
 This matters more here than it does for Terran — see [Why this one
@@ -110,5 +111,4 @@ Resist putting a display face in table cells. Scope it to the frame instead:
 html.dark { --p-font-chrome: "Orbitron", sans-serif; }
 ```
 
-Drop the new `.woff2` into `fonts/`, point its `@font-face` at it, and nothing
-below section 1b needs to change — no rule in the skin names a font directly.
+Drop the new `.woff2` into `fonts/`, point its `@font-face` at it, and nothing else in `skin.css` needs to change — no rule in the skin names a font directly.

@@ -236,7 +236,7 @@ radius instead of a fixed 16px.
 | Rivet / sheen row in a heading (Terran) | the heading strip | Phase B, built |
 | Glow or rivet strips on the navbar's top and bottom edge (all three) | the navbar strips (a glow is Phase D) | Phase B, built |
 | Frames on dashboard widgets | widget frame slots inside the widget's own edge (no overhang: LibreNMS gives widgets uneven gutters and scrolls their contents) | Phase B, built |
-| Cut (chamfered) corners on buttons, labels, badges (Protoss) | `--ts-btn-chamfer` and so on: sizes in px, used in a fixed `clip-path` polygon that base.css writes | Phase C, built. Panels and widgets are not cut: a clip would also trim the frame layers |
+| Cut (chamfered) corners on buttons, labels, badges (Protoss) | `--ts-btn-chamfer` and so on: sizes in px, used in a fixed `clip-path` polygon that base.css writes | Phase C, built for buttons, labels and badges. Panels and widgets are cut too (Phase E, a real clip) |
 | Animation: a breathing strip (Zerg), the alert badge pulse (all three) | breathe and alert pulse | Phase D, built. Zerg's badge also scales up 9%; an upload's pulse changes only the glow |
 | Page background (facets, glow) | already possible: `--ts-body-bg-image` takes gradients | done |
 | `hr` height, dropdown submenu offset | not ornaments | stay bundled-only |

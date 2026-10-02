@@ -227,6 +227,21 @@ obvious at a glance.
 
 ---
 
+## Bundled-only features (parity backlog)
+
+Decided 2026-10-02: bundled skins ship in the repo, and where one uses something an uploaded skin
+can't, the gap is written down here so it can be closed later.
+
+| Bundled skin uses | Why uploads can't | Closing the gap |
+|---|---|---|
+| `features.json` `ornaments` (opt in to the ornament layer) | Not a gap: an upload always gets the layer. Listed because Terran, Protoss and Zerg still use their own structural tokens | Port the three older skins to the upload tokens, then drop the flag. See ORNAMENTS.md, "Roadmap to parity" |
+| `features.json` `effects` (the white rabbit: server-rolled markup) | Markup and a random roll are code, not tokens | Not as markup. A parity version would be a token-driven effect with fixed mechanics (a corner sprite from a declared texture, a chance and a duration within caps, rolled in PHP); it needs a design and a security review first |
+| Structural animation tokens (`--ts-navbar-after-animation`, `--ts-alert-badge-animation`, ...) | `animation` and `filter` are structural except in the fixed shapes | Mostly covered in spirit by breathe, glow and the alert pulse; fold the rest in as fixed shapes when a skin needs them |
+| Generated content (`content:`) on the older bundled skins | `content` is structural: it could show text | None planned; use the ornament layers |
+
+Already at parity: the page ("rain") layer, which any skin may use, and the ornament layer, which
+uploads always get.
+
 ## Open decisions
 
 **~~Screenshots in the README.~~ Done** — three of them, one per skin, in

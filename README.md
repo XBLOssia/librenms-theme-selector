@@ -1,8 +1,8 @@
 # Theme Selector for LibreNMS
 
-StarCraft-inspired skins for [LibreNMS](https://github.com/librenms/librenms).
+Skins for [LibreNMS](https://github.com/librenms/librenms): three StarCraft-inspired ones and a green-phosphor "digital rain".
 
-Three skins: **Terran**, **Protoss** and **Zerg**.
+Four skins: **Terran**, **Protoss**, **Zerg** and **Digital Rain**.
 
 Each user picks their own skin, admins set the instance default and can upload
 skins of their own (a validated `.zip`, see [docs/AUTHORING.md](docs/AUTHORING.md)),
@@ -12,9 +12,10 @@ Skins can carry a repeating texture, cut corners and frame ornaments
 It needs PHP 8.2 or newer and a LibreNMS with the package plugin system.
 
 All artwork is original: CSS (gradients, shadows, generated geometry) and one
-small PNG texture per skin (diamond plate, crystal, creep) that
-[scripts/make-textures.py](scripts/make-textures.py) and
-[scripts/make-creep.py](scripts/make-creep.py) compute from fixed numbers. No
+small PNG texture per skin (diamond plate, crystal, creep, falling glyphs) that
+[scripts/make-textures.py](scripts/make-textures.py),
+[scripts/make-creep.py](scripts/make-creep.py) and
+[scripts/make-rain.py](scripts/make-rain.py) compute from fixed numbers. No
 Blizzard assets are used or redistributed. These are "inspired by" skins, not
 asset ports.
 
@@ -27,8 +28,9 @@ asset ports.
 | **Terran** | Square, riveted, symmetric | Gunmetal + hazard yellow, red LEDs, green phosphor | Saira Condensed + JetBrains Mono |
 | **Protoss** | Chamfered, gold-bracketed | Void blue + keratinous gold, psionic flame | Cinzel + Rajdhani |
 | **Zerg** | Asymmetric, grown, uneven | Creep purple + bone, ichor green, ember orange | Metamorphous + Chakra Petch |
+| **Digital Rain** | Square, torn corners, scanlined | Phosphor green on black, amber and red for alarms | System monospace (Share Tech Mono when installed) |
 
-All three were installed and verified on a production instance (2026-09-29).
+Terran, Protoss and Zerg were installed and verified on a production instance (2026-09-29). Digital Rain is new (2026-10-02) and has been checked on the development instance only.
 They cover **92 of 92** components LibreNMS's dark theme styles, and **179 of 218** once
 you also count the `styles.css` classes the dark theme never touches — most of
 the remainder being dead Observium-era classes. A full survey of
@@ -42,7 +44,7 @@ the remainder being dead Observium-era classes. A full survey of
 Coverage counts selectors answered, not whether it looks right — and it does
 not count the inline `tw:` utilities at all, which is where several real bugs
 lived. The real test is [the live audit](#auditing-a-live-instance), which all
-three skins pass with zero findings on `/`, `/devices`, `/alert-rules`,
+four skins pass with zero findings on `/`, `/devices`, `/alert-rules`,
 `/eventlog` and a device's graph page. (Re-run on 2026-10-02 against a stock
 LibreNMS 26.9.1.1 dev instance, whose tables hold few rows, so row-level states
 are lightly exercised; run it on your own data too.)
@@ -77,6 +79,15 @@ Creep purple and bone, acid green against ember and magenta, on veined creep.
 Asymmetric, uneven, grown rather than built.
 
 ![The Zerg skin on a LibreNMS dashboard](docs/img/dashboard-zerg.png)
+
+### Digital Rain
+Phosphor green on black, a faint scanline over everything, monospace type with a red and cyan
+fringe on the headings, and torn corners on panels and buttons. Behind the page, glyphs fall
+slowly (one tile every 36 seconds; still for visitors who ask for reduced motion). Amber, not
+red, marks outbound traffic on graphs, so it never reads as an alarm. Now and then, on a device
+page, something white and quick crosses the bottom corner.
+
+![The Digital Rain skin on a LibreNMS dashboard](docs/img/dashboard-digital-rain.png)
 
 **None of these are screenshots of a production instance.** Every hostname,
 interface, site and number is invented, and the page says so in its own
@@ -169,7 +180,8 @@ text, accent, status colours, fonts, radius) are enough for a complete skin;
 full list with defaults is [docs/TOKENS.md](docs/TOKENS.md).
 
 The bundled skins set far more: [terran](skins/terran/skin.css) ·
-[protoss](skins/protoss/skin.css) · [zerg](skins/zerg/skin.css). Each also
+[protoss](skins/protoss/skin.css) · [zerg](skins/zerg/skin.css) ·
+[digital-rain](skins/digital-rain/skin.css). Each also
 keeps a private `--p-*` palette its tokens refer to.
 
 ### Typography
@@ -185,12 +197,13 @@ frame against a clean futuristic sans for the data. Zerg puts a gnarled organic
 display face on the frame and keeps a readable angular sans on the data — the
 weirdness lives in the geometry instead, which is what keeps it usable.
 
-All three bundle their faces, so this works with no setup and no external
+Terran, Protoss and Zerg bundle their faces, so this works with no setup and no external
 requests — which matters on an air-gapped NOC box, where a Google Fonts
 `@import` would silently degrade exactly where it is least convenient to
 debug. Details, sizes, licensing and how to swap a face:
 [terran](skins/terran/FONTS.md) · [protoss](skins/protoss/FONTS.md) ·
-[zerg](skins/zerg/FONTS.md).
+[zerg](skins/zerg/FONTS.md). Digital Rain asks for Share Tech Mono and falls back to the
+system monospace until that font is bundled.
 
 ---
 
@@ -244,7 +257,7 @@ python -m http.server 8777
 # then open http://localhost:8777/harness/
 ```
 
-Switch skins with `?skin=terran` / `?skin=protoss` / `?skin=zerg`, or the
+Switch skins with `?skin=terran` / `?skin=protoss` / `?skin=zerg` / `?skin=digital-rain`, or the
 buttons at the top of the page. (A skin's texture renders only on `mockup.html`;
 the other pages load `skin.css` as it is.) `harness/colorway.html` renders a skin's full
 token set and graph ramps.
@@ -314,6 +327,7 @@ tests/                      php tests/run.php: validator, installer, ornaments, 
 base/base.css               the base stylesheet: token defaults + every rule
 skins/<name>/skin.css       a skin: token values, private palette, @font-face
 skins/<name>/skin.json      manifest: name, description, modes
+skins/<name>/features.json  bundled skins only: opt in to ornaments and page effects (docs/PLUGIN.md)
 skins/<name>/graph.conf     graph palette, applied when it's the instance default
 skins/<name>/fonts/         bundled OFL webfonts + licence notices
 skins/<name>/textures/      the skin's repeating PNG tile (generated; skins/zerg/TEXTURES.md says how)
@@ -333,6 +347,7 @@ scripts/pack-skin.py        zip a skin folder for upload
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/make-textures.py    compute the plate, crystal and tile textures
 scripts/make-creep.py       compute the Zerg creep texture
+scripts/make-rain.py        compute the Digital Rain glyph tile
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/dead-css.py         find styles.css rules nothing can match (docs/data/ holds the list)
 scripts/helper-audit.py     which graph helpers hard-code colours (FINDINGS section 5)

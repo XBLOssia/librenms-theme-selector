@@ -121,7 +121,7 @@ render() {  # render <skin> <width> <height> <suffix>
 }
 
 echo "Rendering demo graphs into $OUT"
-for skin in terran protoss zerg; do
+for skin in terran protoss zerg digital-rain; do
   [ -f "$REPO/skins/$skin/graph.conf" ] || continue
   render "$skin" 480 130 ""
   render "$skin" 860 180 "-wide"

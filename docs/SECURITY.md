@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 1,952 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (107 flaws caught, 7 documented as
+`php tests/run.php` runs 2,090 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (127 flaws caught, 8 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 (Counts as of 2026-10-02; `sh dev/test.sh all` prints the current ones.)
 Run all of it with `sh dev/test.sh all`.
@@ -60,7 +60,7 @@ Run all of it with `sh dev/test.sh all`.
 
 | Attack | Control | Tested by |
 |---|---|---|
-| Zip-slip (`../evil.php`, absolute paths, backslashes, drive letters, NUL) | Nothing is extracted and no path is built from an entry name. Entry names must match an exact allowlist (`skin.json`, `skin.css`, `graph.conf`, `LICENSE.txt`, `fonts/<slug>.woff2\|woff`, `textures/<slug>.png`), matched with `\z` so a trailing newline can't slip through | `ZipTest` (46 hostile names), mutation "match with `$`" |
+| Zip-slip (`../evil.php`, absolute paths, backslashes, drive letters, NUL) | Nothing is extracted and no path is built from an entry name. Entry names must match an exact allowlist (`skin.json`, `skin.css`, `graph.conf`, `LICENSE.txt`, `fonts/<slug>.woff2\|woff`, `textures/<slug>.png`), matched with `\z` so a trailing newline can't slip through | `ZipTest` (47 hostile names), mutation "match with `$`" |
 | A `.php`, `.htaccess`, `.svg`, nested zip or anything else in the bundle | Any entry outside the allowlist rejects the *whole* bundle, not just that entry | `ZipTest`, `evil-php-entry`, `evil-htaccess`, `evil-nested-zip` |
 | Symlink or device entries | Unix mode bits checked; only regular files and directories | `ZipTest`, mutation "accept symlink entries" |
 | Decompression bomb | Inflation counts output as it is produced and stops at the declared size; declared sizes are capped per file and in total | `ZipTest` (40 MB bomb stopped with < 20 MB memory), mutation "no cap while inflating" |
@@ -139,7 +139,10 @@ Full description and roadmap: [ORNAMENTS.md](ORNAMENTS.md).
 | Reaching the bundled skins' raw animation tokens | `animation` and `filter` are structural except in the fixed shapes; `--ts-navbar-after-animation` and the like stay closed | `OrnamentTest` |
 | A cut that hides content on a panel or widget | Panel and widget cuts are one fixed slit-notch polygon written in `base.css` and recognised by the classifier; a skin supplies only sizes: px only (no `%`, `em`, `var()`, bare `0`), at most 12px, vertical legs at most twice that. Each removes only a small triangle at a corner, so it can't reach text. The edge line is the panel's own `::after` (inert, `pointer-events: none`, sized by the same cuts, falling back to `0px`) | `OrnamentTest` (both polygons and the overlay written out independently, catalog caps, refused sizes and colours), mutations "panel overlay takes clicks / extends 40px", "drop the size fallback", "widget clip cuts off what hangs out", "panel clip cuts off a dropdown", "no cap on panel cuts" |
 | Dropdowns or dialogs cut off by a clip | The clip margin is 10000px, so nothing that hangs out of a panel or widget is clipped; only the corner triangles are | `OrnamentTest` (the margin), mutations on the margin; a browser check that a fixed child and a menu 150px below a clipped panel still receive clicks |
-| The layer leaking into bundled skins | Rules are keyed on `data-ts-orn`, which only uploaded skins' links carry | `test-upload.sh` ("a bundled skin's links are not"), `OrnamentTest` |
+| The layer leaking into bundled skins | Rules are keyed on `data-ts-orn`, which uploaded skins' links carry and a bundled skin's carry only if its `features.json` (read from the package) asks | `test-upload.sh` ("a bundled skin's links are not"), `OrnamentTest`, `EffectsTest` |
+| A page layer that covers or blocks the page (the drifting "rain") | One fixed rule in `base.css`: `z-index: -1`, `pointer-events: none`, empty `content`, `position: fixed`, moved by `transform` only; no token reaches any of it. A skin gives an image (a gradient or a declared texture), a tile size (whole px, 64 to 512: no `%`, `em`, `var()`) and a period (2s to 60s). No background on `<html>`, so the layer sits on the canvas | `OrnamentTest` (rule pinned declaration by declaration, 16 refused tile sizes, 9 refused periods), mutations "raise the layer above content", "let the layer take clicks", "let the layer scroll with the page", "give the layer text", "accept a tile larger than 512px", "accept a tile in % or em", "keep moving under reduced motion", "paint `<html>` too" |
+| A skin asking for more than it may (uploads) | `features.json` is read only for bundled skins, from the package: an uploaded skin's manifest refuses `ornaments` and `effects`, its zip refuses a `features.json`, and the file's own parser honours two keys and one effect name and ignores the rest | `EffectsTest`, `ZipTest`, mutations under "features:" |
+| Page markup added by an effect (the white rabbit) | The markup is a reviewed file in the package, not skin data: no script, no URL, no link, `aria-hidden`, `pointer-events: none`, fixed to a corner below modals, plays once and fades to nothing, hidden under reduced motion. The chance and the page are decided in PHP, from a short allowlist of effect names | `EffectsTest` (markup checks, one roll in ten, device pages only), mutations under "effects:" |
 
 ### Licence notices
 

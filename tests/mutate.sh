@@ -216,6 +216,29 @@ run_with src/Skin/OutputGuard.php "s#|| PngTexture::check('texture', \$png, new 
 run_with src/Skin/ZipBundleReader.php 's#|textures/\[a-z0-9\]\[a-z0-9-\]{0,40}\\.png##' "zip: textures/*.png is not an allowed entry"
 run_with src/Skin/Limits.php 's#TEXTURE_BYTES = 65_536#TEXTURE_BYTES = 6_553_600#' "texture: no limit on a cleaned texture's size"
 
+RR='/^html\.dark body::before {/,/^}/'
+run_with $B "$RR s/z-index: -1;/z-index: 2;/" "rain: raise the layer above content"
+run_with $B "$RR s/pointer-events: none;/pointer-events: auto;/" "rain: let the layer take clicks"
+run_with $B "$RR s/position: fixed;/position: absolute;/" "rain: let the layer scroll with the page"
+run_with $B "$RR s/content: \"\";/content: \"Session expired\";/" "rain: give the layer text"
+run_with $B 's/transform: translateY(0);/top: 0;/' "rain: animate layout instead of transform"
+run_with $B 's/^    animation: none;/    animation: ts-rain 36s linear infinite;/' "rain: keep moving under reduced motion"
+run_with $B 's/^  font-family: var(--ts-root-font-family);/&\n  background-color: var(--ts-bg);/' "rain: paint <html> too, over the layer"
+run_with src/Skin/TokenFile.php 's#51\[0-2\]#5[1-9][0-9]#' "rain: accept a tile larger than 512px"
+run_with src/Skin/TokenFile.php "s#if (in_array('tile', \$this->catalog->kinds(\$name), true)#if (false \&\& in_array('tile', \$this->catalog->kinds(\$name), true)#" "rain: accept a tile in % or em"
+run_with resources/token-catalog.json '/"--ts-rain-tile": {/,/}/ s/"maxPx": 512/"maxPx": 800/' "rain: cap the tile at 800px in the catalog"
+run_with src/Effects.php 's#\$roll(self::RABBIT_ONE_IN) === 1#$roll(self::RABBIT_ONE_IN) >= 1#' "effects: show the rabbit on every roll"
+run_with src/Effects.php 's#RABBIT_ONE_IN = 10#RABBIT_ONE_IN = 2#' "effects: one in two, not one in ten"
+run_with src/Effects.php 's#\$devicePage \&\& ##' "effects: show the rabbit on every page"
+run_with src/Effects.php "s#in_array('white-rabbit', \$effects, true) \&\& ##" "effects: show the rabbit to skins that did not ask"
+run_with src/Features.php "s#\['ornaments'\] ?? false) === true#['ornaments'] ?? false) == true#" "features: read ornaments 1 as true"
+run_with src/Features.php 's#strlen(\$json) > 2048#strlen($json) > 2048000#' "features: no size limit"
+run_with src/Features.php 's#json_decode(\$json, true, 4)#json_decode($json, true, 512)#' "features: no nesting limit"
+run_with src/Features.php "s#array_values(array_intersect(self::EFFECTS, array_filter(\$effects, 'is_string')))#array_values(array_filter(\$effects, 'is_string'))#" "features: honour any effect name"
+run_with src/SkinRepository.php 's#isUploaded(\$id) || #isUploaded($id) \&\& #' "features: an upload needs a features file to get ornaments"
+run_with src/SkinRepository.php 's#|| ! \$this->isBundled(\$id)) {#) {#' "features: read a features file from a directory that is not a skin"
+run_with src/SkinRepository.php 's#if (! self::isValidId(\$id) || #if (#' "features: do not check the id's shape first" redundant
+
 wait
 n=1
 while [ "$n" -le "$IDX" ]; do

@@ -1,0 +1,10 @@
+{
+  "id": "digital-rain",
+  "name": "Digital Rain",
+  "description": "Phosphor green on black, monospace, scanlines and torn corners, with a slow drift of falling glyphs.",
+  "author": "XBLOssia",
+  "version": "1.0.0",
+  "modes": [
+    "dark"
+  ]
+}

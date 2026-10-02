@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 2,090 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (127 flaws caught, 8 documented as
+`php tests/run.php` runs 2,140 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (134 flaws caught, 8 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 (Counts as of 2026-10-02; `sh dev/test.sh all` prints the current ones.)
 Run all of it with `sh dev/test.sh all`.
@@ -187,6 +187,7 @@ back from the database before it is written to config. (`MiscTest`, mutation
 | Upload floods | `throttle:12,1` on upload, `throttle:30,1` on delete | `test-upload.sh` |
 | Trusting the client's claims | The uploaded file's name and declared type are never used; the content is read from PHP's temp file and never moved or opened by path | `test-upload.sh` (uploaded as `evil.php`, `image/png`: installs, nothing named that exists) |
 | Injection through displayed text | Names, descriptions and authors are restricted to plain printable text *and* escaped on output; anything from the bundle that appears in an error message goes through `Report::quote` | `MiscTest`, `test-upload.sh` |
+| The preview page showing something other than what was asked, or leaking | `GET plugin/theme-selector/preview/{id}` is behind `web` + `auth`, `id` is a slug that must be an installed skin or `none` (anything else is 404). The skin is named to the injector by a request attribute the controller sets after that check, never by a query string, and the visitor's own preference is never read or written. The page is static sample content (no database rows, no user data), its graph is built from numbers and hex-validated colours, and effects are never added | `test-picker.sh` (every bundled skin, seven refused ids, query-string cannot steer, own skin unchanged), `PreviewTest`, mutations under "preview" |
 | A skin that makes pages unusable | Installing changes nobody's view; a user (or admin) opts in. `?theme-selector=off` on any page shows it with no skin | `test-upload.sh` |
 | Untraceable changes | Every rejected upload, install, replacement and removal is logged at warning level (LibreNMS's default, so it needs no configuration) to `logs/librenms.log`, with the user, IP and the bundle's SHA-256 | `test-upload.sh` (reads the log of a stock instance) |
 

@@ -351,5 +351,6 @@ once, with the line for CSS errors, for example:
 ```
 
 Installing a skin doesn't change what anyone sees. Pick it under "Your skin" to
-try it, and use `?theme-selector=off` on any page's address if it goes wrong.
+see it previewed on a sample page (nothing to supply for that: the preview uses
+your stylesheet and graph palette as installed), then apply it to try it, and use `?theme-selector=off` on any page's address if it goes wrong.
 See `docs/SECURITY.md` for why the rules are what they are.

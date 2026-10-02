@@ -239,6 +239,14 @@ run_with src/SkinRepository.php 's#isUploaded(\$id) || #isUploaded($id) \&\& #' 
 run_with src/SkinRepository.php 's#|| ! \$this->isBundled(\$id)) {#) {#' "features: read a features file from a directory that is not a skin"
 run_with src/SkinRepository.php 's#if (! self::isValidId(\$id) || #if (#' "features: do not check the id's shape first" redundant
 
+run_with src/PreviewChoice.php 's#\$default !== null \&\& \$exists(\$default) ?#\$default !== null ?#' "preview: show a default skin that has been removed"
+run_with src/PreviewChoice.php 's#return \$exists(\$choice) ? \$choice : null;#return \$choice;#' "preview: show an id that is not installed"
+run_with src/PreviewGraph.php 's|(\[0-9A-Fa-f\]{6})(?:\[0-9A-Fa-f\]{2})?\\z/D|(.{6})(?:.{2})?\\z/D|' "preview graph: take any six characters as a colour"
+run_with src/PreviewGraph.php 's#return in_array(null, \$colours, true) ? \$fallback : \$colours;#return \$colours;#' "preview graph: keep a ramp with a bad colour in it"
+run_with src/PreviewGraph.php 's#(?= |\\z)/D#/D#' "preview graph: take a colour with something stuck on the end"
+run_with src/SkinRepository.php "s#preg_match(\x27[^\x27]*\x27, \$value) ? substr#true ? substr#" "skin list: show a timestamp that is not one"
+run_with src/SkinRepository.php "s#\x27installed_at\x27 => null,#\x27installed_at\x27 => \x272020-01-01 00:00:00\x27,#" "skin list: give a bundled skin an install date"
+
 wait
 n=1
 while [ "$n" -le "$IDX" ]; do

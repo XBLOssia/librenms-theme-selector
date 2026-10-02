@@ -59,7 +59,7 @@ reset_state() {
   q "delete from theme_selector_settings where name='default_skin'" >/dev/null
   q "delete from users_prefs where pref='theme_selector.skin'" >/dev/null
   for d in "$PUB"/skins/*; do
-    case "$(basename "$d")" in terran|protoss|zerg) ;; *) rm -rf "$d" ;; esac
+    [ -d "/plugin/skins/$(basename "$d")" ] || rm -rf "$d"
   done
   rm -rf "$PUB"/skins/.stage-* "$PUB"/skins/.old-*
 }
@@ -122,6 +122,8 @@ PIN_ADMIN=1
 upload dev-admin "$FIX/good-slate.zip" "evil.php" "image/png"
 check "it installs (whatever the client called the file)" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Installed Slate Teal'")"
 check "and shows in the list as an uploaded skin" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Slate Teal' && printf '%s' \"\$PAGE\" | grep -q 'Uploaded'")"
+INSTALLED_DAY="$(q "select date(created_at) from theme_selector_skins where id='slate-teal'")"
+check "and the list shows the day it was installed" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q '$INSTALLED_DAY'")"
 check "its directory holds exactly one file: skin.css" "$(yes_if "[ \"\$(ls -A $PUB/skins/slate-teal)\" = skin.css ]")"
 check "files are 644 and the directory 755" "$(yes_if "[ \"\$(stat -c %a $PUB/skins/slate-teal/skin.css)\" = 644 ] && [ \"\$(stat -c %a $PUB/skins/slate-teal)\" = 755 ]")"
 check "the registry row records who installed it" "$(yes_if "[ \"\$(q \"select installed_by from theme_selector_skins where id='slate-teal'\")\" = '$ADMIN_ID' ]")"
@@ -300,7 +302,7 @@ check "the lines name the user and their IP" "$(yes_if "printf '%s' \"\$LOGNEW\"
 echo "== what is in the web root, at the end"
 reset_state
 upload dev-admin "$FIX/good-slate.zip"; upload dev-admin "$FIX/good-font.zip"; upload dev-admin "$FIX/good-graph.zip"
-UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/with-license/skin.css" ! -path "$PUB/skins/with-frames/skin.css" ! -path "$PUB/skins/with-texture/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
+UNEXPECTED="$(find "$PUB" -type f ! -name base.css ! -name .bundled.json ! -name .install.lock ! -path "$PUB/skins/terran/*" ! -path "$PUB/skins/protoss/*" ! -path "$PUB/skins/zerg/*" ! -path "$PUB/skins/digital-rain/*" ! -path "$PUB/skins/slate-teal/skin.css" ! -path "$PUB/skins/with-font/skin.css" ! -path "$PUB/skins/with-license/skin.css" ! -path "$PUB/skins/with-frames/skin.css" ! -path "$PUB/skins/with-texture/skin.css" ! -path "$PUB/skins/slate-graph/skin.css")"
 check "only base.css, bundled skins and each uploaded skin's single skin.css exist" "$(yes_if "[ -z '$UNEXPECTED' ]")"
 check "there are no PHP, HTML, script or config files anywhere in it" "$(yes_if "[ \"\$(find $PUB -type f \( -iname '*.php*' -o -iname '*.phtml' -o -iname '*.htm*' -o -iname '*.js' -o -iname '.htaccess' -o -iname '*.svg' -o -iname '*.sh' \) | wc -l)\" = 0 ]")"
 check "no file in it is executable" "$(yes_if "[ \"\$(find $PUB -type f -perm /111 | wc -l)\" = 0 ]")"

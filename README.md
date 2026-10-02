@@ -4,7 +4,8 @@ Skins for [LibreNMS](https://github.com/librenms/librenms): three StarCraft-insp
 
 Four skins: **Terran**, **Protoss**, **Zerg** and **Digital Rain**.
 
-Each user picks their own skin, admins set the instance default and can upload
+Each user picks their own skin from a dropdown that previews it on a sample page before
+anything is applied, admins set the instance default and can upload
 skins of their own (a validated `.zip`, see [docs/AUTHORING.md](docs/AUTHORING.md)),
 and graphs follow the skin too, down to the colours of the port traffic series.
 Skins can carry a repeating texture, cut corners and frame ornaments

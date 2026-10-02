@@ -22,39 +22,49 @@
     @endif
 
     @php
-        // Everything the dropdown and its preview frame need, one entry per choice. `value` is what
-        // saving stores ('' follows the instance default); `target` is the skin the preview shows.
-        $nameOfDefault = $defaultName ?? 'stock LibreNMS';
+        // Everything the two dropdowns and their preview frames need. For each mode, one entry per
+        // choice: `value` is what saving stores ('' follows the instance default for that mode),
+        // `target` is the skin the preview shows. A skin is written for one mode but can be put in
+        // either; the label says which it was written for.
         $meta = function (array $s): string {
             $bits = [$s['source'] === 'bundled' ? 'Bundled with the plugin' : 'Uploaded'];
+            $bits[] = 'written for ' . $s['mode'] . ' mode';
             if (($s['version'] ?? '') !== '') { $bits[] = 'v' . $s['version']; }
             if (($s['author'] ?? '') !== '') { $bits[] = 'by ' . $s['author']; }
             if (! empty($s['installed_at'])) { $bits[] = 'installed ' . substr($s['installed_at'], 0, 10); }
             if (! empty($s['license'])) { $bits[] = $s['license']; }
             return implode(' · ', $bits);
         };
-        $choices = [
-            ['group' => 'Defaults', 'value' => '', 'label' => 'Instance default (' . $nameOfDefault . ')', 'target' => $default ?? 'none',
-             'name' => 'Instance default', 'desc' => 'Follows whatever the administrator sets as the default, now ' . $nameOfDefault . '.', 'meta' => ''],
-            ['group' => 'Defaults', 'value' => 'none', 'label' => 'Stock LibreNMS', 'target' => 'none',
-             'name' => 'Stock LibreNMS', 'desc' => 'No skin: LibreNMS as it ships.', 'meta' => ''],
-        ];
-        foreach ($skins as $id => $skin) {
-            $choices[] = ['group' => $skin['source'] === 'bundled' ? 'Bundled' : 'Installed', 'value' => $id, 'label' => $skin['name'], 'target' => $id,
-                          'name' => $skin['name'], 'desc' => $skin['description'], 'meta' => $meta($skin)];
+        $slots = [];
+        foreach (['light' => ['Light mode', 'skin_light'], 'dark' => ['Dark mode', 'skin']] as $mode => [$heading, $field]) {
+            $m = $modes[$mode];
+            $nameOfDefault = $m['defaultName'] ?? 'stock LibreNMS';
+            $choices = [
+                ['group' => 'Defaults', 'value' => '', 'label' => 'Instance default (' . $nameOfDefault . ')', 'target' => $m['default'] ?? 'none',
+                 'name' => 'Instance default', 'desc' => 'Follows whatever the administrator sets as the ' . $mode . '-mode default, now ' . $nameOfDefault . '.', 'meta' => ''],
+                ['group' => 'Defaults', 'value' => 'none', 'label' => 'Stock LibreNMS', 'target' => 'none',
+                 'name' => 'Stock LibreNMS', 'desc' => 'No skin: LibreNMS as it ships.', 'meta' => ''],
+            ];
+            foreach ($skins as $id => $skin) {
+                $note = $skin['mode'] === $mode ? '' : ' (written for ' . $skin['mode'] . ')';
+                $choices[] = ['group' => $skin['family'] !== '' ? $skin['family'] : ($skin['source'] === 'bundled' ? 'Bundled' : 'Installed'),
+                              'value' => $id, 'label' => $skin['name'] . $note, 'target' => $id,
+                              'name' => $skin['name'], 'desc' => $skin['description'], 'meta' => $meta($skin)];
+            }
+            $choice = $m['choice'];
+            $current = $choice === null ? 'Instance default (' . $nameOfDefault . ')' : ($choice === 'none' ? 'Stock LibreNMS' : ($skins[$choice]['name'] ?? 'Instance default (' . $nameOfDefault . ')'));
+            $shown = collect($choices)->firstWhere('value', $m['selected']) ?? $choices[0];
+            $slots[$mode] = compact('heading', 'field', 'choices', 'choice', 'current', 'shown') + ['selected' => $m['selected'], 'target' => $m['target']];
         }
-        $selectedValue = $previewChoice ?? ($choice ?? '');
-        $shown = null;
-        foreach ($choices as $c) { if ($previewChoice !== null && $c['value'] === $previewChoice) { $shown = $c; } }
-        $currentLabel = $choice === null ? 'Instance default (' . $nameOfDefault . ')' : ($choice === 'none' ? 'Stock LibreNMS' : ($skins[$choice]['name'] ?? 'Instance default (' . $nameOfDefault . ')'));
     @endphp
 
     <style>
-        .ts-frame { position:relative; overflow:hidden; border:1px solid rgba(128,128,128,.5); margin:10px 0;
-                    background:rgba(128,128,128,.08); aspect-ratio:1280 / 660; width:100%; max-width:1000px; }
-        .ts-frame.ts-nojs { width:640px; }
+        .ts-frame { position:relative; overflow:hidden; border:1px solid rgba(128,128,128,.5); margin:8px 0;
+                    background:rgba(128,128,128,.08); aspect-ratio:1280 / 660; width:100%; }
+        .ts-frame.ts-nojs { width:480px; max-width:100%; }
         .ts-frame iframe { position:absolute; left:0; top:0; width:1280px; height:660px; border:0; transform-origin:0 0;
-                           transform:scale(var(--ts-scale, .5)); pointer-events:none; }
+                           transform:scale(var(--ts-scale, .375)); pointer-events:none; }
+        .ts-slot select { width:100%; }
         .ts-scroll { max-height:26em; overflow:auto; border:1px solid rgba(128,128,128,.4); }
         .ts-scroll table { margin-bottom:0; }
         .ts-scroll thead th { position:sticky; top:0; z-index:1; background:inherit; box-shadow:0 1px 0 rgba(128,128,128,.5); }
@@ -66,74 +76,84 @@
     </style>
 
     <div class="panel panel-default" id="ts-picker">
-        <div class="panel-heading"><h3 class="panel-title">Your skin</h3></div>
+        <div class="panel-heading"><h3 class="panel-title">Your skins</h3></div>
         <div class="panel-body">
-            <p>Your skin now: <strong>{{ $currentLabel }}</strong></p>
-            <form method="get" action="{{ route('theme-selector.index') }}#ts-picker" id="ts-choose" class="form-inline">
-                <label for="ts-select">Skin</label>
-                <select name="preview" id="ts-select" class="form-control" style="min-width:18em; max-width:100%">
-                    @foreach(collect($choices)->groupBy('group') as $group => $list)
-                        <optgroup label="{{ $group }}">
-                            @foreach($list as $c)
-                                <option value="{{ $c['value'] }}" @selected($c['value'] === $selectedValue)
-                                        data-name="{{ $c['name'] }}" data-desc="{{ $c['desc'] }}" data-meta="{{ $c['meta'] }}"
-                                        data-src="{{ route('theme-selector.preview', ['id' => $c['target']]) }}">{{ $c['label'] }}</option>
+            <p>LibreNMS is light or dark depending on your Display Settings (or your device), and you can choose a skin for each. Pick one in either list to preview it; nothing changes until you apply.</p>
+            <form method="post" action="{{ route('theme-selector.store') }}" id="ts-form">
+                @csrf
+                <div class="row">
+                @foreach($slots as $mode => $slot)
+                    <div class="col-md-6 ts-slot" data-mode="{{ $mode }}" data-current="{{ $slot['choice'] ?? '' }}">
+                        <h4 style="margin-top:0">{{ $slot['heading'] }}</h4>
+                        <p class="text-muted" style="margin-bottom:6px">Now: <strong>{{ $slot['current'] }}</strong></p>
+                        <select name="{{ $slot['field'] }}" class="form-control ts-select" aria-label="{{ $slot['heading'] }} skin">
+                            @foreach(collect($slot['choices'])->groupBy('group') as $group => $list)
+                                <optgroup label="{{ $group }}">
+                                    @foreach($list as $c)
+                                        <option value="{{ $c['value'] }}" @selected($c['value'] === $slot['selected'])
+                                                data-name="{{ $c['name'] }}" data-desc="{{ $c['desc'] }}" data-meta="{{ $c['meta'] }}"
+                                                data-src="{{ route('theme-selector.preview', ['id' => $c['target'], 'mode' => $mode]) }}">{{ $c['label'] }}</option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
-                        </optgroup>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn btn-default" id="ts-show">Preview</button>
+                        </select>
+                        <div style="margin-top:8px">
+                            <strong class="ts-pv-name">{{ $slot['shown']['name'] }}</strong>
+                            <span class="ts-pv-desc">{{ $slot['shown']['desc'] }}</span>
+                            <div class="text-muted ts-pv-meta">{{ $slot['shown']['meta'] }}</div>
+                        </div>
+                        <div class="ts-frame ts-nojs">
+                            <iframe class="ts-iframe" title="Preview in {{ $mode }} mode" tabindex="-1"
+                                    src="{{ route('theme-selector.preview', ['id' => $slot['target'], 'mode' => $mode]) }}"></iframe>
+                        </div>
+                        <a class="ts-full" href="{{ route('theme-selector.preview', ['id' => $slot['target'], 'mode' => $mode]) }}" target="_blank" rel="noopener">Open full size</a>
+                    </div>
+                @endforeach
+                </div>
+                <p style="margin-top:12px">
+                    <button type="submit" class="btn btn-primary" id="ts-apply" disabled>Apply to my account</button>
+                    <span class="text-muted" id="ts-apply-note">These are your skins now.</span>
+                </p>
             </form>
 
-            <div id="ts-preview" @if($shown === null) hidden @endif style="margin-top:12px">
-                <h4 id="ts-pv-name" style="margin-bottom:2px">{{ $shown['name'] ?? '' }}</h4>
-                <p id="ts-pv-desc" style="margin:0">{{ $shown['desc'] ?? '' }}</p>
-                <p id="ts-pv-meta" class="text-muted" style="margin:0">{{ $shown['meta'] ?? '' }}</p>
-                <div class="ts-frame ts-nojs" id="ts-frame">
-                    <iframe id="ts-iframe" title="Preview of the selected skin" tabindex="-1"
-                            @if($shown !== null) src="{{ route('theme-selector.preview', ['id' => $previewTarget]) }}" @endif></iframe>
-                </div>
-                <form method="post" action="{{ route('theme-selector.store') }}" class="form-inline">
-                    @csrf
-                    <input type="hidden" name="skin" id="ts-apply-value" value="{{ $shown['value'] ?? '' }}">
-                    <button type="submit" class="btn btn-primary" id="ts-apply" @disabled($shown !== null && $shown['value'] === ($choice ?? ''))>Apply to my account</button>
-                    <span class="text-muted" id="ts-apply-note">{{ $shown !== null && $shown['value'] === ($choice ?? '') ? 'This is your skin now.' : 'Nothing changes until you apply it.' }}</span>
-                </form>
-            </div>
-
             <p class="help-block">
-                The preview is a sample page with invented content, always in dark mode. Skins apply in dark mode only:
-                with LibreNMS set to Light, pages stay stock. If a skin ever makes a page hard to use, add
-                <code>?theme-selector=off</code> to that page's address to see it without any skin, then come back here
-                and pick another.
+                The previews are a sample page with invented content. A skin is written for light or dark mode but can be used in either:
+                in the other mode it is shown adapted, and its graph colours apply only in the mode it was written for. If a skin ever
+                makes a page hard to use, add <code>?theme-selector=off</code> to that page's address to see it without any skin, then
+                come back here and pick another.
             </p>
         </div>
     </div>
     <script>
     (function () {
-        var sel = document.getElementById('ts-select'), box = document.getElementById('ts-preview'),
-            frame = document.getElementById('ts-frame'), iframe = document.getElementById('ts-iframe'),
-            apply = document.getElementById('ts-apply'), value = document.getElementById('ts-apply-value'),
-            note = document.getElementById('ts-apply-note'), current = {!! json_encode($choice ?? '') !!};
-        if (!sel || !box || !frame || !iframe) { return; }
-        frame.classList.remove('ts-nojs');
-        function scale() { frame.style.setProperty('--ts-scale', frame.clientWidth / 1280); }
-        function show() {
-            var o = sel.options[sel.selectedIndex];
-            document.getElementById('ts-pv-name').textContent = o.getAttribute('data-name');
-            document.getElementById('ts-pv-desc').textContent = o.getAttribute('data-desc');
-            document.getElementById('ts-pv-meta').textContent = o.getAttribute('data-meta');
-            box.hidden = false;
-            scale();
-            if (iframe.getAttribute('src') !== o.getAttribute('data-src')) { iframe.setAttribute('src', o.getAttribute('data-src')); }
-            value.value = o.value;
-            apply.disabled = (o.value === current);
-            note.textContent = apply.disabled ? 'This is your skin now.' : 'Nothing changes until you apply it.';
+        var form = document.getElementById('ts-form'), apply = document.getElementById('ts-apply'),
+            note = document.getElementById('ts-apply-note'), slots = form ? form.querySelectorAll('.ts-slot') : [];
+        if (!form || !slots.length) { return; }
+        function dirty() {
+            var changed = false;
+            Array.prototype.forEach.call(slots, function (slot) {
+                if (slot.querySelector('.ts-select').value !== slot.getAttribute('data-current')) { changed = true; }
+            });
+            apply.disabled = !changed;
+            note.textContent = changed ? 'Nothing changes until you apply it.' : 'These are your skins now.';
         }
-        sel.addEventListener('change', show);
-        document.getElementById('ts-choose').addEventListener('submit', function (e) { e.preventDefault(); show(); });
-        window.addEventListener('resize', scale);
-        scale();
+        Array.prototype.forEach.call(slots, function (slot) {
+            var sel = slot.querySelector('.ts-select'), frame = slot.querySelector('.ts-frame'), iframe = slot.querySelector('.ts-iframe');
+            frame.classList.remove('ts-nojs');
+            function scale() { frame.style.setProperty('--ts-scale', frame.clientWidth / 1280); }
+            sel.addEventListener('change', function () {
+                var o = sel.options[sel.selectedIndex];
+                slot.querySelector('.ts-pv-name').textContent = o.getAttribute('data-name');
+                slot.querySelector('.ts-pv-desc').textContent = o.getAttribute('data-desc');
+                slot.querySelector('.ts-pv-meta').textContent = o.getAttribute('data-meta');
+                if (iframe.getAttribute('src') !== o.getAttribute('data-src')) { iframe.setAttribute('src', o.getAttribute('data-src')); }
+                slot.querySelector('.ts-full').setAttribute('href', o.getAttribute('data-src'));
+                dirty();
+            });
+            window.addEventListener('resize', scale);
+            scale();
+        });
+        dirty();
     })();
     </script>
 
@@ -141,18 +161,22 @@
     <div class="panel panel-default">
         <div class="panel-heading"><h3 class="panel-title">Instance default <small>admin</small></h3></div>
         <div class="panel-body">
-            <p>Applies to users who haven't chosen a skin, and to the login page. Graphs follow each user's
-               own skin; the default skin's graph palette is what LibreNMS stores, so it also applies to users
-               who follow the default and to graphs no logged-in user requested (API, reports).</p>
+            <p>Applies to users who haven't chosen a skin, and to the login page, in each mode. Graphs follow each user's
+               own skin for the mode the graph is drawn in; the defaults' graph palettes are what LibreNMS stores, so they also
+               apply to users who follow a default and to graphs no logged-in user requested (API, reports, alert emails, which
+               are drawn light).</p>
             <form method="post" action="{{ route('theme-selector.default') }}" class="form-inline">
                 @csrf
-                <select name="default" class="form-control">
-                    <option value="" @selected($default === null)>None (stock LibreNMS)</option>
-                    @foreach($skins as $id => $skin)
-                        <option value="{{ $id }}" @selected($default === $id)>{{ $skin['name'] }}</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn btn-default">Set default</button>
+                @foreach(['light' => ['Light mode', 'default_light'], 'dark' => ['Dark mode', 'default']] as $mode => [$heading, $field])
+                    <label for="ts-default-{{ $mode }}">{{ $heading }}</label>
+                    <select name="{{ $field }}" id="ts-default-{{ $mode }}" class="form-control" style="margin-right:12px">
+                        <option value="" @selected($modes[$mode]['default'] === null)>None (stock LibreNMS)</option>
+                        @foreach($skins as $id => $skin)
+                            <option value="{{ $id }}" @selected($modes[$mode]['default'] === $id)>{{ $skin['name'] }}{{ $skin['mode'] === $mode ? '' : ' (written for ' . $skin['mode'] . ')' }}</option>
+                        @endforeach
+                    </select>
+                @endforeach
+                <button type="submit" class="btn btn-default">Set defaults</button>
             </form>
         </div>
     </div>
@@ -162,6 +186,11 @@
         <div class="panel-body">
             <div class="ts-tools" id="ts-tools" hidden>
                 <input type="search" id="ts-filter" class="form-control" style="max-width:16em" placeholder="Filter by name, author, id" aria-label="Filter skins">
+                <select id="ts-mode" class="form-control" style="width:auto" aria-label="Written for">
+                    <option value="">Light and dark</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
                 <select id="ts-source" class="form-control" style="width:auto" aria-label="Show">
                     <option value="">All skins</option>
                     <option value="bundled">Bundled</option>
@@ -180,6 +209,7 @@
                     <tr>
                         <th><button type="button" class="ts-sort" data-key="name">Skin</button></th>
                         <th>Id</th>
+                        <th><button type="button" class="ts-sort" data-key="mode">Mode</button></th>
                         <th><button type="button" class="ts-sort" data-key="author">Author</button></th>
                         <th><button type="button" class="ts-sort" data-key="version">Version</button></th>
                         <th><button type="button" class="ts-sort" data-key="source">Source</button></th>
@@ -189,12 +219,13 @@
                 </thead>
                 <tbody>
                 @foreach($skins as $id => $skin)
-                    <tr data-name="{{ strtolower($skin['name']) }}" data-author="{{ strtolower($skin['author']) }}"
+                    <tr data-name="{{ strtolower($skin['name']) }}" data-author="{{ strtolower($skin['author']) }}" data-mode="{{ $skin['mode'] }}"
                         data-version="{{ $skin['version'] }}" data-source="{{ $skin['source'] }}"
                         data-installed="{{ $skin['installed_at'] ? strtotime($skin['installed_at'] . ' UTC') : 0 }}"
-                        data-search="{{ strtolower($skin['name'] . ' ' . $id . ' ' . $skin['author']) }}">
-                        <td>{{ $skin['name'] }}</td>
+                        data-search="{{ strtolower($skin['name'] . ' ' . $id . ' ' . $skin['author'] . ' ' . $skin['family']) }}">
+                        <td>{{ $skin['name'] }}@if($skin['family'] !== '')<div class="text-muted">{{ $skin['family'] }}</div>@endif</td>
                         <td><code>{{ $id }}</code></td>
+                        <td>{{ ucfirst($skin['mode']) }}</td>
                         <td>{{ $skin['author'] ?: '-' }}</td>
                         <td>{{ $skin['version'] ?: '-' }}</td>
                         <td>
@@ -224,7 +255,7 @@
                             @endif
                         </td>
                         <td class="text-right" style="white-space:nowrap">
-                            <a href="{{ route('theme-selector.index', ['preview' => $id]) }}#ts-picker" class="btn btn-default btn-xs">Preview</a>
+                            <a href="{{ route('theme-selector.index', [$skin['mode'] => $id]) }}#ts-picker" class="btn btn-default btn-xs">Preview</a>
                             @if($skin['source'] === 'uploaded')
                                 <form method="post" action="{{ route('theme-selector.delete', ['id' => $id]) }}" style="display:inline"
                                       onsubmit="return confirm('Remove this skin? Anyone using it goes back to the instance default.');">
@@ -249,7 +280,7 @@
                 if (!table) { return; }
                 var body = table.tBodies[0], rows = Array.prototype.slice.call(body.rows),
                     tools = document.getElementById('ts-tools'), pager = document.getElementById('ts-pager'),
-                    filter = document.getElementById('ts-filter'), source = document.getElementById('ts-source'),
+                    filter = document.getElementById('ts-filter'), source = document.getElementById('ts-source'), modeSel = document.getElementById('ts-mode'),
                     size = document.getElementById('ts-size'), count = document.getElementById('ts-count'),
                     pageLabel = document.getElementById('ts-page'), prev = document.getElementById('ts-prev'),
                     next = document.getElementById('ts-next'), buttons = table.querySelectorAll('.ts-sort'),
@@ -262,9 +293,9 @@
                     return (r || a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'))) * dir;
                 }
                 function draw() {
-                    var q = filter.value.trim().toLowerCase(), src = source.value, per = parseInt(size.value, 10),
+                    var q = filter.value.trim().toLowerCase(), src = source.value, md = modeSel.value, per = parseInt(size.value, 10),
                         list = rows.filter(function (r) {
-                            return (!q || r.getAttribute('data-search').indexOf(q) !== -1) && (!src || r.getAttribute('data-source') === src);
+                            return (!q || r.getAttribute('data-search').indexOf(q) !== -1) && (!src || r.getAttribute('data-source') === src) && (!md || r.getAttribute('data-mode') === md);
                         }).sort(cmp);
                     var pages = Math.max(1, Math.ceil(list.length / per));
                     if (page >= pages) { page = pages - 1; }
@@ -284,7 +315,7 @@
                         dir = (k === key) ? -dir : (k === 'installed' ? -1 : 1); key = k; page = 0; draw();
                     });
                 });
-                [filter, source, size].forEach(function (el) { el.addEventListener('input', function () { page = 0; draw(); }); });
+                [filter, source, modeSel, size].forEach(function (el) { el.addEventListener('input', function () { page = 0; draw(); }); });
                 prev.addEventListener('click', function () { page--; draw(); });
                 next.addEventListener('click', function () { page++; draw(); });
                 draw();

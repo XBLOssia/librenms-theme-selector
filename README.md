@@ -4,8 +4,8 @@ Skins for [LibreNMS](https://github.com/librenms/librenms): three StarCraft-insp
 
 Four skins: **Terran**, **Protoss**, **Zerg** and **Digital Rain**.
 
-Each user picks their own skin from a dropdown that previews it on a sample page before
-anything is applied, admins set the instance default and can upload
+Each user picks a skin for light mode and one for dark mode, from dropdowns that preview each on a
+sample page before anything is applied; admins set the instance defaults and can upload
 skins of their own (a validated `.zip`, see [docs/AUTHORING.md](docs/AUTHORING.md)),
 and graphs follow the skin too, down to the colours of the port traffic series.
 Skins can carry a repeating texture, cut corners and frame ornaments
@@ -326,6 +326,7 @@ resources/token-catalog.json  which tokens exist, and which uploads may set (gen
 database/migrations/        the plugin's two tables (settings, uploaded skins) and their later columns
 tests/                      php tests/run.php: validator, installer, ornaments, port series, fuzzing; mutate.sh
 base/base.css               the base stylesheet: token defaults + every rule
+base/light.css              light mode only: LibreNMS's stock palette mapped onto a skin's roles (appended to base-light.css)
 skins/<name>/skin.css       a skin: token values, private palette, @font-face
 skins/<name>/skin.json      manifest: name, description, modes
 skins/<name>/features.json  bundled skins only: opt in to ornaments and page effects (docs/PLUGIN.md)

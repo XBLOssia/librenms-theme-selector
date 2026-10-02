@@ -1,0 +1,123 @@
+/*
+ * Light mode only. Appended to base-light.css (the light twin of base.css, see Modes::lightBase),
+ * never published on its own and never part of the dark base.
+ *
+ * base.css was written against LibreNMS's DARK theme, whose colours live in a private palette
+ * (--tw-color-dark-*) that the base retints. Light mode has no such palette: stock light styling
+ * uses Tailwind's ordinary scales (gray, blue, green, red, amber ...), so a skin that wants a page
+ * that is not stock white and grey has to retint those. The scales are mapped to the skin's ROLES,
+ * not to colours: the light end of a neutral scale is surface, the dark end is text; a status
+ * scale is the status colour, with its pale steps mixed into the surface. Whatever palette the
+ * skin chose is what stock markup then shows, and a skin that sets only the 20 core roles still
+ * gets all of this.
+ *
+ * Only `--tw-color-*` variables are set here, never a property of an element, so nothing here can
+ * place, hide, resize or cover anything.
+ *
+ * `white` is left alone on purpose: it is the text on a coloured button, and that must stay white.
+ */
+html:not(.dark) {
+  /* Neutrals (gray, neutral, slate, zinc): backgrounds and rules at the light end, text at the dark end. */
+  --ts-light-n50: var(--ts-surface);
+  --ts-light-n100: var(--ts-surface-raised);
+  --ts-light-n200: var(--ts-surface-hover);
+  --ts-light-n300: var(--ts-border);
+  --ts-light-n400: var(--ts-text-mute);
+  --ts-light-n500: var(--ts-text-mute);
+  --ts-light-n600: var(--ts-text-dim);
+  --ts-light-n700: var(--ts-text-dim);
+  --ts-light-n800: var(--ts-text);
+  --ts-light-n900: var(--ts-text-bright);
+  --ts-light-n950: var(--ts-text-bright);
+
+  --tw-color-gray-50: var(--ts-light-n50);
+  --tw-color-gray-100: var(--ts-light-n100);
+  --tw-color-gray-200: var(--ts-light-n200);
+  --tw-color-gray-300: var(--ts-light-n300);
+  --tw-color-gray-400: var(--ts-light-n400);
+  --tw-color-gray-500: var(--ts-light-n500);
+  --tw-color-gray-600: var(--ts-light-n600);
+  --tw-color-gray-700: var(--ts-light-n700);
+  --tw-color-gray-800: var(--ts-light-n800);
+  --tw-color-gray-900: var(--ts-light-n900);
+
+  --tw-color-neutral-50: var(--ts-light-n50);
+  --tw-color-neutral-100: var(--ts-light-n100);
+  --tw-color-neutral-200: var(--ts-light-n200);
+  --tw-color-neutral-300: var(--ts-light-n300);
+  --tw-color-neutral-400: var(--ts-light-n400);
+  --tw-color-neutral-500: var(--ts-light-n500);
+  --tw-color-neutral-600: var(--ts-light-n600);
+  --tw-color-neutral-700: var(--ts-light-n700);
+  --tw-color-neutral-900: var(--ts-light-n900);
+  --tw-color-neutral-950: var(--ts-light-n950);
+
+  --tw-color-slate-100: var(--ts-light-n100);
+  --tw-color-slate-200: var(--ts-light-n200);
+  --tw-color-slate-300: var(--ts-light-n300);
+  --tw-color-slate-400: var(--ts-light-n400);
+  --tw-color-slate-500: var(--ts-light-n500);
+  --tw-color-slate-700: var(--ts-light-n700);
+  --tw-color-slate-800: var(--ts-light-n800);
+
+  --tw-color-zinc-800: var(--ts-light-n800);
+  --tw-color-zinc-900: var(--ts-light-n900);
+
+  /* Blue is the link and accent colour: pale steps are a wash of it, the middle is the link, the dark end is the link too. */
+  --tw-color-blue-50: color-mix(in srgb, var(--ts-link) 8%, var(--ts-surface));
+  --tw-color-blue-100: color-mix(in srgb, var(--ts-link) 14%, var(--ts-surface));
+  --tw-color-blue-200: color-mix(in srgb, var(--ts-link) 24%, var(--ts-surface));
+  --tw-color-blue-300: color-mix(in srgb, var(--ts-link) 60%, var(--ts-surface));
+  --tw-color-blue-400: var(--ts-link);
+  --tw-color-blue-500: var(--ts-link);
+  --tw-color-blue-600: var(--ts-link);
+  --tw-color-blue-700: var(--ts-link);
+  --tw-color-blue-800: var(--ts-link);
+  --tw-color-blue-900: var(--ts-link);
+  --tw-color-blue-950: var(--ts-link);
+
+  /* Status scales: the pale steps (backgrounds) are a wash of the status colour, the rest is the colour. */
+  --tw-color-green-50: color-mix(in srgb, var(--ts-success) 8%, var(--ts-surface));
+  --tw-color-green-100: color-mix(in srgb, var(--ts-success) 14%, var(--ts-surface));
+  --tw-color-green-200: color-mix(in srgb, var(--ts-success) 24%, var(--ts-surface));
+  --tw-color-green-300: color-mix(in srgb, var(--ts-success) 50%, var(--ts-surface));
+  --tw-color-green-400: var(--ts-success);
+  --tw-color-green-500: var(--ts-success);
+  --tw-color-green-600: var(--ts-success);
+  --tw-color-green-700: var(--ts-success);
+  --tw-color-green-800: var(--ts-success);
+  --tw-color-green-900: var(--ts-success);
+  --tw-color-emerald-100: color-mix(in srgb, var(--ts-success) 14%, var(--ts-surface));
+  --tw-color-emerald-600: var(--ts-success);
+  --tw-color-emerald-900: var(--ts-success);
+
+  --tw-color-red-50: color-mix(in srgb, var(--ts-danger) 8%, var(--ts-surface));
+  --tw-color-red-100: color-mix(in srgb, var(--ts-danger) 14%, var(--ts-surface));
+  --tw-color-red-200: color-mix(in srgb, var(--ts-danger) 24%, var(--ts-surface));
+  --tw-color-red-300: color-mix(in srgb, var(--ts-danger) 50%, var(--ts-surface));
+  --tw-color-red-600: var(--ts-danger-text);
+  --tw-color-red-700: var(--ts-danger-text);
+  --tw-color-red-800: var(--ts-danger-text);
+  --tw-color-red-900: var(--ts-danger-text);
+
+  --tw-color-amber-500: var(--ts-warning);
+  --tw-color-amber-600: var(--ts-warning);
+  --tw-color-amber-700: var(--ts-warning);
+  --tw-color-orange-400: var(--ts-warning);
+  --tw-color-orange-600: var(--ts-warning);
+  --tw-color-yellow-600: var(--ts-warning);
+}
+
+/* Stock light markup paints some surfaces with the plain white utility (`white` itself is kept, for
+ * text on coloured buttons), so the surface role is applied to the utility. Unlayered, so it beats
+ * Tailwind's utilities layer without !important; the important variants are in base.css already. */
+html:not(.dark) .tw\:bg-white {
+  background-color: var(--ts-surface);
+}
+
+/* The selected item of the Lists / Graphs bars (the rounded pill) sets its own dark link colour in stock
+ * light styling, which is unreadable on a dark skin's pill; it follows the skin's bright text instead. */
+html:not(.dark) .pagemenu-selected a,
+html:not(.dark) .pagemenu-selected a:hover {
+  color: var(--ts-text-bright);
+}

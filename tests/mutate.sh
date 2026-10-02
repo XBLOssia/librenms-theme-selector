@@ -92,7 +92,7 @@ run_with $Z "s/if (\$ranges\[\$i\]\[0\] < \$ranges\[\$i - 1\]\[1\]) {/if (false)
 run_with $Z "s/if (substr_count(\$data, \"PK\\\\x05\\\\x06\") !== 1) {/if (false) {/" "allow two end-of-directory records"
 run_with $Z "s/if (! \$isDir \&\& ! preg_match(self::NAME, \$name)) {/if (false) {/" "skip the entry-name allowlist"
 run_with $T "s/if (\$upload \&\& \$this->catalog->isStructural(\$name)) {/if (false) {/" "let uploads set structural tokens"
-run_with $T "s/if (\$selector !== 'html.dark') {/if (false) {/" "accept any selector"
+run_with $T "s/if (\$selector !== \$wrapper) {/if (false) {/" "accept any selector"
 run_with $T "s/if (! \$this->catalog->has(\$name)) {/if (false) {/" "accept unknown --ts tokens"
 run_with $T "s/if ((\$private\[\$p\] ?? 0) > \$cap) {/if (false) {/" "let the palette bypass a token's px cap"
 run_with $T "s/if (\$m\[0\] !== '@font-face') {/if (false) {/" "accept any at-rule"
@@ -104,7 +104,7 @@ run_with $F "s/if (stripos(\$bytes, '<?php') !== false/if (false \&\& stripos(\$
 run_with $G "s/if (substr_count(strtolower(\$css), 'url(') !== \$fonts + \$textures) {/if (false) {/" "guard: ignore stray url("
 run_with $G "s/foreach (\['<', '>', /foreach ([/" "guard: allow angle brackets"
 run_with $M "s/} elseif (in_array(\$id, self::RESERVED_IDS, true)) {/} elseif (false) {/" "allow reserved skin ids"
-run_with $M "s/if (\$modes !== \['dark'\]) {/if (false) {/" "allow non-dark modes"
+run_with $M "s/if (\$mode !== null \&\& ! Modes::valid(\$mode)) {/if (false) {/" "allow any mode name"
 run_with $C "s/|| ! in_array(\$m\[1\], self::COLOUR_TAGS, true)//" "accept unknown RRDtool colour tags"
 
 I=src/SkinInstaller.php
@@ -114,12 +114,12 @@ run_with $I 's#if (! SkinRepository::isValidId($id) || in_array($id, Manifest::R
 run_with $I 's#if ($this->skins->isBundled($id)) {#if (false) {#' "install/remove: allow bundled ids"
 run_with $I 's#$this->removeTree($skinsDir . ./. . $id);#;#' "install: keep the directory when saving the row fails"
 run_with $I 's#rename($old, $skinsDir . ./. . $id);#;#' "install: do not restore the old skin after a failure"
-run_with $I 's#$this->default->set(null);#;#' "remove: do not clear a default that is being deleted"
+run_with $I 's#$this->default->clear($id);#;#' "remove: do not clear a default that is being deleted"
 run_with $I 's#if ($this->registry->find($id) === null) {#if (false) {#' "remove: allow ids that were never uploaded"
 run_with $I 's#if (@filemtime($leftover) < time() - 3600) {#if (true) {#' "sweep: delete in-progress staging directories too"
 run_with $I 's#if (is_dir($child) \&\& ! is_link($child)) {#if (is_dir($child)) {#' "removal: descend into symlinked directories (entry check still unlinks them)" redundant
 run_with $I 's#if (is_dir($child) \&\& ! is_link($child)) {#if (is_dir($child)) {#;s#if (is_link($path)) {#if (false) {#;s#! str_starts_with($real, $root . DIRECTORY_SEPARATOR)#false#' "removal: drop ALL THREE link protections (deletion would follow links out)"
-run_with $I 's#if (hash_file(.sha256., $file) !== hash(.sha256., $skin->css)) {#if (false) {#' "install: skip the read-back check of the written file" redundant
+run_with $I 's#if (hash_file(.sha256., $file) !== hash(.sha256., $css)) {#if (false) {#' "install: skip the read-back check of the written file" redundant
 run_with $I 's#! str_starts_with($real, $root . DIRECTORY_SEPARATOR)#false#' "removal: drop the containment check (links are handled first)" redundant
 run_with $I 's#if (is_link($path)) {#if (false) {#' "removal: drop the top-level link check (remove() unlinks first)" redundant
 run_with $I 's#|| ! flock($handle, LOCK_EX)#|| false#' "install: skip taking the lock (needs concurrency to observe)" redundant
@@ -246,6 +246,29 @@ run_with src/PreviewGraph.php 's#return in_array(null, \$colours, true) ? \$fall
 run_with src/PreviewGraph.php 's#(?= |\\z)/D#/D#' "preview graph: take a colour with something stuck on the end"
 run_with src/SkinRepository.php "s#preg_match(\x27[^\x27]*\x27, \$value) ? substr#true ? substr#" "skin list: show a timestamp that is not one"
 run_with src/SkinRepository.php "s#\x27installed_at\x27 => null,#\x27installed_at\x27 => \x272020-01-01 00:00:00\x27,#" "skin list: give a bundled skin an install date"
+
+run_with src/Modes.php "s#return \$mode === self::DARK ? self::LIGHT : self::DARK;#return \$mode;#" "modes: the other mode is the same mode"
+run_with src/Modes.php "s#return \$mode === self::DARK ? self::DARK_SELECTOR : self::LIGHT_SELECTOR;#return self::DARK_SELECTOR;#" "modes: every mode uses the dark selector"
+run_with src/Modes.php "s#return \$dark === \$light ? null : (\$dark ? self::DARK : self::LIGHT);#return \$dark ? self::DARK : self::LIGHT;#" "modes: a stylesheet for both modes counts as one"
+run_with src/Modes.php "s#\$native === self::DARK ? \x27/^html\\\\.dark \\\\{\$/m\x27 : \x27/^html:not\\\\(\\\\.dark\\\\) \\\\{\$/m\x27#\x27/^html\\\\.dark \\\\{\$/m\x27#" "modes: a light stylesheet is mirrored as if it were dark"
+run_with src/Modes.php "s#\$base = str_replace(\x27html.dark:has(link\\[data-ts-orn\\])\x27, \x27html.dark:has(link\\[data-ts-orn-light\\])\x27, \$base);##" "modes: the light base keeps the dark slot's ornament gate"
+run_with src/Modes.php "s#return str_replace(self::DARK_SELECTOR, self::LIGHT_SELECTOR, \$base);#return \$base;#" "modes: the light base is the dark base"
+run_with src/SkinResolver.php "s#return \$mode === Modes::LIGHT ? self::PREF_LIGHT : self::PREF;#return self::PREF;#" "modes: one preference for both modes"
+run_with src/Settings.php "s#return \$mode === Modes::LIGHT ? self::DEFAULT_SKIN_LIGHT : self::DEFAULT_SKIN;#return self::DEFAULT_SKIN;#" "modes: one instance default for both modes"
+run_with src/Skin/TokenFile.php "s#\$out .= Modes::selector(\$skinMode) . \" {\\\\n\";#\$out .= \"html.dark {\\\\n\";#" "modes: write every skin with the dark wrapper"
+run_with src/Skin/OutputGuard.php "s#|| substr_count(\$css, Modes::selector(Modes::other(\$mode)) . ' {') !== 0) {#) {#" "modes: the guard lets the other mode's block stand beside this one" redundant
+run_with src/Skin/OutputGuard.php "s#if (! Modes::valid(\$mode)) {#if (false) {#" "modes: the guard accepts a mode that is not one"
+run_with src/Skin/Manifest.php "s#} elseif (\$mode !== null \&\& \$mode !== \$legacy\[0\]) {#} elseif (false) {#" "modes: mode and modes may disagree"
+run_with src/Skin/Manifest.php "s#if (\$mode !== null \&\& ! Modes::valid(\$mode)) {#if (false) {#" "modes: any mode name is accepted"
+run_with src/Skin/SkinCompiler.php "s#\$mirror = \$css === null ? null : Modes::mirror(\$css);#\$mirror = \$css;#" "modes: a skin's mirror is the same stylesheet"
+run_with src/Skin/SkinCompiler.php "s#\$skinMode = \$manifest\['mode'\] ?? Modes::DARK;#\$skinMode = Modes::DARK;#" "modes: every skin is compiled as a dark one"
+run_with src/SkinRepository.php "s#(\$native === \$slot ? 'skin.css' : 'skin.mirror.css')#(\$native !== \$slot ? 'skin.css' : 'skin.mirror.css')#" "modes: a slot loads the wrong one of a skin's two stylesheets"
+run_with src/SkinRepository.php "s#\$slot === Modes::DARK ? 'base.css' : 'base-light.css'#'base.css'#" "modes: the light slot loads the dark base"
+run_with src/SkinPublisher.php "s#Modes::lightBase(\$contents) . \"\\\\n\" . \$extra#Modes::lightBase(\$contents)#" "modes: the light base is published without the light-only mapping"
+run_with src/SkinPublisher.php "s# || \$relative === 'light.css'##" "modes: light.css is published as a file of its own"
+run_with src/SkinPublisher.php "s#\$this->write(dirname(\$target) . '/skin.mirror.css', \$mirror);#;#" "modes: a bundled skin is published without its mirror"
+run_with src/PreviewGraph.php "s#\$suffix = \$mode === Modes::DARK ? '_dark' : '';#\$suffix = '_dark';#" "modes: a light graph is drawn from the dark chrome keys"
+run_with src/Skin/GraphConf.php "s#public const CHROME_KEYS = \['rrdgraph_def_text', 'rrdgraph_def_text_dark'\];#public const CHROME_KEYS = ['rrdgraph_def_text_dark'];#" "modes: graph.conf refuses the light chrome"
 
 wait
 n=1

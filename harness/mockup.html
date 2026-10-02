@@ -98,7 +98,7 @@
 </style>
 
 <!-- THE SKIN: base.css, then the skin's token file, exactly as the plugin loads
-     them. Pick with ?skin=terran|protoss|zerg|digital-rain, or use the switcher.
+     them. Pick with ?skin=terran|protoss|zerg|digital-rain, or use the switcher; add &mode=light to see it in light mode.
        ?skin=example    examples/minimal: the 20 core roles and nothing else
        ?skin=defaults   base.css alone, no token file -->
 <script>
@@ -106,15 +106,34 @@
   // Bundled skins whose features.json asks for the ornament layer: the plugin marks their link data-ts-orn.
   var ORNAMENTS = ['digital-rain'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'terran').toLowerCase();
-  var special = skin === 'example' || skin === 'defaults';
+  var special = skin === 'example' || skin === 'example-light' || skin === 'defaults';
   if (!special && SKINS.indexOf(skin) === -1) skin = 'terran';
   // The harness is for editing skins: never let the browser serve a stale copy.
   var bust = '?t=' + Date.now();
   var skinHref = skin === 'example' ? '../examples/minimal/skin.css'
+               : skin === 'example-light' ? '../examples/minimal-light/skin.css'
                : skin === 'defaults' ? null
                : '../skins/' + skin + '/skin.css';
-  document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
-                 (skinHref ? '<link id="skin-css" rel="stylesheet"' + (ORNAMENTS.indexOf(skin) !== -1 ? ' data-ts-orn' : '') + ' href="' + skinHref + bust + '">' : ''));
+  // ?mode=light puts the page in light mode, the way the plugin does: the base's light twin (every
+  // html.dark selector becomes html:not(.dark), plus base/light.css) and the skin's rules under the
+  // same swapped selector, so any skin can be looked at in either mode. Done here in the browser
+  // because the harness has no PHP; the plugin does the same substitution when it publishes
+  // (src/Modes.php).
+  var mode = new URLSearchParams(location.search).get('mode') === 'light' ? 'light' : 'dark';
+  function fetchText(url) { var x = new XMLHttpRequest(); x.open('GET', url + bust, false); x.send(); return x.responseText; }
+  if (mode === 'light') {
+    document.documentElement.classList.remove('dark');
+    var swap = function (css) { return css.replace(/^html\.dark \{$/mg, 'html:not(.dark) {').replace(/^html:not\(\.dark\) \{$/mg, 'html:not(.dark) {'); };
+    var base = fetchText('../base/base.css').split('html.dark:has(link[data-ts-orn])').join('html.dark:has(link[data-ts-orn-light])').split('html.dark').join('html:not(.dark)');
+    document.write('<style id="base-light">' + base + '\n' + fetchText('../base/light.css') + '</style>');
+    if (skinHref) {
+      document.write('<style id="skin-css">' + swap(fetchText(skinHref)) + '</style>');
+      if (ORNAMENTS.indexOf(skin) !== -1) { document.write('<link rel="stylesheet" data-ts-orn-light href="data:text/css,">'); }
+    }
+  } else {
+    document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
+                   (skinHref ? '<link id="skin-css" rel="stylesheet"' + (ORNAMENTS.indexOf(skin) !== -1 ? ' data-ts-orn' : '') + ' href="' + skinHref + bust + '">' : ''));
+  }
   // A url() in a custom property is resolved against the stylesheet that USES the variable
   // (base.css), not the one that declares it, so a skin's --tx-<name>: url("textures/<name>.png")
   // would point into base/. The plugin embeds textures as data: URLs when it publishes; here, point
@@ -127,7 +146,7 @@
     (xhr.responseText.match(/--tx-[a-z0-9-]+: url\("textures\/[a-z0-9-]+\.png"\);/g) || []).forEach(function (d) {
       fixes += d.replace('url("textures/', 'url("../skins/' + skin + '/textures/');
     });
-    if (fixes) document.write('<style id="skin-textures">html.dark{' + fixes + '}</style>');
+    if (fixes) document.write('<style id="skin-textures">' + (mode === 'light' ? 'html:not(.dark)' : 'html.dark') + '{' + fixes + '}</style>');
   }
 </script>
 </head>
@@ -332,8 +351,9 @@ rrdcached ok</pre>
   document.getElementById('skin-name').textContent = skin;
   document.getElementById('skin-switcher').innerHTML = SKINS.map(function (s) {
     return s === skin ? '<strong>' + s + '</strong>'
-                      : '<a href="?skin=' + s + '">' + s + '</a>';
-  }).join(' / ');
+                      : '<a href="?skin=' + s + '&mode=' + mode + '">' + s + '</a>';
+  }).join(' / ') + ' &middot; mode: ' + (mode === 'light' ? '<a href="?skin=' + skin + '&mode=dark">dark</a> / <strong>light</strong>'
+                                                       : '<strong>dark</strong> / <a href="?skin=' + skin + '&mode=light">light</a>');
 
   // Graphs are per-skin files, so they have to be wired after the skin is known.
   Array.prototype.forEach.call(document.querySelectorAll('img[data-graph]'), function (img) {

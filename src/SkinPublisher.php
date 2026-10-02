@@ -22,6 +22,9 @@ class SkinPublisher
 {
     private const MARKER = '.bundled.json';
 
+    /** Bumped when what is published from the same package files changes (here: base-light.css and skin.mirror.css). */
+    private const FORMAT = 2;
+
     /** Files a skin directory may publish, by extension. */
     private const SKIN_FILES = ['css', 'json', 'conf'];
     private const FONT_FILES = ['woff2', 'woff', 'ttf', 'txt'];
@@ -81,7 +84,7 @@ class SkinPublisher
         $skip = fn (string $relative): bool => preg_match('#^skins/([^/]+)/#', $relative, $m) === 1 && in_array($m[1], $uploaded, true);
 
         foreach ($files as $relative => $source) {
-            if ($skip($relative) || str_contains($relative, '/textures/')) {
+            if ($skip($relative) || str_contains($relative, '/textures/') || $relative === 'light.css') {
                 continue;
             }
             $this->copy($source, "$this->publicDir/$relative");
@@ -124,7 +127,9 @@ class SkinPublisher
      */
     private function packageFiles(): array
     {
-        $files = ['base.css' => "$this->packageRoot/base/base.css"];
+        // light.css is not published as a file: it is part of base-light.css (see copy()). It is
+        // listed so that changing it changes the fingerprint and republishes.
+        $files = ['base.css' => "$this->packageRoot/base/base.css", 'light.css' => "$this->packageRoot/base/light.css"];
 
         foreach ($this->bundledSkins() as $id) {
             $dir = "$this->packageRoot/skins/$id";
@@ -162,7 +167,7 @@ class SkinPublisher
             $parts[] = $relative . ':' . @filesize($source) . ':' . @filemtime($source);
         }
 
-        return sha1(implode("\n", $parts));
+        return sha1(self::FORMAT . "\n" . implode("\n", $parts));
     }
 
     /**
@@ -182,10 +187,21 @@ class SkinPublisher
         if ($contents === false) {
             throw new RuntimeException("cannot read $source");
         }
-        if (basename($source) === 'skin.css') {
+        $name = basename($source);
+        if ($name === 'skin.css') {
             $contents = $this->embedTextures($contents, dirname($source));
         }
         $this->write($target, $contents);
+
+        // The light twin of the base, and the mirror of a skin (the same rules for the other
+        // mode, so any skin can be put in either slot). Derived from what was just written.
+        if ($name === 'base.css') {
+            // Light mode's own colour mapping goes on the end (docs/ORNAMENTS.md, "Light mode").
+            $extra = (string) @file_get_contents(dirname($source) . '/light.css');
+            $this->write(dirname($target) . '/base-light.css', Modes::lightBase($contents) . "\n" . $extra);
+        } elseif ($name === 'skin.css' && ($mirror = Modes::mirror($contents)) !== null) {
+            $this->write(dirname($target) . '/skin.mirror.css', $mirror);
+        }
     }
 
     /**

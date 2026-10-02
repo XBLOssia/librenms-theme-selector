@@ -1,0 +1,38 @@
+/*
+ * Minimal example skin for LIGHT mode: the 20 core roles and nothing else. The block is
+ * html:not(.dark) (a dark-mode skin uses html.dark), and skin.json says "mode": "light".
+ * The plugin applies it when LibreNMS is in light mode; every other token falls back to a
+ * default in base/base.css built from these. Any skin can also be put in the other mode by a
+ * user, so a light skin should look deliberate on a dark page too.
+ */
+html:not(.dark) {
+  /* Surfaces, lightest to darkest */
+  --ts-bg: #f4f7f7;
+  --ts-surface: #ffffff;
+  --ts-surface-raised: #eaf1f2;
+  --ts-surface-hover: #dde9eb;
+  --ts-border: #c5d6d9;
+
+  /* Text */
+  --ts-text: #24373d;
+  --ts-text-dim: #4a6169;
+  --ts-text-mute: #5d747c;
+  --ts-text-bright: #0f1f24;
+
+  /* Accents */
+  --ts-accent: #0f8b80;
+  --ts-link: #0a6f8a;
+  --ts-highlight: #0f8b80;
+
+  /* Status */
+  --ts-success: #1f8a4c;
+  --ts-warning: #b57a00;
+  --ts-danger: #c43a3a;
+  --ts-info: #1f78b4;
+  --ts-danger-text: #a82828;
+
+  /* Type and shape */
+  --ts-font-display: "Segoe UI", system-ui, sans-serif;
+  --ts-font-mono: Consolas, "SF Mono", Menlo, ui-monospace, monospace;
+  --ts-radius-sm: 3px;
+}

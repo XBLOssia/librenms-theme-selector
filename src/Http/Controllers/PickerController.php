@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use Throwable;
 use Xblossia\ThemeSelector\DefaultSkin;
 use Xblossia\ThemeSelector\InstallException;
+use Xblossia\ThemeSelector\Modes;
 use Xblossia\ThemeSelector\PreviewChoice;
 use Xblossia\ThemeSelector\PreviewGraph;
 use Xblossia\ThemeSelector\Skin\Limits;
@@ -27,20 +28,29 @@ class PickerController extends Controller
 {
     public function index(Request $request, SkinRepository $skins, SkinResolver $resolver): View
     {
-        // ?preview=<choice> opens the page with that choice already previewed: the link for
-        // "Preview" on a row of the skin list, and what the form does without JavaScript.
-        $previewChoice = $request->query('preview');
-        $previewChoice = is_string($previewChoice) ? $previewChoice : null;
-        $previewTarget = $previewChoice === null ? null
-            : PreviewChoice::target($previewChoice, $resolver->default(), fn (string $id): bool => $skins->exists($id));
+        // One dropdown and preview for each mode. ?light=<choice> and ?dark=<choice> open the page
+        // with that choice already selected (the "Preview" link on a row of the skin list); a
+        // choice that is not one of the choices is ignored.
+        $modes = [];
+        foreach (Modes::ALL as $mode) {
+            $default = $resolver->default($mode);
+            $exists = fn (string $id): bool => $skins->exists($id);
+            $asked = $request->query($mode);
+            $asked = is_string($asked) && PreviewChoice::target($asked, $default, $exists) !== null ? $asked : null;
+            $choice = $resolver->choice($request->user(), $mode);
+            $selected = $asked ?? ($choice ?? '');
+            $modes[$mode] = [
+                'choice' => $choice,
+                'default' => $default,
+                'defaultName' => $skins->name($default),
+                'selected' => $selected,
+                'target' => PreviewChoice::target($selected, $default, $exists) ?? PreviewChoice::STOCK,
+            ];
+        }
 
         return view(ThemeSelectorProvider::PLUGIN_NAME . '::picker', [
             'skins' => $skins->all(),
-            'choice' => $resolver->choice($request->user()),
-            'default' => $resolver->default(),
-            'defaultName' => $skins->name($resolver->default()),
-            'previewChoice' => $previewTarget === null ? null : $previewChoice,
-            'previewTarget' => $previewTarget,
+            'modes' => $modes,
             'uploadsAvailable' => function_exists('inflate_init'),
             'uploadLimit' => intdiv(Limits::ARCHIVE_BYTES, 1024 * 1024),
             'phpLimit' => ini_get('upload_max_filesize'),
@@ -56,47 +66,77 @@ class PickerController extends Controller
     public function preview(Request $request, string $id, SkinRepository $skins): View
     {
         abort_unless($id === PreviewChoice::STOCK || $skins->exists($id), 404);
-        $request->attributes->set(SkinInjector::PREVIEW, $id);
+        // ?mode=light shows the page in light mode; anything else is dark.
+        $mode = $request->query('mode') === Modes::LIGHT ? Modes::LIGHT : Modes::DARK;
+        $request->attributes->set(SkinInjector::PREVIEW, ['skin' => $id, 'mode' => $mode]);
         $stock = $id === PreviewChoice::STOCK;
+        // A skin's graph colours apply in the mode it is written for (GraphPalette).
+        $native = $stock ? null : ($skins->all()[$id]['mode'] ?? Modes::DARK);
 
         return view(ThemeSelectorProvider::PLUGIN_NAME . '::preview', [
             'name' => $stock ? 'Stock LibreNMS' : $skins->name($id),
-            'graph' => PreviewGraph::svg($stock ? [] : $skins->graphPalette($id)),
+            'mode' => $mode,
+            'graph' => PreviewGraph::svg($native === $mode ? $skins->graphPalette($id) : [], $mode),
         ]);
     }
 
     /**
-     * The user's own choice: '' (follow the default), 'none', or a skin id.
+     * The user's own choices, one for each mode: '' (follow the default), 'none', or a skin id.
+     * `skin` is the dark-mode choice (the name the form has always used) and `skin_light` the
+     * light-mode one; a choice that is not sent is left as it is. Every choice is checked before
+     * any is saved, so a bad one changes nothing.
      */
     public function store(Request $request, SkinRepository $skins): RedirectResponse
     {
-        $skin = (string) $request->input('skin', '');
-
-        if ($skin === '') {
-            UserPref::forgetPref($request->user(), SkinResolver::PREF);
-        } elseif ($skin === SkinResolver::NONE || $skins->exists($skin)) {
-            UserPref::setPref($request->user(), SkinResolver::PREF, $skin);
-        } else {
-            return back()->withErrors(['skin' => 'Unknown skin.']);
+        $choices = [];
+        foreach ([Modes::DARK => 'skin', Modes::LIGHT => 'skin_light'] as $mode => $field) {
+            if (! $request->has($field)) {
+                continue;
+            }
+            // LibreNMS's ConvertEmptyStringsToNull turns an empty choice ("follow the default") into null.
+            $skin = $request->input($field) ?? '';
+            if (! is_string($skin) || ($skin !== '' && $skin !== SkinResolver::NONE && ! $skins->exists($skin))) {
+                return back()->withErrors([$field => 'Unknown skin.']);
+            }
+            $choices[$mode] = $skin;
         }
 
-        return redirect()->route('theme-selector.index')->with('status', 'Your skin is saved.');
+        foreach ($choices as $mode => $skin) {
+            if ($skin === '') {
+                UserPref::forgetPref($request->user(), SkinResolver::pref($mode));
+            } else {
+                UserPref::setPref($request->user(), SkinResolver::pref($mode), $skin);
+            }
+        }
+
+        return redirect()->route('theme-selector.index')->with('status', 'Your skins are saved.');
     }
 
     /**
-     * Admin: the instance default ('' for none), which users who haven't
-     * chosen get, the login page gets, and whose graph palette applies to
-     * everyone.
+     * Admin: the instance defaults, one for each mode ('' for none), which users who haven't
+     * chosen get, the login page gets, and whose graph palettes apply to graphs nobody chose
+     * for. `default` is the dark-mode default and `default_light` the light-mode one; one that
+     * is not sent is left as it is. Every one is checked before any is saved.
      */
     public function setDefault(Request $request, SkinRepository $skins, DefaultSkin $default): RedirectResponse
     {
-        $skin = (string) $request->input('default', '');
-        if ($skin !== '' && ! $skins->exists($skin)) {
-            return back()->withErrors(['default' => 'Unknown skin.']);
+        $choices = [];
+        foreach ([Modes::DARK => 'default', Modes::LIGHT => 'default_light'] as $mode => $field) {
+            if (! $request->has($field)) {
+                continue;
+            }
+            // LibreNMS's ConvertEmptyStringsToNull turns an empty choice ("follow the default") into null.
+            $skin = $request->input($field) ?? '';
+            if (! is_string($skin) || ($skin !== '' && ! $skins->exists($skin))) {
+                return back()->withErrors([$field => 'Unknown skin.']);
+            }
+            $choices[$mode] = $skin === '' ? null : $skin;
         }
 
         try {
-            $default->set($skin === '' ? null : $skin);
+            foreach ($choices as $mode => $skin) {
+                $default->set($skin, $mode);
+            }
         } catch (InvalidArgumentException) {
             return back()->withErrors(['default' => 'Unknown skin.']);
         } catch (Throwable $e) {
@@ -105,11 +145,11 @@ class PickerController extends Controller
             return back()->withErrors(['default' => 'Saving the default failed; see the LibreNMS log.']);
         }
 
-        $name = $skins->name($skin === '' ? null : $skin);
+        $dark = $skins->name($default->current(Modes::DARK));
+        $light = $skins->name($default->current(Modes::LIGHT));
 
-        return redirect()->route('theme-selector.index')->with('status', $name
-            ? "Default skin is now $name, and graphs use its palette."
-            : 'No default skin; graphs are back to their previous colours.');
+        return redirect()->route('theme-selector.index')->with('status',
+            'Default skins are now ' . ($light ?? 'stock LibreNMS') . ' in light mode and ' . ($dark ?? 'stock LibreNMS') . ' in dark mode.');
     }
 
     /**

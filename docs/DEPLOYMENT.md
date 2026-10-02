@@ -146,13 +146,20 @@ every skin deploy look like it hadn't worked.)
 ## Custom skins (admins)
 
 **Plugins → Theme Selector → Installed skins** lists every skin (bundled and
-uploaded) with its source and install date, can be filtered, sorted and paged,
+uploaded) with the mode it is written for, its source and install date, can be filtered, sorted and paged,
 has a Preview link on each row, and takes a `.zip` to add another. (The preview
 is one more route: if you cache routes with `php artisan route:cache`, run it
 again after updating or the preview frame shows a 404.) What a bundle contains and the
 rules it must follow are in [AUTHORING.md](AUTHORING.md); why those rules exist,
 and what is and isn't defended, is in [SECURITY.md](SECURITY.md).
 
+- **Light and dark.** A skin is written for light or dark mode (`skin.json`'s `mode`), and every
+  user chooses a skin for each mode; admins set a default for each. The upgrade that added this
+  needs `./lnms migrate --force` (two columns on `theme_selector_skins`; `daily.sh` runs it nightly,
+  but run it now). Until it has run, uploading a light-mode skin is refused rather than recorded as
+  dark. Everyone's existing choice becomes their dark-mode skin and the instance default becomes the
+  dark-mode default; light mode stays stock until someone chooses a light skin. The update also
+  publishes `base-light.css` and a `skin.mirror.css` beside every skin.
 - **Installing changes nobody's view.** The skin appears in everyone's "Your
   skin" list. Try it yourself, then make it the instance default if you want it
   to be everyone's.

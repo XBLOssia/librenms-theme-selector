@@ -41,6 +41,7 @@ class ValidateCommand extends Command
 
         $m = $skin->manifest;
         $this->info("Accepted: {$m['name']} ({$m['id']}) {$m['version']}");
+        $this->line('  written for: ' . $m['mode'] . ' mode' . ($m['family'] !== '' ? ', family ' . $m['family'] : '') . ' (usable in either mode: the other is served as its mirror)');
         $this->line('  stylesheet: ' . number_format(strlen($skin->css)) . ' bytes, ' . $skin->fontCount . ' font(s) embedded');
         $this->line('  graph palette: ' . ($skin->graph === [] ? 'none' : count($skin->graph) . ' setting(s)'));
         $this->line('  fingerprint: ' . $skin->sha256);

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use Xblossia\ThemeSelector\GraphPalette;
+use Xblossia\ThemeSelector\Modes;
 use Xblossia\ThemeSelector\SkinResolver;
 
 /**
@@ -40,9 +41,15 @@ class GraphColours
                 // resolves to the instance default, which the config holds.
                 $user = Auth::user();
                 if ($user !== null) {
+                    // LibreNMS draws a graph light or dark by the request's own `style`, else the
+                    // session's (GraphParameters), so that decides which of the user's two skins applies.
+                    $style = (string) ($request->input('style') ?: session('applied_site_style'));
+                    $mode = $style === 'dark' ? Modes::DARK : Modes::LIGHT;
                     $overrides = $this->palette->overridesFor(
-                        $this->resolver->forUser($user),
-                        $this->resolver->default(),
+                        $this->resolver->forUser($user, $mode),
+                        $mode,
+                        $this->resolver->default(Modes::DARK),
+                        $this->resolver->default(Modes::LIGHT),
                     );
                     foreach ($overrides as $key => $value) {
                         LibrenmsConfig::set($key, $value);

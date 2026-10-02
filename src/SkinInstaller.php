@@ -73,13 +73,20 @@ class SkinInstaller
                 throw new InstallException('Could not create a working directory; check that the web server user can write ' . $skinsDir . '.');
             }
             try {
-                $file = $stage . '/skin.css';
-                if (file_put_contents($file, $skin->css, LOCK_EX) !== strlen($skin->css) || ! chmod($file, 0644)) {
-                    throw new InstallException('Could not write the stylesheet.');
-                }
-                // Read it back: what is on disk must be exactly what was validated.
-                if (hash_file('sha256', $file) !== hash('sha256', $skin->css)) {
-                    throw new InstallException('The stylesheet did not verify after writing.');
+                // The skin's stylesheet, and its mirror (the same rules for the other mode, so the
+                // skin can be put in either slot). Both come from the validator.
+                foreach (['skin.css' => $skin->css, 'skin.mirror.css' => $skin->mirror] as $name => $css) {
+                    if ($css === '') {
+                        throw new InstallException('The skin has no stylesheet to write.');
+                    }
+                    $file = $stage . '/' . $name;
+                    if (file_put_contents($file, $css, LOCK_EX) !== strlen($css) || ! chmod($file, 0644)) {
+                        throw new InstallException('Could not write the stylesheet.');
+                    }
+                    // Read it back: what is on disk must be exactly what was validated.
+                    if (hash_file('sha256', $file) !== hash('sha256', $css)) {
+                        throw new InstallException('The stylesheet did not verify after writing.');
+                    }
                 }
 
                 $target = $skinsDir . '/' . $id;
@@ -122,7 +129,7 @@ class SkinInstaller
         }
 
         // The palette may have changed under a skin that is the default.
-        if ($this->default->current() === $id) {
+        if ($this->default->isDefault($id)) {
             $this->default->reapply();
         }
 
@@ -149,8 +156,8 @@ class SkinInstaller
         try {
             // Clear the default first: that puts the graph colours back, and
             // must happen while the skin (and its palette) still exists.
-            if ($this->default->current() === $id) {
-                $this->default->set(null);
+            if ($this->default->isDefault($id)) {
+                $this->default->clear($id);
             }
 
             $target = $skinsDir . '/' . $id;

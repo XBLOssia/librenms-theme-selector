@@ -2,6 +2,8 @@
 
 namespace Xblossia\ThemeSelector\Skin;
 
+use Xblossia\ThemeSelector\Modes;
+
 /**
  * A last, independent check on the stylesheet about to be published.
  *
@@ -13,7 +15,8 @@ namespace Xblossia\ThemeSelector\Skin;
  *
  * What a served skin stylesheet may contain, in full:
  *   - printable ASCII and newlines;
- *   - one `html.dark { ... }` block and one `@font-face { ... }` block per font;
+ *   - one root block, `html.dark { ... }` for a dark-mode skin or `html:not(.dark) { ... }` for a
+ *     light-mode one, and one `@font-face { ... }` block per font;
  *   - exactly one `url(` per font, each a base64 data: URL for a font type;
  *   - exactly one `url(` per texture, each a `--tx-<name>` declaration holding a
  *     base64 data: URL that decodes to a clean PNG (PngTexture checks it again).
@@ -22,8 +25,14 @@ namespace Xblossia\ThemeSelector\Skin;
  */
 final class OutputGuard
 {
-    public static function safe(string $css, int $fonts, int $textures = 0): bool
+    /**
+     * @param  string  $mode  the mode the stylesheet is for (Modes::DARK or LIGHT): its one root block uses that mode's selector
+     */
+    public static function safe(string $css, int $fonts, int $textures = 0, string $mode = Modes::DARK): bool
     {
+        if (! Modes::valid($mode)) {
+            return false;
+        }
         if ($css === '' || preg_match('/[^\x0A\x20-\x7E]/', $css)) {
             return false;
         }
@@ -36,6 +45,12 @@ final class OutputGuard
         // Structure: one root block plus one block per font face.
         if (substr_count($css, '@') !== $fonts || substr_count($css, '@font-face') !== $fonts
             || substr_count($css, '{') !== $fonts + 1 || substr_count($css, '}') !== $fonts + 1) {
+            return false;
+        }
+
+        // The root block is for this mode and no other.
+        if (substr_count("\n" . $css, "\n" . Modes::selector($mode) . " {\n") !== 1
+            || substr_count($css, Modes::selector(Modes::other($mode)) . ' {') !== 0) {
             return false;
         }
 

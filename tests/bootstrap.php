@@ -147,7 +147,7 @@ final class ZipBuilder
 /** A minimal valid skin.json. */
 function good_manifest(array $over = []): string
 {
-    return json_encode(array_merge(['id' => 'testskin', 'name' => 'Test Skin', 'description' => 'For tests', 'author' => 'Tests', 'version' => '1.0.0', 'modes' => ['dark']], $over));
+    return json_encode(array_merge(['id' => 'testskin', 'name' => 'Test Skin', 'description' => 'For tests', 'author' => 'Tests', 'version' => '1.0.0'], $over));
 }
 
 /** A minimal valid token file: the core roles. */

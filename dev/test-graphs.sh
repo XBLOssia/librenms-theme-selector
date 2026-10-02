@@ -124,6 +124,57 @@ done
 
 echo "== default cleared"
 set_default ""
+check "persistent greens back to stock (before the light-mode section)" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
+
+echo "== light mode: each mode's graphs follow that mode's skin, and a palette applies in the mode its skin is written for"
+FXG=/tmp/ts-fixtures-graphs; rm -rf "$FXG"; php /plugin/dev/make-fixtures.php "$FXG" >/dev/null
+upload_skin() { # file
+  tok=$(curl -s -c "$(jar dev-admin)" -b "$(jar dev-admin)" -H "X-Dev-User: dev-admin" $B/plugin/theme-selector | grep -o 'name="_token" value="[^"]*"' | head -1 | cut -d'"' -f4)
+  curl -s -o /dev/null -c "$(jar dev-admin)" -b "$(jar dev-admin)" -H "X-Dev-User: dev-admin" -F "_token=$tok" -F "bundle=@$1" $B/plugin/theme-selector/skins
+}
+upload_skin "$FXG/good-light.zip"
+check "a light skin (paper-teal) is installed" "$([ "$(q "select mode from theme_selector_skins where id='paper-teal'")" = light ] && echo ok || echo no)"
+gstyle() { # user type style
+  curl -s -b "$(jar "$1")" -H "X-Dev-User: $1" \
+    "$B/graph.php?type=$2&id=$PID&from=$FROM&to=$LAST&width=300&height=120&style=$3" | sha256sum | cut -c1-10
+}
+for T in port_bits port_errors; do
+  post dev-admin /plugin/theme-selector "skin=none&skin_light=none"
+  L_STOCK=$(gstyle dev-admin $T light); D_STOCK=$(gstyle dev-admin $T dark)
+  post dev-admin /plugin/theme-selector "skin=none&skin_light=paper-teal"
+  L_PAPER=$(gstyle dev-admin $T light); D_WITH_LIGHT=$(gstyle dev-admin $T dark)
+  post dev-admin /plugin/theme-selector "skin=paper-teal&skin_light=none"
+  L_PAPER_DARKSLOT=$(gstyle dev-admin $T light); D_PAPER_DARKSLOT=$(gstyle dev-admin $T dark)
+  post dev-admin /plugin/theme-selector "skin=zerg&skin_light=zerg"
+  L_ZERG_LIGHTSLOT=$(gstyle dev-admin $T light); D_ZERG=$(gstyle dev-admin $T dark)
+  echo "  $T: light stock=$L_STOCK paper=$L_PAPER | dark stock=$D_STOCK zerg=$D_ZERG"
+  check "$T: a light skin in the light slot changes light graphs" "$(differ "$L_PAPER" "$L_STOCK")"
+  check "$T: and leaves dark graphs alone (stock)" "$(same "$D_WITH_LIGHT" "$D_STOCK")"
+  check "$T: a light skin in the dark slot changes nothing: its palette is for light graphs" "$(same "$D_PAPER_DARKSLOT" "$D_STOCK")"
+  check "$T: ... and light graphs follow the light slot (empty here), so stock" "$(same "$L_PAPER_DARKSLOT" "$L_STOCK")"
+  check "$T: a dark skin in the light slot changes nothing in light graphs (its palette is for dark graphs)" "$(same "$L_ZERG_LIGHTSLOT" "$L_STOCK")"
+  check "$T: and in the dark slot it still changes dark graphs" "$(differ "$D_ZERG" "$D_STOCK")"
+done
+check "no leak: persistent greens unchanged by light-mode requests" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
+set_default_light() { post dev-admin /plugin/theme-selector/default "default_light=$1"; }
+post dev-admin /plugin/theme-selector "skin=none&skin_light=none"
+L_STOCK=$(gstyle dev-admin port_bits light); D_STOCK=$(gstyle dev-admin port_bits dark)   # the loop above ended on port_errors
+set_default_light paper-teal
+check "a light default writes its palette into the persistent config (light chrome and ramps)" "$([ "$(cfg rrdgraph_def_text_color)" = 332200 ] && [ "$(cfg graph_colours.greens)" != "$STOCK_GREENS" ] && echo ok || echo no)"
+check "and not the dark chrome" "$([ "$(cfg rrdgraph_def_text_color_dark)" != 332200 ] && echo ok || echo no)"
+post dev-user /plugin/theme-selector "skin=&skin_light="
+L_DEFAULT=$(gstyle dev-user port_bits light); D_DEFAULT=$(gstyle dev-user port_bits dark)
+check "a user following the default sees it in light graphs and not in dark ones" "$(differ "$L_DEFAULT" "$D_STOCK")"
+check "...dark graphs stay stock" "$(same "$D_DEFAULT" "$D_STOCK")"
+post dev-user /plugin/theme-selector "skin=none&skin_light=none"
+check "a user who chose stock for light gets stock light graphs despite the default" "$(same "$(gstyle dev-user port_bits light)" "$L_STOCK")"
+set_default_light ""
+check "clearing the light default restores the config" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
+check "no graph_colours/rrdgraph override rows left" "$([ "$(q "select count(*) from config where config_name like 'graph_colours.%' or config_name like 'rrdgraph_def_text%'")" = 0 ] && echo ok || echo no)"
+post dev-admin /plugin/theme-selector "skin=&skin_light="
+post dev-user /plugin/theme-selector "skin=&skin_light="
+post dev-admin /plugin/theme-selector/skins/paper-teal/delete ""
+rm -rf "$FXG"
 check "persistent greens back to stock" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
 check "no graph_colours/rrdgraph override rows left" \
   "$([ "$(q "select count(*) from config where config_name like 'graph_colours.%' or config_name like 'rrdgraph_def_text%'")" = 0 ] && echo ok || echo no)"

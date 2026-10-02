@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Xblossia\ThemeSelector\DefaultSkin;
+use Xblossia\ThemeSelector\Modes;
 use Xblossia\ThemeSelector\InstallException;
 use Xblossia\ThemeSelector\Skin\CompiledSkin;
 use Xblossia\ThemeSelector\SkinInstaller;
@@ -57,15 +58,26 @@ class FakeDefault extends DefaultSkin
     {
     }
 
-    public function current(): ?string
+    public function current(string $mode = 'dark'): ?string
     {
-        return $this->cur;
+        return $mode === 'dark' ? $this->cur : null;
     }
 
-    public function set(?string $id): void
+    public function isDefault(string $id): bool
+    {
+        return $this->cur === $id;
+    }
+
+    public function set(?string $id, string $mode = 'dark'): void
     {
         $this->calls[] = 'set:' . ($id ?? 'null');
         $this->cur = $id;
+    }
+
+    public function clear(string $id): void
+    {
+        $this->calls[] = 'clear:' . $id;
+        $this->cur = null;
     }
 
     public function reapply(): void
@@ -92,11 +104,12 @@ function rmrf(string $path): void
 function compiled(string $id, string $css = "html.dark {\n  --ts-bg: #000;\n}\n", array $graph = []): CompiledSkin
 {
     return new CompiledSkin(
-        ['id' => $id, 'name' => ucfirst($id), 'description' => '', 'author' => '', 'version' => '1.0.0', 'license' => '', 'modes' => ['dark']],
+        ['id' => $id, 'name' => ucfirst($id), 'description' => '', 'author' => '', 'version' => '1.0.0', 'license' => '', 'family' => '', 'mode' => 'dark', 'modes' => ['dark']],
         $css,
         $graph,
         hash('sha256', $css),
         0,
+        mirror: (string) Modes::mirror($css),
     );
 }
 
@@ -131,7 +144,7 @@ function test_installer(): void
 
     $replaced = $inst->install(compiled('mine', "html.dark {\n  --ts-bg: #111;\n}\n"), 7);
     T::ok('reports it was not a replacement', $replaced === false);
-    T::ok('writes exactly one file, skin.css', scandir("$pub/skins/mine") === ['.', '..', 'skin.css']);
+    T::ok('writes exactly two files, skin.css and its mirror for the other mode', scandir("$pub/skins/mine") === ['.', '..', 'skin.css', 'skin.mirror.css']);
     T::ok('with the generated content', file_get_contents("$pub/skins/mine/skin.css") === "html.dark {\n  --ts-bg: #111;\n}\n");
     T::ok('file mode 644, directory 755', substr(sprintf('%o', fileperms("$pub/skins/mine/skin.css")), -3) === '644' && substr(sprintf('%o', fileperms("$pub/skins/mine")), -3) === '755');
     T::ok('records the installing user', ($reg->installedBy['mine'] ?? null) === 7);
@@ -264,7 +277,7 @@ function test_installer(): void
     $inst->remove('mine');
     T::ok('removing a skin deletes its directory', ! file_exists("$pub/skins/mine"));
     T::ok('and its row', ! isset($reg->rows['mine']));
-    T::ok('and clears the default first when it was the default', $def->calls === ['set:null'] && $def->cur === null);
+    T::ok('and clears the default first when it was the default', $def->calls === ['clear:mine'] && $def->cur === null);
     T::ok('and leaves nothing behind', leftover_count($pub) === 0);
     $def->calls = [];
     $inst->remove('sweeper');

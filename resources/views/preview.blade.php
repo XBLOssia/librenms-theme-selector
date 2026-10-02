@@ -5,11 +5,11 @@
 {{--
     A sample page for the picker's preview frame (docs/PLUGIN.md, "The picker"). It goes through the
     real layout, so the real navbar and the real stylesheets are there; SkinInjector puts the
-    previewed skin on it (the controller sets that, nothing in the URL does). Every name and number
-    below is invented. It is always shown in dark mode, which is the only mode skins apply in.
+    previewed skin on it, in the mode asked for (the controller sets both; nothing in the URL steers
+    the injector). Every name and number below is invented.
 --}}
 @section('javascript')
-    <script>document.documentElement.classList.add('dark');</script>
+    <script>document.documentElement.classList.toggle('dark', {{ $mode === 'dark' ? 'true' : 'false' }});</script>
     <style>
         /* The page is shown in a frame nobody can scroll: no scrollbar track beside it. */
         html, body { overflow: hidden !important; }
@@ -21,7 +21,7 @@
 
 @section('content')
 <div class="container-fluid ts-preview-page">
-    <p class="text-muted ts-preview-note">Preview of <strong>{{ $name }}</strong>. Every host, number and graph on this page is invented.</p>
+    <p class="text-muted ts-preview-note">Preview of <strong>{{ $name }}</strong> in {{ $mode }} mode. Every host, number and graph on this page is invented.</p>
 
     <div class="row">
         <div class="col-md-7">

@@ -7,7 +7,7 @@
 #   1. Header-based login, so nobody types a password into the dev instance.
 #   2. PHP edits in /plugin take effect on the next request.
 #   3. Install /plugin (this repo, bind-mounted) as a package plugin.
-#   4. Run the plugin's migration and publish its skins.
+#   4. Run the plugin's migrations and publish its skins.
 #   5. Seed one admin and one non-admin user.
 set -e
 

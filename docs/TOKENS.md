@@ -195,7 +195,7 @@ Used by the defaults below.
 | `--ts-panel-border` | `1px solid var(--ts-border)` | `.panel (+1)` border |
 | `--ts-panel-border-bottom-width` | `1px` | `.panel (+1)` border-bottom-width |
 | `--ts-panel-border-left-width` | `1px` | `.panel (+1)` border-left-width |
-| `--ts-panel-chamfer` | `initial` | `/* --------------------------------------------------------------------------- * FRAME ORNAMENTS (skins installed by upload; see docs/ORNAMENTS.md) * * A fixed decorative layer behind a panel (+10)` clip-path; `/* --------------------------------------------------------------------------- * FRAME ORNAMENTS (skins installed by upload; see docs/ORNAMENTS.md) * * A fixed decorative layer behind a panel (+10)` clip-path; `/* --------------------------------------------------------------------------- * FRAME ORNAMENTS (skins installed by upload; see docs/ORNAMENTS.md) * * A fixed decorative layer behind a panel (+10)` clip-path; +5 more |
+| `--ts-panel-chamfer` | `initial` | `html.dark:has(link[data-ts-orn]) .panel` clip-path; `html.dark:has(link[data-ts-orn]) .panel` clip-path; `html.dark:has(link[data-ts-orn]) .panel` clip-path; +37 more |
 | `--ts-panel-chamfer-bl` | `initial` | — |
 | `--ts-panel-chamfer-br` | `initial` | — |
 | `--ts-panel-chamfer-rise` | `1` | — |
@@ -243,24 +243,24 @@ Used by the defaults below.
 | `--ts-widget-alert-label-letter-spacing` | `1.32px` | `.widget-alert-totals .label (+2)` letter-spacing |
 | `--ts-widget-bar-bg` | `var(--ts-surface-raised)` | `.grid-stack-item-content > header` background |
 | `--ts-widget-bar-border-bottom` | `1px solid var(--ts-border)` | `.grid-stack-item-content > header` border-bottom |
-| `--ts-widget-bg-image` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image; `.gs-w (+1)` background-image |
+| `--ts-widget-bg-image` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image; `.gs-w (+1)` background-image |
 | `--ts-widget-border` | `1px solid var(--ts-border)` | `.gs-w (+1)` border |
 | `--ts-widget-border-left-width` | `1px` | `.gs-w (+1)` border-left-width |
-| `--ts-widget-chamfer` | `initial` | `/* Dashboard widgets: the same eight slots (+11)` clip-path; `/* Dashboard widgets: the same eight slots (+11)` clip-path; `/* Dashboard widgets: the same eight slots (+11)` clip-path; +5 more |
+| `--ts-widget-chamfer` | `initial` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` clip-path; `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` clip-path; `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` clip-path; +37 more |
 | `--ts-widget-chamfer-bl` | `initial` | — |
 | `--ts-widget-chamfer-br` | `initial` | — |
 | `--ts-widget-chamfer-rise` | `1` | — |
 | `--ts-widget-chamfer-tl` | `initial` | — |
 | `--ts-widget-chamfer-tr` | `initial` | — |
 | `--ts-widget-cut-stroke` | `initial` | — |
-| `--ts-widget-frame-bl` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image |
-| `--ts-widget-frame-bottom` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image |
-| `--ts-widget-frame-br` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image |
-| `--ts-widget-frame-left` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image |
-| `--ts-widget-frame-right` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image |
-| `--ts-widget-frame-tl` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image |
-| `--ts-widget-frame-top` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image |
-| `--ts-widget-frame-tr` | `none` | `/* Dashboard widgets: the same eight slots (+11)` background-image |
+| `--ts-widget-frame-bl` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image |
+| `--ts-widget-frame-bottom` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image |
+| `--ts-widget-frame-br` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image |
+| `--ts-widget-frame-left` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image |
+| `--ts-widget-frame-right` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image |
+| `--ts-widget-frame-tl` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image |
+| `--ts-widget-frame-top` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image |
+| `--ts-widget-frame-tr` | `none` | `html.dark:has(link[data-ts-orn]) .grid-stack .grid-stack-item-content` background-image |
 | `--ts-widget-header-bg-image` | `none` | `.widget-header` background-image |
 | `--ts-widget-header-letter-spacing` | `normal` | `.widget-header` letter-spacing |
 | `--ts-widget-radius-bl` | `var(--ts-radius-md)` | `.gs-w (+1)` border-bottom-left-radius; `.grid-stack-item-content[class*="tw:rounded"]` border-bottom-left-radius |
@@ -278,7 +278,7 @@ Used by the defaults below.
 | Token | Default | Used by |
 |---|---|---|
 | `--ts-bootgrid-header-border` | `var(--ts-border)` | `.bootgrid-header (+1)` border-color |
-| `--ts-table-bg` | `transparent` | `/* ----------------------------------------------------------------------------- * STOCK RULES THAT OUTRANK OURS * Found with harness/leaks.html. Each selector below is written one point of * specificity above the stock rule it answers (+11)` background-color |
+| `--ts-table-bg` | `transparent` | `table (+1)` background-color |
 | `--ts-table-border` | `var(--ts-border)` | `.table (+4)` border-color |
 | `--ts-table-cell-font-size` | `13.5px` | `.table > tbody > tr > td` font-size |
 | `--ts-table-cell-font-weight` | `400` | `.table > tbody > tr > td` font-weight |
@@ -304,7 +304,7 @@ Used by the defaults below.
 | `--ts-btn-active-filter` | `none` | `.btn:active` filter |
 | `--ts-btn-active-shadow` | `none` | `.btn:active` box-shadow |
 | `--ts-btn-border-left-width` | `1px` | `.btn` border-left-width |
-| `--ts-btn-chamfer` | `initial` | `/* Cut corners for buttons (+6)` clip-path; `/* Cut corners for buttons (+6)` clip-path; `/* Cut corners for buttons (+6)` clip-path; +5 more |
+| `--ts-btn-chamfer` | `initial` | `html.dark:has(link[data-ts-orn]) .btn` clip-path; `html.dark:has(link[data-ts-orn]) .btn` clip-path; `html.dark:has(link[data-ts-orn]) .btn` clip-path; +5 more |
 | `--ts-btn-chamfer-bl` | `initial` | — |
 | `--ts-btn-chamfer-br` | `initial` | — |
 | `--ts-btn-chamfer-rise` | `1` | — |
@@ -355,8 +355,8 @@ Used by the defaults below.
 | `--ts-input-border` | `1px solid var(--ts-border)` | `.form-control (+6)` border |
 | `--ts-input-border-top-color` | `rgb(42, 69, 112)` | `.form-control (+6)` border-top-color |
 | `--ts-input-border-top-width` | `1px` | `.form-control (+6)` border-top-width |
-| `--ts-input-disabled-bg` | `var(--ts-surface-raised)` | `/* Read-only fields are meant to be read: stock's #999 under our light text is * under 2:1. */ .form-control[disabled] (+2)` background-color |
-| `--ts-input-disabled-fg` | `var(--ts-text-dim)` | `/* Read-only fields are meant to be read: stock's #999 under our light text is * under 2:1. */ .form-control[disabled] (+2)` color |
+| `--ts-input-disabled-bg` | `var(--ts-surface-raised)` | `.form-control[disabled] (+2)` background-color |
+| `--ts-input-disabled-fg` | `var(--ts-text-dim)` | `.form-control[disabled] (+2)` color |
 | `--ts-input-focus-shadow` | `var(--ts-recess), 0 0 0 1px var(--ts-highlight)` | `.form-control:focus` box-shadow |
 | `--ts-input-font-family` | `Verdana, Arial, Helvetica, sans-serif` | `.form-control (+6)` font-family |
 | `--ts-input-font-weight` | `400` | `.form-control (+6)` font-weight |

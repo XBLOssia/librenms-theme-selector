@@ -71,22 +71,52 @@ measurement is only as good as the last time anyone checked it.
 | Coverage "100%" | **corrected → 83%** | Revised down twice. First the denominator omitted 123 `styles.css` classes; then substring matching over-counted. |
 | §2: inline `tw:…!` utilities are "unreachable from `custom_css` by any means" | **retracted** | The test redefined `--color-red-500`; LibreNMS prefixes its theme variables, so the name is `--tw-color-red-500`. A typo read as a property of the cascade. |
 | §2b: the widget header colour "is not in a stylesheet at all" | **retracted** | It is themeable, via the element selector or the theme variable — which §16 of every skin here now does. Flagged by a LibreNMS maintainer; our own later work had already disproved it. |
-| "1,322 graph definitions" | **corrected → 1,233** | The figure summed per-helper reference counts, which double-counts any file using more than one helper. Caught while fact-checking a forum reply. |
+| "1,322 graph definitions" | **corrected → 1,233, then → 1,313** | The figure summed per-helper reference counts, which double-counts any file using more than one helper. Caught while fact-checking a forum reply. The replacement, 1,233, was wrong too: its command's pattern had no digit in `[a-z_]` and missed the 80 files that reference only `generic_v3_multiline*.inc.php`. The right count is 1,313 (caught 2026-10-02). |
 | `tw_dark.css` is "the whole dark theme" | **corrected** | Per a maintainer: legacy Bootstrap overrides kept for the Tailwind theme toggle, carrying a lot of dead CSS. Some of its 272 literals want deleting, not tokenising. |
 | "What would actually help" §4: tokenise the `.lnms-btn-*` component classes | **corrected** | A maintainer rejects the pattern itself, not just its hard-coded hex: "I do not like lnms-btn-danger so no, just swapping one set of class names for another is probably not the winning strategy." Tokenising a pattern upstream wants retired is the wrong investment. |
 | §2c: the select2 placeholder is a second stock dark-theme bug at 1.2:1 | **retracted** | Measured with a skin active. Stock dark leaves the field white, where core's ink reads 14.24:1; the skins' own field darkening caused the failure. Caught while preparing it as an upstream PR, by measuring with the skin disabled for the first time. Also claimed in the posted forum proposal. |
 | §2b: PR #20294 is precedent - it "did exactly that for a different element" | **corrected** | It was closed unmerged, and it was the same element. The blocker was adding rules to `tw_dark.css` ("will be deleted in the future") and a disputed design, not the markup. |
 | §2c: `.active` is a near-miss - "five of six pass", links short by 0.08 | **corrected** | The table measured three inks. A real disabled-rule row also has `.text-muted` at 2.06:1. |
 | §2c re-verification: "neither page's table is `.table-hover`" | **corrected**, same day | Only `/poller` was checked. `/alert-rules` is `.table-hover`; hover then observed at 4.60:1. |
+| §2b: "two `.widget-header` rules survive in master's `styles.css`" (dead CSS) | **retracted (2026-10-02)** | No such rule exists in any `html/css/*.css`; the only `widget-header` strings are two compound class names. Wrong at 63e0394 as well. |
+| §5: `device_bits` resolves to `generic_multi_bits_separated.inc.php` | **corrected (2026-10-02)** | `device/bits.inc.php` requires `generic_multi_seperated.inc.php`. Both read `graph_colours`, so the conclusion is unchanged. |
+| §2: `show.blade.php:53` carries `tw:bg-white!` and `tw:dark:text-gray-800` | **corrected (2026-10-02)** | Line 53 has `tw:bg-gray-100!` and `tw:dark:bg-white!`; the dark text colour is in `components/date-range-picker.blade.php:20` and the bare `tw:bg-white!` is in `components/popup.blade.php:14`. |
 | "~31 dead classes" as evidence that `tw_dark.css` is full of dead CSS | **corrected** | The ~31 were `styles.css` classes, searched in `resources/views` only. A full survey across every emitter finds 2 dead rules in `tw_dark.css` and 127 in `styles.css`. Direction right, file and number wrong. |
 
-**The pattern worth naming:** thirteen entries, and most were wrong the moment
+**The pattern worth naming:** seventeen entries, and most were wrong the moment
 they were written — miscounts, a variable-name typo, a test that did not do
 what it appeared to. They survived because nothing here re-checks a finding
 once it is written down, so a correction only happens when something forces
 one: ten were forced by later work in this same repo, three by outside
 review. If you are reading this document to decide whether to act on it,
 weight the reproduction commands over the prose.
+
+### Re-measured on 2026-10-02
+
+Every count in this document was re-run against LibreNMS 26.9.1 (the tree of the `26.9.1.1`
+dev image, 20 commits after 63e0394) and, where cheap, against master. Almost everything
+holds: `styles.css`, `tw_dark.css`, `mono.css`, `blue.css` and `app.css` are byte-identical
+to 63e0394, so the 331 / 272 / 25 hex literals, the 2,556-line, 452-rule, 127-candidate
+dead-CSS survey (the per-selector list matches `docs/data/`), the 22 `!` utilities in 9 Blade
+files, 58 literals in 15 graph helpers (10 reading `graph_colours`, 5 not), 168 files
+delegating to a config-blind helper (150 setting a colour from a hex literal), and 89 graph
+files using `graph_colours` all reproduce exactly. What moved:
+
+* **1,233 → 1,313** distinct graph definitions that use a `generic_*` helper (see above).
+* **264 → 265** distinct first-party colours on 26.9.1 (269 on master:
+  `LibreNMS/Util/NetworkMapOptions.php` gained `#1f2937`); **595 → 596** `tw:` colour utilities.
+* **`nav-justified`** in `tw_dark.css` is dead in source, but the built bundle contains a Vue tabs
+  component that builds that class, so on an installed instance `scripts/dead-css.py` reports one
+  candidate, not two.
+* **The muted-on-`.active:hover` ratio** in the §2c tables is 2.52:1, not 2.45.
+* **Line anchors**: the stylesheet links in `layouts/librenmsv1.blade.php` are lines 42-48 (the
+  `custom_css` loop at 47), and `applySiteStyle` is at `html/js/librenms.js:845`.
+* **Raw-PHP `class="danger"` literals** are four (app_ntp, ntp, ltm_pool_details, ltm_vs_pool)
+  plus three Blade sites in `poller.blade.php` plus the alert layout, not five and two.
+* **Master is moving**: its `tw_dark.css` fills are replaced by #20594, and the Blade-dependent
+  counts have jumped (dark ramp uses 249 → 388, `tw:dark:` variants 538 → 678, `tw:` colour
+  utilities 708, bare `tw:bg-white` 90). Every count here that depends on Blade templates is only
+  valid for 26.9.1 and earlier.
 
 ---
 
@@ -314,12 +344,14 @@ grep -rhoE 'tw:(dark:)?(text|bg|border|ring|divide)-[a-z0-9-]+!' \
 **22 distinct colour utilities** carrying `!`, across 9 Blade files. They
 include `tw:bg-white!` and `tw:dark:bg-white!` — a forced white background in
 dark mode, on the date-range field that sits on every graph page
-(`resources/views/graphs/show.blade.php:53`). That is the most visible single
+(`resources/views/graphs/show.blade.php:53` carries `tw:bg-gray-100!` and `tw:dark:bg-white!`;
+the bare `tw:bg-white!` is on the popup, `components/popup.blade.php:14`). That is the most visible single
 item in this document, and a one-character fix upstream.
 
 #### The trap: those elements carry a text colour too
 
-`graphs/show.blade.php:53` pairs `tw:dark:bg-white!` with
+`graphs/show.blade.php:53` carries `tw:dark:bg-white!`, and the date-range
+component it renders (`components/date-range-picker.blade.php:20`) carries
 `tw:dark:text-gray-800` — a dark ink chosen to sit on the white background it
 ships with. A skin that repaints the background and leaves the text alone
 lands at **1.19:1**, which is *worse* than the white box it replaced.
@@ -523,9 +555,13 @@ unmerged** on 2026-09-21. The two reviews are the useful part:
   black banner awful imho."*
 
 So the obstacle was never the one line of markup. It was adding rules to a file
-slated for deletion, and a design the maintainers do not agree on. Two
-`.widget-header` rules survive in master's `styles.css` with nothing emitting
-the class - the live dashboard has zero such elements - so they are dead CSS.
+slated for deletion, and a design the maintainers do not agree on. No
+`.widget-header` rule exists in `styles.css` (the only `widget-header` strings there are
+the compound classes `.widget-alert-map-widget-header` and `.availability-map-widget-header`),
+and nothing emits the class: it existed only in the closed PR.
+
+*(Corrected 2026-10-02: this paragraph used to say two `.widget-header` rules survive in
+master's `styles.css` as dead CSS. That was wrong at 63e0394 too.)*
 
 ---
 
@@ -915,7 +951,10 @@ Read that carefully, because it separates two things that look like one:
   the config does reach the graph.
 - `#3fb8f5`, `#3ad6a8`, `#2cb08a`, `#218c6e` are `graph_colours.purples[2]` and
   `graph_colours.greens[2..4]` verbatim. `device_bits` resolves to
-  `generic_multi_bits_separated.inc.php`, which reads the config.
+  `generic_multi_seperated.inc.php` (`device/bits.inc.php` requires it; the
+  `generic_multi_bits_separated` include next to it is commented out), which reads the config.
+  *(Corrected 2026-10-02: this named `generic_multi_bits_separated`, which reads the config
+  the same way, so the conclusion stands.)*
 - `#90b040` and `#8080c0` are the literals at `generic_data.inc.php` lines 150
   and 158, unchanged. `port_bits` resolves there, and that file contains zero
   references to `graph_colours`.
@@ -989,16 +1028,19 @@ the literals live in the helpers.
 | **`generic_data.inc.php`** | **18** | **20** (incl. `port_bits`) |
 | `generic_multi_bits_separated.inc.php` | 1 | 9 |
 | …5 more | 20 | 12 |
-| **Total** | **58 across 15 files** | **1,322 refs / 1,233 files** |
+| **Total** | **58 across 15 files** | **1,322 refs / 1,313 files** |
 
 **Read that last figure carefully.** 1,322 is the sum of the per-helper counts,
 and it double-counts: `device/bits.inc.php` alone references three helpers, so
 it appears three times. The number of *distinct* graph definitions touching any
-`generic_*` helper is **1,233**:
+`generic_*` helper is **1,313** (1,314 with the `grep` below; `scripts/helper-audit.py` prints it):
 
 ```bash
-grep -rlE 'generic_[a-z_]+\.inc\.php' includes/html/graphs/ --include='*.php'   | grep -vE '/generic_[a-z_]+\.inc\.php$' | wc -l
+grep -rlE 'generic_[a-z0-9_]+\.inc\.php' includes/html/graphs/ --include='*.php' | grep -vE '/generic_[a-z0-9_]+\.inc\.php$' | wc -l
 ```
+
+*(Corrected 2026-10-02. This section used to say 1,233, from the same command with `[a-z_]`, which has no
+digit in its class and so missed the 80 files that reference only `generic_v3_multiline*.inc.php`.)*
 
 ~~**Tokenising 58 literals in 15 files would make essentially every graph in
 LibreNMS theme-aware.**~~ **Retracted** (see the note above and the corrections
@@ -1235,9 +1277,9 @@ pixel-identical, which is what makes them reviewable.
    added rules to `tw_dark.css`, which is slated for deletion, and the
    maintainers disagree on the header design itself. Not small after all -
    see §2b.)* *(The contextual-row
-   half is submitted as librenms/librenms#20594 — eight values, accepted as a
-   quick fix after three review rounds. §2c records what those rounds
-   established.)*
+   half was submitted as librenms/librenms#20594 — eight values, accepted as a
+   quick fix after three review rounds, and **merged 2026-09-29** (it is in master, not in
+   release 26.9.1.1). §2c records what those rounds established.)*
 2b. **Give `components/date-range-picker.blade.php` a dark background
    variant** (§2). Its date and time inputs carry bare `tw:bg-white` with no
    `dark:` companion, so they render as four white 319x29 boxes on a dark

@@ -2,7 +2,8 @@
 
 **The fonts ship with the skin. There is nothing to install.**
 
-Copy the `terran/` directory and the typography works. No system fonts to
+The fonts sit inside the skin folder, so nothing is fetched at run time. (The folder alone does not
+apply a skin: it needs the plugin and `base/base.css`, see the README.) No system fonts to
 chase, no Google Fonts request, nothing for the end user to do.
 
 ---
@@ -81,7 +82,7 @@ skin directory can live anywhere under the webroot and the fonts still load.
 
 Everything is two variables at the top of `skins/terran/skin.css`, in the `html.dark` block. To swap a face, drop a
 `.woff2` in `fonts/`, point the matching `@font-face` at it, and you are done —
-no rule below section 1b mentions a font by name.
+no rule mentions a font by name.
 
 To go harder on the CRT look, [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono)
 or [VT323](https://fonts.google.com/specimen/VT323) will do it. Both are

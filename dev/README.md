@@ -3,8 +3,9 @@
 A throwaway LibreNMS in Docker, with this repo installed as a package plugin.
 Not for production.
 
-- Image `librenms/librenms:26.9.1.1`, the first release containing `63e0394`
-  (the production host's commit).
+- Image `librenms/librenms:26.9.1.1`: a release newer than `63e0394`, the commit the skins
+  were first verified against. Install, uninstall, coverage and the live skin audit were
+  re-run on it on 2026-10-02.
 - The repo is bind-mounted **read-only** at `/plugin` and installed via a Composer path
   repository with symlinks, so edits to `src/`, `resources/` and `skins/` show
   on the next request. There's no rebuild; OPcache revalidates on every request.
@@ -13,7 +14,8 @@ Not for production.
 
 ## One-time: Docker in WSL
 
-Docker runs inside the WSL Debian distro, not Docker Desktop. Run in Debian:
+Docker runs inside the WSL Debian distro, not Docker Desktop. Run in Debian (13; its
+`docker-compose` package is Compose v2, which provides the `docker compose` command used below):
 
 ```bash
 sudo apt-get update && sudo apt-get install -y docker.io docker-compose docker-buildx
@@ -65,7 +67,7 @@ stock under any default, and that nothing leaks into the persistent config.
 ## Tests
 
 ```bash
-sh dev/test.sh            # PHP lint, unit tests (1,085 checks), token catalog check
+sh dev/test.sh            # PHP lint, unit tests, token catalog check
 sh dev/test.sh mutate     # break each defence in turn; every one must be caught
 sh dev/test.sh live       # end to end against this instance: the legacy patch tooling, graphs, port colours, then uploads
 sh dev/test.sh all
@@ -129,5 +131,14 @@ Equal hashes with the same bytes means the change draws exactly what it drew bef
 ## Resetting the plugin install
 
 `vendor/` is part of the container, not a volume. Recreating the container
-(`up -d --build`, `down` then `up`) reinstalls the plugin from scratch, which
-is the path a real `lnms plugin:add` takes. A plain `restart` keeps it.
+(`up -d --build`, `down` then `up`) reinstalls the plugin's *code* (a `plugin:add` from the
+path repository), but the database and `/data` are named volumes, so the tables, config rows,
+users and the `plugins` row survive it. A plain `restart` keeps everything. `down -v` is the
+real reset.
+
+To test the real install and uninstall (a Composer VCS repository, no dev shortcuts), start a
+second, clean `librenms/librenms:26.9.1.1` container with no bind mount and run the commands in
+the README and `docs/DEPLOYMENT.md` there, as `librenms` in `/opt/librenms`; that is how the
+uninstall steps were checked. Repeated installs from one address can hit GitHub's anonymous API
+limit (Composer then fails with "Host key verification failed"); see DEPLOYMENT.md, "If something
+looks wrong"

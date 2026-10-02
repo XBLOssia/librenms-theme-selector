@@ -20,7 +20,7 @@ OUT="${1:-$REPO/docs/img}"
 PORT="${PORT:-8777}"
 BASE="http://localhost:$PORT/harness/mockup.html"
 WIDTH=1500
-HEIGHT=1180          # full page height at 1500px wide, measured; no scrollbar
+HEIGHT=1110          # full page height at 1500px wide, measured 2026-10-02; no scrollbar, no empty strip
 
 # --- find a Chromium-family browser -----------------------------------------
 BROWSER=""

@@ -3,8 +3,8 @@
 #   docker compose -f dev/compose.yml up -d --build
 #   open http://localhost:8000
 #
-# See dev/README.md. Pinned to the release that contains 63e0394, the commit
-# the production host runs and the skins are verified against.
+# See dev/README.md. Pinned to LibreNMS 26.9.1.1 (see the Dockerfile), newer than 63e0394,
+# the commit the skins were first verified against.
 
 name: theme-selector-dev
 

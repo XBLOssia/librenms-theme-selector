@@ -281,6 +281,22 @@ for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
 done
 check "a burst of uploads is rate limited (429)" "$(yes_if "[ $n429 -ge 1 ]")"
 
+echo "== the audit trail, at LibreNMS's default log level (warning)"
+LOG=/opt/librenms/logs/librenms.log
+before="$(wc -l < "$LOG" 2>/dev/null || echo 0)"
+reset_state
+upload dev-admin "$FIX/good-slate.zip"
+upload dev-admin "$FIX/good-slate.zip"
+upload dev-admin "$FIX/notzip.zip"
+post dev-admin /plugin/theme-selector/skins/slate-teal/delete ""
+LOGNEW="$(tail -n +$((before + 1)) "$LOG" 2>/dev/null)"
+check "the log is LibreNMS's own, at its default level (no LOG_LEVEL override)" "$(yes_if "! grep -q '^LOG_LEVEL=' /opt/librenms/.env 2>/dev/null")"
+check "an install is logged" "$(yes_if "printf '%s' \"\$LOGNEW\" | grep -q 'ThemeSelector: skin installed'")"
+check "a replacement is logged" "$(yes_if "printf '%s' \"\$LOGNEW\" | grep -q 'ThemeSelector: skin replaced'")"
+check "a rejected upload is logged, with the bundle's SHA-256" "$(yes_if "printf '%s' \"\$LOGNEW\" | grep 'ThemeSelector: skin upload rejected' | grep -q sha256")"
+check "a removal is logged" "$(yes_if "printf '%s' \"\$LOGNEW\" | grep -q 'ThemeSelector: skin removed'")"
+check "the lines name the user and their IP" "$(yes_if "printf '%s' \"\$LOGNEW\" | grep 'ThemeSelector: skin removed' | grep -q 'dev-admin' && printf '%s' \"\$LOGNEW\" | grep 'ThemeSelector: skin removed' | grep -q ip")"
+
 echo "== what is in the web root, at the end"
 reset_state
 upload dev-admin "$FIX/good-slate.zip"; upload dev-admin "$FIX/good-font.zip"; upload dev-admin "$FIX/good-graph.zip"

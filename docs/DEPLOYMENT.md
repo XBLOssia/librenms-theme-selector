@@ -4,8 +4,10 @@ Installing Theme Selector for LibreNMS, keeping it updated, and removing it
 again. The one host that ran the older `install.sh` setup has been migrated;
 what happened is recorded at the end of this page.
 
-Written against LibreNMS master @ `63e0394`; tested on the `dev/` Docker
-instance (LibreNMS 26.9.1.1).
+Needs PHP 8.2 or newer and a LibreNMS with the package plugin system. Written against
+LibreNMS master @ `63e0394` (2026-09-17). Install, uninstall, graph colours and the live
+skin audit were re-run on a stock LibreNMS 26.9.1.1 (the `dev/` image, and a second,
+clean container for the install and uninstall) on 2026-10-02.
 
 ---
 
@@ -13,7 +15,7 @@ instance (LibreNMS 26.9.1.1).
 
 | LibreNMS version | Devices | Install | Status |
 |---|---|---|---|
-| `26.8.1-147-g63e0394bd1` | ~1,400 | Plugin (`dev-main`) | Migrated 2026-09-28/29 from `install.sh`; SSO login only |
+| `26.8.1-147-g63e0394bd1` (as of the migration; it has been updated since) | ~1,400 | Plugin (`dev-main`) | Migrated 2026-09-28/29 from `install.sh`; SSO login only |
 
 The instance itself is deliberately not named here. It is a production
 monitoring box, and pairing a resolvable hostname with an exact software
@@ -47,7 +49,9 @@ php artisan route:cache
 2. **`plugin:add`** runs `composer require` and records the package in
    `composer.plugins.json`, which `daily.sh` reads to reinstall plugins after
    each update. The plugin is enabled by default.
-3. **`migrate`** creates the plugin's one table, `theme_selector_settings`.
+3. **`migrate`** creates the plugin's two tables, `theme_selector_settings` (the
+   instance default and the recorded original graph colours) and
+   `theme_selector_skins` (uploaded skins), in four migrations.
    `plugin:add` doesn't run migrations; `daily.sh` does, so this step only
    saves waiting for the next nightly run.
 4. **`route:cache`** rebuilds LibreNMS's route cache. Production installs
@@ -76,13 +80,17 @@ LibreNMS whatever they picked.
 | What | Where |
 |---|---|
 | Plugin code | `vendor/xblossia/librenms-theme-selector` (Composer) |
-| Published skins | `html/css/custom/theme-selector/` (gitignored by LibreNMS) |
+| Published skins | `html/css/custom/theme-selector/` (gitignored by LibreNMS), with two bookkeeping files, `.bundled.json` and `.install.lock` |
 | Instance default, graph originals | table `theme_selector_settings` |
+| Uploaded skins (name, graph palette, textures, licence notice, SHA-256) | table `theme_selector_skins`; each one's generated `skin.css` is under `html/css/custom/theme-selector/skins/<id>/` |
 | Each user's choice | `users_prefs`, key `theme_selector.skin` |
 | Graph colours | LibreNMS config rows (`graph_colours.*`, `rrdgraph_def_text_dark`, `rrdgraph_def_text_color_dark`) |
 
-Nothing under `/opt/librenms` is edited, and no core file is touched, except
-by the optional [port-graph patch](#optional-the-port-graph-core-patch).
+No LibreNMS core file is touched. Outside its own files the plugin changes only:
+`composer.json` and `composer.lock` (edited by `plugin:add`; `daily.sh` resets and
+re-requires them), `composer.plugins.json`, the route cache under `bootstrap/cache/`, and
+`html/css/custom/theme-selector/`. (The older [port-graph core
+patch](#legacy-the-port-graph-core-patch-not-needed) did edit a core file; it is not needed.)
 
 ---
 
@@ -90,7 +98,7 @@ by the optional [port-graph patch](#optional-the-port-graph-core-patch).
 
 **LibreNMS updates:** `daily.sh` resets `composer.json`, pulls, then
 re-requires every package in `composer.plugins.json` and runs
-`composer install --no-dev` and `lnms migrate` (`daily.sh:302, 361-367`). The
+`composer install --no-dev` and `lnms migrate` (`daily.sh` lines 302 and 361-368 in 26.9.1.1). The
 plugin survives, and `html/css/custom/` survives because `daily.sh` never runs
 `git clean`.
 
@@ -152,7 +160,7 @@ and what is and isn't defended, is in [SECURITY.md](SECURITY.md).
   if it is the default). Up to 50 uploaded skins at once.
 - **What ends up on disk:** for each uploaded skin, one generated `skin.css` in
   `html/css/custom/theme-selector/skins/<id>/`, and a row in
-  `theme_selector_skins` holding its name, graph palette and licence notice.
+  `theme_selector_skins` holding its name, graph palette, texture list, licence notice, SHA-256 and who installed it.
   Nothing you upload is stored or served as-is, and fonts are embedded in that
   stylesheet. A bundle's `LICENSE.txt` lives only in the database and is shown
   under "Licence notice" in the skin list.
@@ -165,8 +173,9 @@ and what is and isn't defended, is in [SECURITY.md](SECURITY.md).
   page's address to see it with no skin, then pick another or ask an admin to
   remove it. Nothing stored changes.
 - **Audit trail:** every rejected upload, install, replacement and removal is
-  logged as `ThemeSelector: ...` in `storage/logs/librenms.log`, with the user,
-  their IP and the bundle's SHA-256.
+  logged at warning level (LibreNMS's default, so nothing needs configuring) as
+  `ThemeSelector: ...` in `/opt/librenms/logs/librenms.log`, with the user, their IP and
+  the bundle's SHA-256. `dev/test-upload.sh` checks each of them against a stock instance.
 - **Check a bundle before uploading it:** `./lnms theme-selector:validate
   my-skin.zip` runs the upload page's checks and installs nothing.
 
@@ -243,8 +252,8 @@ no cache to clear.
 - Graph chrome uses the `*_dark` settings, so it only follows a skin for users
   on the dark theme.
 - The `graph_colours.*` ramps and the `*_dark` keys are the only settings the
-  plugin ever touches, and only from a skin's `graph.conf` (other keys in that
-  file are ignored).
+  plugin ever touches, and only from a skin's `graph.conf` (any other key in that
+  file is an error: an uploaded skin is refused, and the unit tests fail for a bundled one).
 
 **Testing it:** `dev/test-graphs.sh` builds a dummy device and synthetic RRD in
 the Docker instance and draws the same graphs as users with different skins
@@ -273,10 +282,13 @@ sudo -u librenms php artisan tinker --execute='echo Xblossia\ThemeSelector\Graph
 `yes` means the wrapper is available. Then pick a skin (Plugins → Theme Selector) and
 load a port graph.
 
-Run it again after a LibreNMS update. `no`, or a line `ThemeSelector: port graph colours not
-installed` in `storage/logs/laravel.log`, means core changed its RRD store: port series are on
-stock colours (nothing else is affected) until the plugin is updated, and that is one of the
-conditions listed in `docs/ROADMAP.md` for reopening the upstream change.
+Run it again after a LibreNMS update. `no` means core changed its RRD store: port series are
+on stock colours (nothing else is affected) until the plugin is updated, and that is one of the
+conditions listed in `docs/ROADMAP.md` for reopening the upstream change. Nothing is logged in
+that case (it would be a line per request and per poller), so this check is the way to know.
+`yes` with port series still stock means the skin sets no `graph_colours.port_in` / `port_out`,
+or the store was already in use when the plugin booted (an `info` line, hidden at LibreNMS's
+default level; `LOG_LEVEL=info` in `.env` shows it).
 
 **A skin with no port colours of its own shows another skin's.** A skin without
 `graph_colours.port_in` / `port_out` should draw stock green and lavender. If it shows another
@@ -286,8 +298,7 @@ treats as the instance's own setting. Check, then erase them (the plugin's own c
 the same):
 
 ```bash
-php artisan tinker --execute='foreach (["graph_colours.port_in","graph_colours.port_out"] as $k) echo $k." effective=".json_encode(App\Facades\LibrenmsConfig::get($k))." db=".json_encode(App\Models\Config::where("config_name",$k)->value("config_value"))."
-";'
+php artisan tinker --execute='foreach (["graph_colours.port_in","graph_colours.port_out"] as $k) echo $k." effective=".json_encode(App\Facades\LibrenmsConfig::get($k))." db=".json_encode(App\Models\Config::where("config_name",$k)->value("config_value")).PHP_EOL;'
 php artisan tinker --execute='App\Facades\LibrenmsConfig::erase("graph_colours.port_in"); App\Facades\LibrenmsConfig::erase("graph_colours.port_out");'
 ```
 
@@ -323,8 +334,8 @@ That is all. Earlier versions also patched `resources/definitions/config_definit
 to declare the two keys. They don't need declaring: `lnms config:set` refuses a key
 LibreNMS doesn't declare, but the plugin stores them with `LibrenmsConfig::persist()`
 and every later process reads them back from the `config` table (checked on LibreNMS
-26.9.1). The plugin writes the two keys whenever it sees the patched helper, and skips
-them when it doesn't. `config_definitions.json` changes upstream far more often than
+26.9.1). The plugin writes the two keys whenever something will honour them: its own wrapper, or the
+patched helper. `config_definitions.json` changes upstream far more often than
 the helper does, so leaving it alone removes most of the exposure described below.
 
 **With no config set, output is byte-identical.** Verified rather than
@@ -333,9 +344,11 @@ fixed, produced the same SHA-256 and the same 141,496 bytes before and after
 patching.
 
 ```bash
-./scripts/patch-core.sh status
-./scripts/patch-core.sh apply --wrapped   # then re-save the instance default
-./scripts/patch-core.sh revert
+cd /opt/librenms
+P=vendor/xblossia/librenms-theme-selector/scripts/patch-core.sh
+$P status
+$P apply --wrapped   # then re-save the instance default
+$P revert
 ```
 
 `apply` refuses without `--wrapped`, which means "`daily.sh` on this host is started
@@ -405,9 +418,8 @@ git status --short       # should now list only composer.json and composer.lock
 expected to stay listed: `lnms plugin:add` edits them and `daily.sh` resets and re-requires
 them each run. Any other stray files, such as a `php-snmp.pcap`, are untracked and harmless.)
 
-The plugin notices the helper is stock again and stops writing the two port keys. Rows
-already stored under `graph_colours.port_in` / `.port_out` are harmless and are overwritten or
-erased the next time the instance default is saved. Note that `revert` from versions before
+Rows already stored under `graph_colours.port_in` / `.port_out` are the plugin's own and are
+overwritten or erased the next time the instance default is saved. Note that `revert` from versions before
 this one copied a saved `*.pre-skins-patch` file over the target, which is stale after an
 update and would undo upstream's changes; this version removes those files and never
 restores them.
@@ -432,42 +444,63 @@ back, but a root-owned file under `/opt/librenms` is exactly what the FAIL row i
 
 ### Getting off the patch
 
-Best: have LibreNMS read the colours itself. `generic_data.inc.php` would read
-`graph_colours.port_in` / `.port_out`, defaulting to today's values (byte-identical with
-no config), the way its other palettes already read `graph_colours.*`; the plugin then
-only sets config and nothing is patched. That is a change to upstream, which is yours to
-propose (the draft in [PROPOSAL.md](PROPOSAL.md) predates this and covers more files).
-Until then, leaving the patch off is the safe choice on scheduler installs, and the patch
-plus the wrapper is safe only where the wrapper starts `daily.sh`. CSS can't recolour the
-port series (they are server-side images).
+Revert it (above). The plugin's own wrapper does the same job without touching core. A change
+that would make LibreNMS read these colours itself was drafted and deliberately not submitted;
+`docs/ROADMAP.md`, "Upstream: the port series change", says why and what would change that.
 
 ---
 
 ## Uninstall
 
-1. **Clear the instance default** (Plugins → Theme Selector → None). This
-   restores the graph colours. Skipping it leaves the last default's palette
-   in LibreNMS config.
-2. Remove the plugin and its files, as `librenms` in `/opt/librenms`:
+Tested end to end on a clean LibreNMS 26.9.1.1: install, set a default and a user choice,
+uninstall as below, reinstall. As `librenms` in `/opt/librenms`:
+
+1. **Clear the instance default** (Plugins → Theme Selector → None). This restores the graph
+   colours. Skipping it leaves the last default's palette in LibreNMS config, and removing the
+   plugin first loses the record of the originals (see "Plugin already removed" below).
+2. **Remove the plugin and its files:**
 
 ```bash
 ./lnms plugin:remove xblossia/librenms-theme-selector
 rm -rf html/css/custom/theme-selector
+php artisan route:cache
+php scripts/composer_wrapper.php config --global --unset repositories.theme-selector
 ```
 
-What stays behind, harmlessly: the `theme_selector_settings` and
-`theme_selector_skins` tables and `theme_selector.skin` rows in `users_prefs`.
-To remove them too:
+   `plugin:remove` only runs `composer remove`; it does **not** rebuild the route cache, which
+   keeps routes to the removed controller until something rebuilds it (`route:list` fails with
+   it in that state), so `route:cache` goes right after. The last line removes the Composer
+   repository entry that the install added.
+3. **Optional: remove the data.** The tables, `theme_selector.skin` rows in `users_prefs`, the
+   plugin's four rows in `migrations`, and its row in `plugins` stay behind, harmlessly:
 
 ```sql
 DROP TABLE theme_selector_settings;
 DROP TABLE theme_selector_skins;
 DELETE FROM users_prefs WHERE pref = 'theme_selector.skin';
+DELETE FROM migrations WHERE migration LIKE '%theme_selector%';
+DELETE FROM plugins WHERE plugin_name = 'ThemeSelector';
 ```
 
-**To switch it off without uninstalling:** `./lnms plugin:disable ThemeSelector`.
-Pages go stock on the next load; the graph palette stays until a default is
-cleared, which needs the plugin enabled.
+   **Delete the `migrations` rows together with the tables.** If you drop the tables and keep the
+   rows, a later reinstall's `lnms migrate` reports "Nothing to migrate" and creates nothing, so
+   uploads fail and the default can't be saved. (LibreNMS's validate page also keeps warning
+   about the extra migrations until they are gone.)
+
+**Plugin already removed, default never cleared.** The `graph_colours.*`,
+`rrdgraph_def_text_dark` and `rrdgraph_def_text_color_dark` rows stay in the `config` table,
+and the record of their originals went with the table. List them, then erase the ones you did
+not set yourself (a key that had an override before you installed anything is the one to keep):
+
+```bash
+php artisan tinker --execute='foreach (App\Models\Config::where("config_name","like","graph_colours.%")->orWhere("config_name","like","rrdgraph_def_text%")->pluck("config_name") as $k) echo $k, PHP_EOL;'
+php artisan tinker --execute='App\Facades\LibrenmsConfig::erase("graph_colours.port_in"); App\Facades\LibrenmsConfig::erase("graph_colours.greens");'   # one call per key
+```
+
+**To switch it off without uninstalling:** `./lnms plugin:disable ThemeSelector`. Pages go stock
+on the next load and the graph wrapper is not installed; the graph palette stays until a default
+is cleared, which needs the plugin enabled. `./lnms plugin:enable ThemeSelector` turns it back on
+(it also rebuilds the route cache).
 
 ---
 
@@ -475,11 +508,11 @@ cleared, which needs the plugin enabled.
 
 | Question | Answer |
 |---|---|
-| Core files modified? | None (unless you apply the optional port-graph patch) |
-| Database schema changed? | One table of its own, `theme_selector_settings` |
-| Files outside `html/css/custom/`? | The Composer package under `vendor/` |
+| Core files modified? | None |
+| Database schema changed? | Two tables of its own, `theme_selector_settings` and `theme_selector_skins` |
+| Files outside `html/css/custom/`? | The Composer package under `vendor/`, `composer.json`/`composer.lock`/`composer.plugins.json`, and the route cache |
 | Services restarted or installed? | None |
-| Affects polling, discovery, alerting? | No. CSS, plus graph colour config |
+| Affects polling, discovery, alerting? | Not their behaviour: the plugin's store subclass overrides only `graph()`. Alert emails and chat messages that embed a graph use the instance default's colours, port series included |
 | Affects other users? | Only through the instance default and the graph palette; each user's own choice affects only them |
 | Can a skin break a page? | The code that adds the stylesheet catches every error and falls back to stock styling. CSS itself can't break PHP. |
 
@@ -487,7 +520,7 @@ cleared, which needs the plugin enabled.
 
 1. **Stock styling everywhere.** The user is on Light, has chosen stock, or
    there's no default. Check Plugins → Theme Selector. If the page source has
-   no `data-theme-selector` links, check `storage/logs/librenms.log` for
+   no `data-theme-selector` links, check `/opt/librenms/logs/librenms.log` for
    `ThemeSelector:` lines.
 2. **Skin half-applied, or 404s for `theme-selector/...` files.** Publishing
    failed, usually because `librenms` can't write
@@ -495,5 +528,11 @@ cleared, which needs the plugin enabled.
    see the error.
 3. **Some components still stock-coloured.** Expected: see
    [ROADMAP.md](ROADMAP.md) for coverage.
-4. **Port graph series still green and lavender.** That needs the port-graph
-   patch; everything else about graphs follows the default skin.
+4. **Port graph series still green and lavender.** Run the `PortSeriesSupport::compatible()`
+   check under [Port traffic series](#port-traffic-series). `no` means core changed its RRD store
+   (port series stay stock until the plugin is updated; the rest of the graph still follows the
+   skin); `yes` means check that the skin sets `graph_colours.port_in` / `port_out`.
+5. **`plugin:add` fails with "Host key verification failed".** Composer fell back to SSH after
+   GitHub's anonymous API limit was used up (it happens after several installs from one
+   address). Wait for the limit to reset, or give Composer a token:
+   `php scripts/composer_wrapper.php config --global github-oauth.github.com <token>`.

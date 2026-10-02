@@ -1,7 +1,7 @@
 # Fetch the bundled webfonts from Google Fonts.
 #
 # End users do NOT need this - the .woff2 files are committed to the repo so a
-# skin installs by copying one directory. This script exists to regenerate them
+# skin needs nothing downloaded at install time. This script exists to regenerate them
 # reproducibly, and to document exactly where they came from.
 #
 # Only the "latin" unicode-range subset is taken. Google serves these already

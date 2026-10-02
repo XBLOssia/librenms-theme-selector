@@ -2,7 +2,8 @@
 
 **The fonts ship with the skin. There is nothing to install.**
 
-Copy the `zerg/` directory and the typography works. No system fonts to chase,
+The fonts sit inside the skin folder, so nothing is fetched at run time. (The folder alone does not
+apply a skin: it needs the plugin and `base/base.css`, see the README.) No system fonts to chase,
 no Google Fonts request, nothing for the end user to do.
 
 ---
@@ -69,8 +70,7 @@ the type stays legible. If you disagree and want the drip, it is one variable:
 html.dark { --p-font-chrome: "Eater", cursive; }
 ```
 
-Drop the `.woff2` into `fonts/`, point a `@font-face` at it, and nothing below
-section 1b needs to change — no rule in the skin names a font directly. Just
+Drop the `.woff2` into `fonts/`, point a `@font-face` at it, and nothing else in `skin.css` needs to change — no rule in the skin names a font directly. Just
 leave `--p-font-data` alone.
 
 ---

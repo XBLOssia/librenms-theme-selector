@@ -14,7 +14,7 @@ my-skin/
   textures/        optional: repeating .png tiles skin.css declares
 ```
 
-Pack, check, upload:
+Pack, check, upload (at most 40 files in the zip, 3 MiB unpacked, 4 MB zipped):
 
 ```bash
 python scripts/pack-skin.py my-skin -o my-skin.zip
@@ -37,12 +37,13 @@ A working starting point is `examples/minimal/` (20 values, nothing else).
 }
 ```
 
-- `id` and `name` are required. `id` is 1-63 characters: lowercase letters,
+- `id` and `name` are required; `version` (if given) is three numbers like `1.2.0`. `id` is 1-63 characters: lowercase letters,
   digits and hyphens, not starting with a hyphen. It can't be one of the
   bundled skins' ids (`terran`, `protoss`, `zerg`) or `none`, `default`, `base`
   and a few other reserved words. Uploading the same id again replaces the skin.
-- Text fields are plain text (letters, digits, spaces and `. , ( ) ' + : / & -`),
-  up to 60 characters (200 for `description`).
+- Text fields are plain text (they start with a letter or digit, then letters, digits, spaces
+  and `. , _ ( ) ' + : / & -`; a `description` may also use `! ? ;`), up to 60 characters
+  (200 for `description`).
 - `modes` must be `["dark"]`. Skins apply in dark mode; light-mode skins aren't
   supported yet.
 - No other fields.
@@ -84,12 +85,14 @@ html.dark {
 - **Sizes are bounded**: shadows up to 100 px, borders 24 px, radii and spacing
   64 px, everything else 800 px; durations up to 5 s; filter arguments within
   sensible ranges. Out-of-range values are rejected, not clamped.
-- Keep it under 96 KB.
+- Keep it under 96 KB, at most 500 declarations, at most 250 of your own `--p-*` names, and
+  each value under 1,200 characters.
 
 ### Fonts
 
-Put the files in `fonts/` (`.woff2` or `.woff`, up to 400 KB each, at most 8)
-and declare them:
+Put the files in `fonts/` (`.woff2` or `.woff`, named
+`fonts/<letters, digits, _ or ->.woff2`, up to 400 KB each, at most 8, with at most 12
+`@font-face` blocks) and declare them:
 
 ```css
 @font-face {
@@ -129,7 +132,7 @@ html.dark {
 * **Format.** PNG only: not interlaced, not animated, 8 bits per channel (greyscale
   may be 1, 2, 4 or 8 bits, and a palette image any depth up to 8), at most
   **256 x 256 px**. Non-square is fine. No JPEG, GIF, WebP or SVG.
-* **Size.** At most **64 KB once cleaned**, 4 textures, 128 KB altogether. A palette
+* **Size.** At most **64 KB once cleaned** (256 KB as you upload it), 4 textures, 128 KB altogether. A palette
   (indexed) image or greyscale with alpha is usually far smaller than RGBA; a
   256 x 256 tile of soft detail is often 10 to 40 KB.
 * **Names.** The file is `textures/<name>.png`, the name is lowercase letters,
@@ -158,7 +161,7 @@ checks every chunk, checksum and row, and writes a clean copy, which it embeds i
 generated stylesheet as a `data:` URL. Nothing you upload is ever a file on the
 server. `docs/ORNAMENTS.md` has more on what a skin can draw; the bundled Zerg skin's
 `textures/creep.png` is a worked example, and `docs/TEXTURES.md` shows how the
-bundled tiles (plate, crystal, creep, waves) are generated so that they repeat.
+bundled tiles (plate, crystal, creep) are generated so that they repeat.
 
 ## LICENSE.txt
 
@@ -200,8 +203,7 @@ and the box gives you the other, so a corner slot is how you make a short bar.
 Put several gradients in one slot, separated by commas, for L-shapes and stripes.
 You can't move, resize or raise the layer, and it can't hold text or take clicks.
 The part of a slot that lies under the panel's heading or body is hidden by them.
-`docs/ORNAMENTS.md` has the rules and what is planned next (cut corners,
-animation).
+`docs/ORNAMENTS.md` has the rules and the reasoning behind each limit.
 
 **Heading marker and strip.** Each panel heading has a 12px-wide marker band on
 its left edge and a strip layer across the whole heading, both under the
@@ -276,9 +278,16 @@ visitors whose system asks for reduced motion.
 
 Panels and widgets are clipped, so the cut works over any page background, a texture
 included, and nothing that hangs out of a panel (a dropdown) is cut off. The line takes
-a literal `#hex`, `rgb()` or `hsl()`, not a `var(--p-*)`. (`--ts-panel-cut-fill` from
+a literal `#hex`, `rgb()` or `hsl()`, not a `var(--p-*)`. On a widget the line is drawn over
+the frame bars, so a bar ends under it; a corner with no cut is left exactly as it is, so the
+bars that jut out of it are never trimmed. (`--ts-panel-cut-fill` from
 earlier versions is still accepted and ignored.) `--ts-panel-radius-*` and `--ts-widget-radius-*` also work on
 elements LibreNMS rounds with a Tailwind class (the device page header).
+
+**Hover.** A panel or widget is raised above its neighbours while the pointer is over it (or
+while it holds an open menu), so a hover card or dropdown opened inside it is not trapped under
+the next panel. There is nothing to set; it is `z-index: 1035`, above the sticky navbar and
+below modals.
 
 **Widgets.** Dashboard widgets take the same eight slots as panels under the
 names `--ts-widget-frame-tl` ... `--ts-widget-frame-left`, plus
@@ -297,11 +306,22 @@ rrdgraph_def_text_color_dark=c9dde3
 graph_colours.greens=["9CF2B4","6FE08E","46C96B","34A552","26823E","1A6030"]
 ```
 
-Only those three shapes are accepted: `-c NAME#RRGGBB` pairs (NAME one of `BACK
-CANVAS SHADEA SHADEB GRID MGRID FONT AXIS FRAME ARROW`), six hex digits, and
-`graph_colours.<name>` as a JSON list of up to 40 six-digit hex colours.
-`skins/zerg/graph.conf` is a full example. Each user's own graphs use their
-skin's palette.
+Only those three shapes are accepted, and any other key is an error (the upload is refused):
+
+* `rrdgraph_def_text_dark`: `-c NAME#RRGGBB` or `-c NAME#RRGGBBAA` pairs (NAME one of `BACK
+  CANVAS SHADEA SHADEB GRID MGRID FONT AXIS FRAME ARROW`, each at most once, at most 12 pairs,
+  400 characters).
+* `rrdgraph_def_text_color_dark`: six hex digits.
+* `graph_colours.<name>` (lowercase letters and underscores, up to 30): a JSON list of up to 40
+  six-digit hex colours.
+
+**Port traffic graphs.** `graph_colours.port_in` and `graph_colours.port_out` (at least three
+six-digit colours each, palest first: the 95th-percentile fill, the area fill, the outline)
+recolour the in and out series of `port_bits` and 19 other graph types. LibreNMS hard-codes those
+colours, so the plugin rewrites them just before the graph is drawn (see `docs/PLUGIN.md`); a skin
+that sets neither draws them in LibreNMS's stock green and lavender.
+
+`skins/zerg/graph.conf` is a full example. Each user's own graphs use their skin's palette.
 
 ## What you'll see when it's wrong
 

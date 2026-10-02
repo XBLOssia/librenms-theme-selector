@@ -29,6 +29,39 @@ final class GraphConf
     private const COLOUR_TAGS = ['BACK', 'CANVAS', 'SHADEA', 'SHADEB', 'GRID', 'MGRID', 'FONT', 'AXIS', 'FRAME', 'ARROW'];
 
     /**
+     * A validated palette as it applies to graphs drawn in $mode: the series ramps as they are, and
+     * the chrome and its text colour under $mode's own keys (`_dark` for dark graphs, plain for
+     * light). If the palette has $mode's own keys they are used; otherwise the other mode's are
+     * carried over, so a skin written for one mode colours the other mode's graphs with its own look
+     * (a light skin put in the dark slot draws its light chrome on dark-mode graphs).
+     *
+     * @param  array<string, string|string[]>  $palette
+     * @return array<string, string|string[]>
+     */
+    public static function forMode(array $palette, string $mode): array
+    {
+        $dark = $mode === 'dark';
+        $own = $dark ? ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'] : ['rrdgraph_def_text', 'rrdgraph_def_text_color'];
+        $other = $dark ? ['rrdgraph_def_text', 'rrdgraph_def_text_color'] : ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'];
+
+        $out = [];
+        foreach ($palette as $key => $value) {
+            if (! in_array($key, self::CHROME_KEYS, true) && ! in_array($key, self::FONT_KEYS, true)) {
+                $out[$key] = $value;
+            }
+        }
+        foreach ([0, 1] as $i) {
+            if (isset($palette[$own[$i]])) {
+                $out[$own[$i]] = $palette[$own[$i]];
+            } elseif (isset($palette[$other[$i]])) {
+                $out[$own[$i]] = $palette[$other[$i]];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
      * @return array<string, string|string[]>|null  key => canonical value
      */
     public static function parse(string $text, Report $report): ?array

@@ -63,8 +63,9 @@ written for, the plugin serves the same rules under the other mode's selector (y
 this). So a light skin should be written for light, a dark one for dark, and both will still look
 deliberate if someone puts one in the other slot: it is the same tokens either way.
 
-Graph colours are the exception: they are tuned to a ground, so a skin's `graph.conf` applies only in
-the mode the skin is written for (see "graph.conf" below).
+Graph colours follow the page: whichever slot a skin is in, its graph chrome and series colours draw that
+mode's graphs, so a light skin's graphs are light and a dark skin's are dark even when it is put in the other
+mode (see "graph.conf" below).
 
 ## skin.css
 
@@ -357,10 +358,12 @@ colours, so the plugin rewrites them just before the graph is drawn (see `docs/P
 that sets neither draws them in LibreNMS's stock green and lavender.
 
 `skins/zerg/graph.conf` is a full example. Each user's own graphs use their skin's palette for the
-mode the graph is drawn in. **A skin's palette applies only in the mode the skin is written for**: a
-light skin sets the light chrome (`rrdgraph_def_text`, `rrdgraph_def_text_color`) and ramps that read
-on a light ground, a dark skin the `_dark` pair, and a dark skin used in the light slot leaves light
-graphs as LibreNMS draws them. The series ramps (`graph_colours.*`) are the same keys in both modes.
+mode the graph is drawn in. **A skin colours the graphs of whichever mode it is put in**: a light skin
+sets the light chrome (`rrdgraph_def_text`, `rrdgraph_def_text_color`) and ramps that read on a light
+ground, a dark skin the `_dark` pair. A skin that sets only its own mode's chrome lends it to the other
+mode (a dark skin in the light slot draws its dark chrome on light-mode graphs), so the graphs match the
+page; set both pairs if you want a different look in each. The series ramps (`graph_colours.*`) are the
+same keys in both modes.
 `examples/minimal-light/graph.conf` is a light example.
 
 ## What you'll see when it's wrong

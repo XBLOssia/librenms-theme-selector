@@ -44,6 +44,7 @@ PALETTES = {
         gear='154, 106, 28', gear_alpha=0.11, head_glow='none',
         breathe_low='.85', breathe_high='1', frame_breathe='', marker_breathe='',
         navbar_bg='#f3e7cf', navbar_text='#3b2a1c',
+        map_filter='none',
     ),
     'lantern': dict(
         id='clock-tower-lantern', name='Clock Tower Lantern', wrap='html.dark', mode='dark',
@@ -63,6 +64,7 @@ PALETTES = {
         gear='212, 162, 58', gear_alpha=0.075, head_glow='0 0 8px rgba(255, 179, 71, .45)',
         breathe_low='.7', breathe_high='1', frame_breathe='9s', marker_breathe='6s',
         navbar_bg='#1b120a', navbar_text='#ecd9b0',
+        map_filter='invert(1) hue-rotate(180deg) sepia(.4) brightness(.72) contrast(1.05) saturate(.55)',
     ),
 }
 
@@ -181,6 +183,9 @@ $wrap {
   --ts-radius-lg: 8px;
 
   /* The page: a pool of light, and a faint tile of cogwheels over the ground. */
+  /* The map: left as LibreNMS draws it by day, inverted and warmed by night. */
+  --ts-map-tile-filter: $map_filter;
+
   --ts-body-bg-image: var(--tx-gears), var(--p-page);
   --ts-body-bg-size: 256px 256px, 100% 100%;
   --ts-body-bg-repeat: repeat, no-repeat;

@@ -15,6 +15,7 @@ use Xblossia\ThemeSelector\InstallException;
 use Xblossia\ThemeSelector\Modes;
 use Xblossia\ThemeSelector\PreviewChoice;
 use Xblossia\ThemeSelector\PreviewGraph;
+use Xblossia\ThemeSelector\Skin\GraphConf;
 use Xblossia\ThemeSelector\Skin\Limits;
 use Xblossia\ThemeSelector\Skin\Report;
 use Xblossia\ThemeSelector\Skin\SkinCompiler;
@@ -70,13 +71,13 @@ class PickerController extends Controller
         $mode = $request->query('mode') === Modes::LIGHT ? Modes::LIGHT : Modes::DARK;
         $request->attributes->set(SkinInjector::PREVIEW, ['skin' => $id, 'mode' => $mode]);
         $stock = $id === PreviewChoice::STOCK;
-        // A skin's graph colours apply in the mode it is written for (GraphPalette).
-        $native = $stock ? null : ($skins->all()[$id]['mode'] ?? Modes::DARK);
 
         return view(ThemeSelectorProvider::PLUGIN_NAME . '::preview', [
             'name' => $stock ? 'Stock LibreNMS' : $skins->name($id),
             'mode' => $mode,
-            'graph' => PreviewGraph::svg($native === $mode ? $skins->graphPalette($id) : [], $mode),
+            // The graph colours the skin gives to this mode's graphs (a skin written for the other mode
+            // lends its own chrome, as for real graphs: GraphConf::forMode).
+            'graph' => PreviewGraph::svg($stock ? [] : GraphConf::forMode($skins->graphPalette($id), $mode), $mode),
         ]);
     }
 

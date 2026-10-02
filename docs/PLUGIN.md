@@ -250,7 +250,9 @@ sends a skin for *each* mode and lets the browser pick:
   skin in the light slot looks like a dark page; that is allowed and previewable.
 - **The base has a light twin.** `base-light.css` is `base.css` with every `html.dark` selector
   swapped for `html:not(.dark)` (`Modes::lightBase`; the ornament gate looks for the light slot's
-  own mark, `data-ts-orn-light`, so one slot's ornaments don't switch on the other's), with
+  own mark, `data-ts-orn-light`, so one slot's ornaments don't switch on the other's; and the
+  blocks fenced `ts:dark-only`, the dark map's inverted tiles and black attribution bar, are
+  left out, so a light page keeps LibreNMS's own map), with
   `base/light.css` appended: the light-only mapping of LibreNMS's stock Tailwind palette (grays,
   blue, status colours) onto the skin's roles, plus two small rules. Tests pin both: the twin is
   *only* those substitutions, and `light.css` can set Tailwind colour variables and exactly two
@@ -265,9 +267,12 @@ sends a skin for *each* mode and lets the browser pick:
   and the light slot starts as "follow the default", which starts as stock.
 - **Graphs follow the mode they are drawn in.** LibreNMS draws a graph light or dark by the
   request's `style` (else the session's). `GraphColours` picks the user's skin for that mode, and
-  a skin's graph palette applies only in the mode the skin is written for (its ramps are tuned for
-  that ground): `graph.conf` takes `rrdgraph_def_text` and `rrdgraph_def_text_color` for light
-  graphs beside the `_dark` pair. The persistent config holds the dark default's palette for dark
+  that skin colours the graphs whichever mode it was written for, so they match the page:
+  `graph.conf` takes `rrdgraph_def_text` and `rrdgraph_def_text_color` for light graphs beside the
+  `_dark` pair, and a skin that gives only its own mode's chrome lends it to the other
+  (`GraphConf::forMode`: a dark skin in the light slot draws its dark chrome on light-mode graphs, a
+  light skin in the dark slot its light chrome on dark-mode ones). The persistent config holds the
+  dark default's palette for dark
   graphs and the light default's for light ones; the series ramps are one set of keys for both and
   graphs nobody asked for in a mode (alert emails, the API) are drawn light, so where both defaults
   set ramps the light default's win.
@@ -517,8 +522,8 @@ gave:
 Verification at the time: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
 breaks each defence and requires a failing test (46 caught, 7 documented as
-redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,311 checks and
-156 mutations caught; `sh dev/test.sh all` prints the current figures.)
+redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,319 checks and
+159 mutations caught; `sh dev/test.sh all` prints the current figures.)
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See
 [SECURITY.md](SECURITY.md) for the controls and, as important, what is not

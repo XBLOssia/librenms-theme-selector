@@ -271,6 +271,9 @@ run_with src/PreviewGraph.php "s#\$suffix = \$mode === Modes::DARK ? '_dark' : '
 run_with src/Skin/GraphConf.php "s#public const CHROME_KEYS = \['rrdgraph_def_text', 'rrdgraph_def_text_dark'\];#public const CHROME_KEYS = ['rrdgraph_def_text_dark'];#" "modes: graph.conf refuses the light chrome"
 
 run_with src/Skin/SkinCompiler.php "s#substr_count(\$css, '@font-face'), count(\$textures), Modes::other#count(\$fonts), count(\$textures), Modes::other#" "modes: guard the mirror against one face per font file"
+run_with src/Modes.php "s#\$base = (string) preg_replace(.\#/\\\\\* ts:dark-only.*\$#;#" "modes: the light base keeps the dark map"
+run_with src/Skin/GraphConf.php "s#\$out\[\$own\[\$i\]\] = \$palette\[\$other\[\$i\]\];#;#" "modes: a skin does not lend its chrome to the other mode's graphs"
+run_with src/Skin/GraphConf.php "s#if (isset(\$palette\[\$own\[\$i\]\])) {#if (false) {#" "modes: a skin's own chrome for a mode is ignored"
 
 wait
 n=1

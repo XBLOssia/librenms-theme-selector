@@ -164,7 +164,8 @@
             <p>Applies to users who haven't chosen a skin, and to the login page, in each mode. Graphs follow each user's
                own skin for the mode the graph is drawn in; the defaults' graph palettes are what LibreNMS stores, so they also
                apply to users who follow a default and to graphs no logged-in user requested (API, reports, alert emails, which
-               are drawn light).</p>
+               are drawn light). Either mode's default can be any skin, including one written for the other mode (it is
+               shown adapted, and its graphs follow its look); that can be confusing, so check the previews first.</p>
             <form method="post" action="{{ route('theme-selector.default') }}" class="form-inline">
                 @csrf
                 @foreach(['light' => ['Light mode', 'default_light'], 'dark' => ['Dark mode', 'default']] as $mode => [$heading, $field])

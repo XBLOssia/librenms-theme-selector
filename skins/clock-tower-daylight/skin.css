@@ -99,6 +99,9 @@ html:not(.dark) {
   --ts-radius-lg: 8px;
 
   /* The page: a pool of light, and a faint tile of cogwheels over the ground. */
+  /* The map: left as LibreNMS draws it by day, inverted and warmed by night. */
+  --ts-map-tile-filter: none;
+
   --ts-body-bg-image: var(--tx-gears), var(--p-page);
   --ts-body-bg-size: 256px 256px, 100% 100%;
   --ts-body-bg-repeat: repeat, no-repeat;

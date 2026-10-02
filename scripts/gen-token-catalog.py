@@ -103,13 +103,25 @@ def widget_polygon(prefix='widget', m='10000px', e='2px'):
 
     def v(k):
         return f'calc({c(k)} * {r})'
-    mm, pm, ne, pe = f'-{m}', f'calc(100% + {m})', f'-{e}', f'calc(100% + {e})'
+
+    def g(k):
+        # The growth of a corner's notch: e (2px) at a corner with a cut, nothing at one without
+        # (any cut above a thousandth of a pixel reaches e), so a corner that is not cut removes
+        # nothing, not even the sliver outside it that the ornaments' bars jut through.
+        return f'min(calc({c(k)} * 1000), {e})'
+
+    def ng(k):
+        return f'calc({g(k)} * -1)'
+
+    def pe(k):
+        return f'calc(100% + {g(k)})'
+    mm, pm = f'-{m}', f'calc(100% + {m})'
     pts = [(mm, mm), (pm, mm),
-           (pm, ne), (f'calc(100% - {c("tr")} - {e} / {r})', ne), (pe, f'calc({v("tr")} + {e} * {r})'), (pe, ne), (pm, ne),
-           (pm, pe), (pe, pe), (pe, f'calc(100% - {v("br")} - {e} * {r})'), (f'calc(100% - {c("br")} - {e} / {r})', pe), (pm, pe),
+           (pm, ng('tr')), (f'calc(100% - {c("tr")} - {g("tr")} / {r})', ng('tr')), (pe('tr'), f'calc({v("tr")} + {g("tr")} * {r})'), (pe('tr'), ng('tr')), (pm, ng('tr')),
+           (pm, pe('br')), (pe('br'), pe('br')), (pe('br'), f'calc(100% - {v("br")} - {g("br")} * {r})'), (f'calc(100% - {c("br")} - {g("br")} / {r})', pe('br')), (pm, pe('br')),
            (pm, pm), (mm, pm),
-           (mm, pe), (f'calc({c("bl")} + {e} / {r})', pe), (ne, f'calc(100% - {v("bl")} - {e} * {r})'), (ne, pe), (mm, pe),
-           (mm, ne), (ne, ne), (ne, f'calc({v("tl")} + {e} * {r})'), (f'calc({c("tl")} + {e} / {r})', ne), (mm, ne)]
+           (mm, pe('bl')), (f'calc({c("bl")} + {g("bl")} / {r})', pe('bl')), (ng('bl'), f'calc(100% - {v("bl")} - {g("bl")} * {r})'), (ng('bl'), pe('bl')), (mm, pe('bl')),
+           (mm, ng('tl')), (ng('tl'), ng('tl')), (ng('tl'), f'calc({v("tl")} + {g("tl")} * {r})'), (f'calc({c("tl")} + {g("tl")} / {r})', ng('tl')), (mm, ng('tl'))]
     return 'polygon(' + ', '.join(f'{x} {y}' for x, y in pts) + ')'
 
 

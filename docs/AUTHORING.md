@@ -21,7 +21,8 @@ python scripts/pack-skin.py my-skin -o my-skin.zip
 lnms theme-selector:validate my-skin.zip     # the upload page's checks, without installing
 ```
 
-A working starting point is `examples/minimal/` (20 values, nothing else).
+A working starting point is `examples/minimal/` (20 values, nothing else) for a dark skin, or
+`examples/minimal-light/` for a light one.
 
 ## skin.json
 
@@ -33,7 +34,8 @@ A working starting point is `examples/minimal/` (20 values, nothing else).
   "author": "You",
   "version": "1.0.0",
   "license": "MIT",
-  "modes": ["dark"]
+  "mode": "dark",
+  "family": "Slate"
 }
 ```
 
@@ -44,13 +46,30 @@ A working starting point is `examples/minimal/` (20 values, nothing else).
 - Text fields are plain text (they start with a letter or digit, then letters, digits, spaces
   and `. , _ ( ) ' + : / & -`; a `description` may also use `! ? ;`), up to 60 characters
   (200 for `description`).
-- `modes` must be `["dark"]`. Skins apply in dark mode; light-mode skins aren't
-  supported yet.
+- `mode` is the mode the skin is written for: `"dark"` (the default) or `"light"`. It must agree with
+  the wrapper in `skin.css` (below). The older `"modes": ["dark"]` / `["light"]` spelling is still
+  read and means the same.
+- `family` (optional, up to 40 characters, plain text) names a group of skins that belong together,
+  such as `Clock Tower` for Daylight, Lantern and Sepia skins. The picker lists skins with the same
+  family together. A family is only a label: each skin in it is installed, chosen and removed on its
+  own.
 - No other fields.
+
+### Light and dark
+
+LibreNMS is light or dark depending on each user's settings, and users choose a skin for each mode.
+A skin is **written for one mode**, and **any skin can be used in either**: for the mode it was not
+written for, the plugin serves the same rules under the other mode's selector (you do nothing for
+this). So a light skin should be written for light, a dark one for dark, and both will still look
+deliberate if someone puts one in the other slot: it is the same tokens either way.
+
+Graph colours are the exception: they are tuned to a ground, so a skin's `graph.conf` applies only in
+the mode the skin is written for (see "graph.conf" below).
 
 ## skin.css
 
-Exactly this shape, and nothing else:
+Exactly this shape, and nothing else (for a light-mode skin the wrapper is `html:not(.dark)` instead
+of `html.dark`, and `skin.json` says `"mode": "light"`):
 
 ```css
 html.dark {
@@ -322,12 +341,12 @@ rrdgraph_def_text_color_dark=c9dde3
 graph_colours.greens=["9CF2B4","6FE08E","46C96B","34A552","26823E","1A6030"]
 ```
 
-Only those three shapes are accepted, and any other key is an error (the upload is refused):
+Only those shapes are accepted, and any other key is an error (the upload is refused):
 
-* `rrdgraph_def_text_dark`: `-c NAME#RRGGBB` or `-c NAME#RRGGBBAA` pairs (NAME one of `BACK
-  CANVAS SHADEA SHADEB GRID MGRID FONT AXIS FRAME ARROW`, each at most once, at most 12 pairs,
-  400 characters).
-* `rrdgraph_def_text_color_dark`: six hex digits.
+* `rrdgraph_def_text_dark` (graphs drawn in dark mode) and `rrdgraph_def_text` (graphs drawn in
+  light mode): `-c NAME#RRGGBB` or `-c NAME#RRGGBBAA` pairs (NAME one of `BACK CANVAS SHADEA SHADEB
+  GRID MGRID FONT AXIS FRAME ARROW`, each at most once, at most 12 pairs, 400 characters).
+* `rrdgraph_def_text_color_dark` and `rrdgraph_def_text_color`: six hex digits.
 * `graph_colours.<name>` (lowercase letters and underscores, up to 30): a JSON list of up to 40
   six-digit hex colours.
 
@@ -337,7 +356,12 @@ recolour the in and out series of `port_bits` and 19 other graph types. LibreNMS
 colours, so the plugin rewrites them just before the graph is drawn (see `docs/PLUGIN.md`); a skin
 that sets neither draws them in LibreNMS's stock green and lavender.
 
-`skins/zerg/graph.conf` is a full example. Each user's own graphs use their skin's palette.
+`skins/zerg/graph.conf` is a full example. Each user's own graphs use their skin's palette for the
+mode the graph is drawn in. **A skin's palette applies only in the mode the skin is written for**: a
+light skin sets the light chrome (`rrdgraph_def_text`, `rrdgraph_def_text_color`) and ramps that read
+on a light ground, a dark skin the `_dark` pair, and a dark skin used in the light slot leaves light
+graphs as LibreNMS draws them. The series ramps (`graph_colours.*`) are the same keys in both modes.
+`examples/minimal-light/graph.conf` is a light example.
 
 ## What you'll see when it's wrong
 

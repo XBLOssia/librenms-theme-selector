@@ -2,13 +2,16 @@
 
 namespace Xblossia\ThemeSelector\Skin;
 
+use Xblossia\ThemeSelector\Modes;
+
 /**
  * Parses a skin's token file (skin.css) and writes the stylesheet that is
  * actually served.
  *
  * The grammar is deliberately tiny. A token file is a sequence of:
  *
- *     html.dark { --ts-name: value; --p-name: value; ... }
+ *     html.dark { --ts-name: value; --p-name: value; ... }   (a skin for dark mode)
+ *     html:not(.dark) { ... }                                 (a skin for light mode: one or the other)
  *     @font-face { font-family: "Name"; src: url("fonts/file.woff2") format("woff2"); ... }
  *
  * plus, inside html.dark, one `--tx-<name>: url("textures/<name>.png");` per
@@ -48,12 +51,13 @@ final class TokenFile
     /**
      * @param  array<string, string>  $fonts  file name (as in the bundle, "fonts/x.woff2") => bytes, already checked by FontFile
      * @param  array<string, array{png: string, width: int, height: int}>  $textures  file name ("textures/x.png") => the cleaned PNG, already checked by PngTexture
+     * @param  string  $skinMode  the mode the skin is written for (Modes::DARK or LIGHT): its root blocks must use that mode's selector
      * @return string|null  the stylesheet to serve, or null (see $report)
      */
-    public function compile(string $css, array $fonts, Report $report, array $textures = []): ?string
+    public function compile(string $css, array $fonts, Report $report, array $textures = [], string $skinMode = Modes::DARK): ?string
     {
         $local = new Report();
-        $out = $this->run($css, $fonts, $local, $textures);
+        $out = $this->run($css, $fonts, $local, $textures, $skinMode);
         $report->merge($local);
 
         return $local->ok() ? $out : null;
@@ -63,7 +67,7 @@ final class TokenFile
      * @param  array<string, string>  $fonts
      * @param  array<string, array{png: string, width: int, height: int}>  $textures
      */
-    private function run(string $css, array $fonts, Report $report, array $textures): ?string
+    private function run(string $css, array $fonts, Report $report, array $textures, string $skinMode): ?string
     {
         if (strlen($css) > Limits::CSS_BYTES) {
             $report->error('skin.css', 'is larger than ' . Limits::CSS_BYTES . ' bytes');
@@ -77,7 +81,7 @@ final class TokenFile
         }
         $css = str_replace(["\r\n", "\r"], "\n", $css);
 
-        $parsed = $this->scan($css, $report);
+        $parsed = $this->scan($css, $report, Modes::selector($skinMode), $skinMode);
         if ($parsed === null) {
             return null;
         }
@@ -107,7 +111,7 @@ final class TokenFile
         foreach ($fontCss as $block) {
             $out .= $block;
         }
-        $out .= "html.dark {\n";
+        $out .= Modes::selector($skinMode) . " {\n";
         foreach ($decls as $name => $value) {
             $out .= "  $name: $value;\n";
         }
@@ -118,7 +122,7 @@ final class TokenFile
 
             return null;
         }
-        if ($this->mode === Mode::Upload && ! OutputGuard::safe($out, count($fontCss), count($textures))) {
+        if ($this->mode === Mode::Upload && ! OutputGuard::safe($out, count($fontCss), count($textures), $skinMode)) {
             $report->error('skin.css', 'failed the final safety check (this is a bug; please report it)');
 
             return null;
@@ -132,7 +136,7 @@ final class TokenFile
     /**
      * @return array{0: array<int, array{0: string, 1: string, 2: int}>, 1: array<int, array<int, array{0: string, 1: string, 2: int}>>}|null
      */
-    private function scan(string $css, Report $report): ?array
+    private function scan(string $css, Report $report, string $wrapper, string $skinMode): ?array
     {
         $n = strlen($css);
         $pos = 0;
@@ -186,8 +190,9 @@ final class TokenFile
                     return null;
                 }
                 $selector = trim(preg_replace('/\s+/', ' ', substr($css, $pos, $brace - $pos)));
-                if ($selector !== 'html.dark') {
-                    $report->error('skin.css', 'line ' . $line($pos) . ': the selector ' . Report::quote($selector) . ' is not allowed; a skin may only use "html.dark { ... }" and @font-face');
+                if ($selector !== $wrapper) {
+                    $report->error('skin.css', 'line ' . $line($pos) . ': the selector ' . Report::quote($selector) . ' is not allowed; a skin for ' . $skinMode . ' mode may only use "' . $wrapper . ' { ... }" and @font-face'
+                        . ($selector === Modes::selector(Modes::other($skinMode)) ? ' (skin.json says the mode is "' . $skinMode . '", but this block is for ' . Modes::other($skinMode) . ' mode)' : ''));
 
                     return null;
                 }

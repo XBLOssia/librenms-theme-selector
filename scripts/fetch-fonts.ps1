@@ -12,7 +12,10 @@
 #
 #   powershell -ExecutionPolicy Bypass -File scripts/fetch-fonts.ps1
 
+param([string[]]$Skins)  # only these skins' fonts (default: all), e.g. -Skins clock-tower-daylight,clock-tower-lantern
+
 $ErrorActionPreference = 'Stop'
+if ($Skins) { $Skins = @($Skins | ForEach-Object { $_ -split ',' }) }  # powershell -File passes a,b as one string
 $UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
 $root = Split-Path -Parent $PSScriptRoot
 
@@ -29,10 +32,17 @@ $faces = @(
   @{ family='Metamorphous';    name='Metamorphous';    weight=400; skin='zerg';    file='Metamorphous-Regular.woff2' },
   @{ family='Chakra+Petch';    name='Chakra Petch';    weight=500; skin='zerg';    file='ChakraPetch-Medium.woff2' },
   @{ family='Chakra+Petch';    name='Chakra Petch';    weight=700; skin='zerg';    file='ChakraPetch-Bold.woff2' },
-  @{ family='Space+Mono';      name='Space Mono';      weight=400; skin='zerg';    file='SpaceMono-Regular.woff2' }
+  @{ family='Space+Mono';      name='Space Mono';      weight=400; skin='zerg';    file='SpaceMono-Regular.woff2' },
+  @{ family='Playfair+Display';   name='Playfair Display';   weight=700; skin='clock-tower-daylight'; file='PlayfairDisplay-Bold.woff2' },
+  @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=400; skin='clock-tower-daylight'; file='LibreBaskerville-Regular.woff2' },
+  @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=700; skin='clock-tower-daylight'; file='LibreBaskerville-Bold.woff2' },
+  @{ family='Playfair+Display';   name='Playfair Display';   weight=700; skin='clock-tower-lantern'; file='PlayfairDisplay-Bold.woff2' },
+  @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=400; skin='clock-tower-lantern'; file='LibreBaskerville-Regular.woff2' },
+  @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=700; skin='clock-tower-lantern'; file='LibreBaskerville-Bold.woff2' }
 )
 
 foreach ($f in $faces) {
+  if ($Skins -and ($Skins -notcontains $f.skin)) { continue }
   $dest = Join-Path $root "skins\$($f.skin)\fonts"
   if (-not (Test-Path $dest)) { New-Item -ItemType Directory -Path $dest -Force | Out-Null }
   $out = Join-Path $dest $f.file
@@ -59,10 +69,15 @@ $licenses = @(
   @{ dir='spacemono';      skin='protoss'; file='OFL-SpaceMono.txt' },
   @{ dir='metamorphous';   skin='zerg';    file='OFL-Metamorphous.txt' },
   @{ dir='chakrapetch';    skin='zerg';    file='OFL-ChakraPetch.txt' },
-  @{ dir='spacemono';      skin='zerg';    file='OFL-SpaceMono.txt' }
+  @{ dir='spacemono';      skin='zerg';    file='OFL-SpaceMono.txt' },
+  @{ dir='playfairdisplay';  skin='clock-tower-daylight'; file='OFL-PlayfairDisplay.txt' },
+  @{ dir='librebaskerville'; skin='clock-tower-daylight'; file='OFL-LibreBaskerville.txt' },
+  @{ dir='playfairdisplay';  skin='clock-tower-lantern'; file='OFL-PlayfairDisplay.txt' },
+  @{ dir='librebaskerville'; skin='clock-tower-lantern'; file='OFL-LibreBaskerville.txt' }
 )
 
 foreach ($l in $licenses) {
+  if ($Skins -and ($Skins -notcontains $l.skin)) { continue }
   $dest = Join-Path $root "skins\$($l.skin)\fonts\$($l.file)"
   $url  = "https://raw.githubusercontent.com/google/fonts/main/ofl/$($l.dir)/OFL.txt"
   try {

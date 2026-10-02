@@ -227,6 +227,33 @@ obvious at a glance.
 
 ---
 
+## Light mode (first pass, 2026-10-03)
+
+**Built:** a skin is written for light or dark; any skin can be put in either slot (mirrored); users
+and admins choose per mode; the base has a light twin plus a light-only mapping of LibreNMS's stock
+Tailwind palette (`base/light.css`); graphs follow the mode they are drawn in; the pickers preview
+each slot; `examples/minimal-light` is a plain light skin. Design: [PLUGIN.md](PLUGIN.md), "Light and
+dark".
+
+**Open, in the order I would take them:**
+
+1. **Clock Tower** (built 2026-10-03: Daylight for light mode, Lantern for dark, one template). Still
+   to do: more palettes (Sepia?) are one more entry in the script. Its fonts (Playfair Display and
+   Libre Baskerville, OFL) are bundled with `FONTS.md` and the licence notices.
+2. **Light variants of Terran, Protoss, Zerg and Digital Rain**, as sibling skins in a family each (the
+   same shapes and ornaments, a light palette); until then they are dark skins you can also put in
+   the light slot.
+3. **A single zip carrying several skins** (a family in one upload: shared fonts and textures, one
+   `skin.css` per variant). Today a family is separate zips with the same `family` text.
+4. **Light-mode coverage audit.** The Tailwind mapping fixed the large leaks found with a dark
+   skin in the light slot (the worst case). Known small ones: the selected item of the Lists / Graphs
+   bars keeps a stock dark link colour on a dark skin's pill, and the few elements `audit.js` reports
+   in stock light mode too (core's `lnms-btn-badge`, `tw:text-gray-500` captions). Run
+   `harness/audit.js` with a dark skin in the light slot, then with each light skin, on `/`,
+   `/devices`, `/alert-rules`, `/eventlog`, a device and its graphs page, and the settings pages.
+5. **Graph palettes across modes.** A skin's palette applies only in the mode it is written for; a
+   family could share ramps between its variants.
+
 ## Bundled-only features (parity backlog)
 
 Decided 2026-10-02: bundled skins ship in the repo, and where one uses something an uploaded skin

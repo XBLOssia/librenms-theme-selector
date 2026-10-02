@@ -22,6 +22,10 @@ namespace Xblossia\ThemeSelector\Skin;
  */
 final class GraphConf
 {
+    /** The graph chrome (ground, grid, frame) and its text colour, for light and for dark graphs. */
+    public const CHROME_KEYS = ['rrdgraph_def_text', 'rrdgraph_def_text_dark'];
+    public const FONT_KEYS = ['rrdgraph_def_text_color', 'rrdgraph_def_text_color_dark'];
+
     private const COLOUR_TAGS = ['BACK', 'CANVAS', 'SHADEA', 'SHADEB', 'GRID', 'MGRID', 'FONT', 'AXIS', 'FRAME', 'ARROW'];
 
     /**
@@ -59,9 +63,9 @@ final class GraphConf
                 return null;
             }
 
-            if ($key === 'rrdgraph_def_text_dark') {
+            if (in_array($key, self::CHROME_KEYS, true)) {
                 $v = self::chrome($value);
-            } elseif ($key === 'rrdgraph_def_text_color_dark') {
+            } elseif (in_array($key, self::FONT_KEYS, true)) {
                 $v = preg_match('/^[0-9A-Fa-f]{6}\z/', $value) ? $value : null;
             } elseif (preg_match('/^graph_colours\.[a-z_]{1,30}\z/D', $key)) {
                 $v = self::ramp($value);
@@ -97,9 +101,9 @@ final class GraphConf
             if (! is_string($key)) {
                 continue;
             }
-            if ($key === 'rrdgraph_def_text_dark' && is_string($value) && ($v = self::chrome($value)) !== null) {
+            if (in_array($key, self::CHROME_KEYS, true) && is_string($value) && ($v = self::chrome($value)) !== null) {
                 $out[$key] = $v;
-            } elseif ($key === 'rrdgraph_def_text_color_dark' && is_string($value) && preg_match('/^[0-9A-Fa-f]{6}\z/', $value)) {
+            } elseif (in_array($key, self::FONT_KEYS, true) && is_string($value) && preg_match('/^[0-9A-Fa-f]{6}\z/', $value)) {
                 $out[$key] = $value;
             } elseif (preg_match('/^graph_colours\.[a-z_]{1,30}\z/D', $key) && is_array($value)
                 && ($v = self::ramp(json_encode($value))) !== null) {

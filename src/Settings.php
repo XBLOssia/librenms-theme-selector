@@ -13,6 +13,13 @@ class Settings
     private const TABLE = 'theme_selector_settings';
 
     public const DEFAULT_SKIN = 'default_skin';
+    public const DEFAULT_SKIN_LIGHT = 'default_skin_light';
+
+    /** The setting that holds the instance default for a mode (the dark one keeps its original name). */
+    public static function defaultName(string $mode): string
+    {
+        return $mode === Modes::LIGHT ? self::DEFAULT_SKIN_LIGHT : self::DEFAULT_SKIN;
+    }
     public const GRAPH_ORIGINALS = 'graph_originals';
 
     /** @var array<string, mixed> */

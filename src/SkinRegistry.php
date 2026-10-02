@@ -74,6 +74,14 @@ class SkinRegistry
         if (Schema::hasColumn(self::TABLE, 'textures')) {
             $fields['textures'] = $skin->textures === [] ? null : json_encode($skin->textures);
         }
+        // Added by a later migration. Until it has run every skin is dark, and a light one can't be
+        // recorded truthfully, so it is refused rather than quietly stored as dark.
+        if (Schema::hasColumn(self::TABLE, 'mode')) {
+            $fields['mode'] = $m['mode'] ?? Modes::DARK;
+            $fields['family'] = $m['family'] ?? '';
+        } elseif (($m['mode'] ?? Modes::DARK) !== Modes::DARK) {
+            throw new \RuntimeException('light-mode skins need the latest migration: run php artisan migrate --force');
+        }
         if (DB::table(self::TABLE)->where('id', $m['id'])->exists()) {
             DB::table(self::TABLE)->where('id', $m['id'])->update($fields);
         } else {

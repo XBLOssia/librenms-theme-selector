@@ -166,7 +166,7 @@ host's nginx config has not been checked.
 
 ```
 <skin>/
-  skin.json        manifest: id, name, author, version, modes
+  skin.json        manifest: id, name, author, version, mode ("dark" or "light"), family
   skin.css         the token file (below)
   fonts/           optional .woff2 files
   LICENSE.txt      optional licence notice (stored, shown to admins, never served)
@@ -233,48 +233,89 @@ list of controls, each with the test that would notice it breaking, is
 
 ### Light and dark
 
-Today every skin rule is prefixed `html.dark`, giving (0,2,1) to beat
-`tw_dark.css`'s `.dark .x` (0,2,0) without `!important`. With two modes:
+**Built 2026-10-03.** LibreNMS decides light or dark in the browser (a per-user Display Setting, or
+the device's own preference), so the server can't know which a page will be. The plugin therefore
+sends a skin for *each* mode and lets the browser pick:
 
-- A token file gains a second wrapper, `html:not(.dark) { ... }`, for its light set.
-- The base must only apply in a mode the active skin supports, so a dark-only
-  skin leaves light mode stock. One option: the pushed `<head>` content also
-  sets `data-ts-modes="dark"` on `<html>` via a two-line inline script, and
-  base rules are scoped `html.dark[data-ts-modes~="dark"]`.
-- Light mode fights stock light rules that are unprefixed but sometimes
-  `!important` inside Tailwind layers; FINDINGS §2 covers reaching those by
-  retinting `--tw-color-*`.
+- **A skin is written for one mode**, its *native* mode: `skin.json` says `"mode": "dark"` (the
+  default, and what every earlier skin is) or `"light"`, and `skin.css` has the matching wrapper,
+  `html.dark { ... }` or `html:not(.dark) { ... }`. Both have the specificity (0,2,1) that beats
+  `tw_dark.css`'s `.dark .x` and stock light rules without `!important`. The validator rejects a
+  wrapper that disagrees with the manifest, or one of each, with a message that says which.
+- **Any skin can be put in either slot.** For the mode a skin was not written for, the plugin serves
+  its *mirror*: the same rules with the one selector swapped (`Modes::mirror`, plain text
+  substitution of `^html.dark {` and `^html:not(.dark) {`). An uploaded skin's mirror is generated
+  and written beside `skin.css` as `skin.mirror.css` at install time (and checked by `OutputGuard`
+  as the stylesheet it is); a bundled skin's is generated when the package is published. A dark
+  skin in the light slot looks like a dark page; that is allowed and previewable.
+- **The base has a light twin.** `base-light.css` is `base.css` with every `html.dark` selector
+  swapped for `html:not(.dark)` (`Modes::lightBase`; the ornament gate looks for the light slot's
+  own mark, `data-ts-orn-light`, so one slot's ornaments don't switch on the other's), with
+  `base/light.css` appended: the light-only mapping of LibreNMS's stock Tailwind palette (grays,
+  blue, status colours) onto the skin's roles, plus two small rules. Tests pin both: the twin is
+  *only* those substitutions, and `light.css` can set Tailwind colour variables and exactly two
+  rules, nothing that places, hides, resizes or adds content.
+- **A page carries one skin per mode.** `SkinInjector` links, for each slot that has a skin, the
+  slot's base (`base.css` or `base-light.css`) and the skin's stylesheet for that slot. Whichever
+  selector matches the page's mode applies; the other is inert. Slots with no skin load nothing,
+  and the page is stock in that mode.
+- **Choices and defaults are per mode.** The user's dark choice keeps its original preference
+  (`theme_selector.skin`) and the light one is `theme_selector.skin_light`; the instance defaults
+  are `default_skin` and `default_skin_light`. What users chose before is their dark-mode skin now,
+  and the light slot starts as "follow the default", which starts as stock.
+- **Graphs follow the mode they are drawn in.** LibreNMS draws a graph light or dark by the
+  request's `style` (else the session's). `GraphColours` picks the user's skin for that mode, and
+  a skin's graph palette applies only in the mode the skin is written for (its ramps are tuned for
+  that ground): `graph.conf` takes `rrdgraph_def_text` and `rrdgraph_def_text_color` for light
+  graphs beside the `_dark` pair. The persistent config holds the dark default's palette for dark
+  graphs and the light default's for light ones; the series ramps are one set of keys for both and
+  graphs nobody asked for in a mode (alert emails, the API) are drawn light, so where both defaults
+  set ramps the light default's win.
+- **Effects** (the white rabbit) are wrapped per slot and hidden when the page is in the other mode.
+- **Migration.** A `mode` and a `family` column on `theme_selector_skins` (`lnms migrate`, or
+  nightly via `daily.sh`). Until it has run every skin is dark, and uploading a light skin is refused
+  rather than recorded as dark.
 
-This is the first thing to prototype in the harness. Specificity must still
-beat stock in both modes.
+**Families.** `"family": "Clock Tower"` in `skin.json` is plain text that groups skins in the
+pickers (an optgroup). A skin is one item; a family is just skins that share a name, so any number of
+palettes (Daylight, Lantern, Sepia ...) can sit together, each its own selectable skin. A single zip
+carrying several skins is a possible later addition (docs/ROADMAP.md).
+
+**Known limits.** Light mode's coverage of LibreNMS's own markup is a first pass: the Tailwind palette
+mapping fixes the large leaks found with a dark skin in the light slot (the worst case), and a few
+small ones remain (docs/ROADMAP.md, "Light mode").
 
 ---
 
 ## The picker and its preview
 
-**Plugins → Theme Selector** has, for everyone, a "Your skin" panel: a dropdown (instance
-default, stock LibreNMS, then bundled and installed skins in groups) and a **Preview** that
-shows the selection in a frame with its description, author, version, source and install date,
-and an **Apply to my account** button. Looking changes nothing: applying is its own POST, and the
-button is off when the previewed skin is the one you already have. Admins also get the instance
-default and an "Installed skins" list: filter by name, author or id; show bundled or uploaded
-only; sort by name, author, version, source or install date; 10 or 25 a page (or all) inside a
-scrolling frame, with a Preview link on each row. All of that is plain DOM work over rows the
-server already rendered (a skin list is at most 50 uploaded skins plus the bundled ones); without
-JavaScript the list shows every row and the preview is the `?preview=<choice>` form.
-
+**Plugins → Theme Selector** has, for everyone, a "Your skins" panel with a **Light mode** and a
+**Dark mode** dropdown side by side (instance default, stock LibreNMS, then skins grouped by family,
+or Bundled / Installed for skins with none; a skin written for the other mode is labelled). Each has
+its own preview frame, which follows its dropdown as soon as a skin is picked, with the skin's
+description, author, version, source and install date, and an "Open full size" link. One **Apply to
+my account** saves both choices (a choice that didn't change is left alone, and the button is off until
+one does). Looking changes nothing: applying is its own POST. Admins also get the instance defaults
+(one for each mode) and an "Installed skins" list: filter by name, author, id or family; show light or
+dark skins, bundled or uploaded only; sort by name, author, version, mode, source or install date;
+10 or 25 a page (or all) inside a scrolling frame, with a Preview link on each row (which opens the
+picker with that skin selected in the mode it was written for, `?light=<id>` or `?dark=<id>`). All of
+that is plain DOM work over rows the server already rendered (a skin list is at most 50 uploaded
+skins plus the bundled ones); without JavaScript the list shows every row.
 **How the preview works.** There is no screenshot to supply and none to go stale. The frame
 loads `GET plugin/theme-selector/preview/{id}` (`['web','auth']`, any signed-in user, `id` an
 installed skin or `none`): a sample page (navbar, a graph, a table, labels, buttons, tabs, an
 alert) built on the real layout, so the real navbar and stylesheets are there, with invented
-content, forced to dark mode, and with the one named skin on it. `SkinInjector` shows that skin
+content, put in the mode asked for (`?mode=light` or the default, dark), and with the one named skin on it
+in that mode (a skin written for the other mode is shown mirrored). `SkinInjector` shows that skin
 because the controller sets a request attribute after checking the id; nothing in a URL can
 make any other page show a skin it wasn't asked to, and the preview never touches the
 visitor's own preference. The frame is scaled down, cannot be clicked or focused, and has no
 scrollbar. Ornaments, fonts, textures and the drifting rain all show, because it is the real
 stylesheet. The sample graph is inline SVG drawn from the skin's own graph palette
 (`PreviewGraph`: the ground, grid and text colours and the port in and out tones, each accepted
-only as hex digits); real graphs are rrdtool images of real devices, so this is the same
+only as hex digits, from the chrome keys for the mode shown, and only when the skin is written for
+that mode, as for real graphs); real graphs are rrdtool images of real devices, so this is the same
 colours on invented traffic. Page effects (the white rabbit) are never added to a preview.
 
 **Install date.** Uploaded skins show when they were installed (the registry's `created_at`;
@@ -298,6 +339,7 @@ src/
                              value grammar, font/graph/manifest checks, output guard
   SkinInstaller, SkinRegistry, SkinRepository, SkinPublisher, DefaultSkin
   Features, Effects          what a bundled skin may ask for (features.json) and the page effects
+  Modes                      light and dark: the two selectors, a skin's mirror, the base's light twin
   PreviewChoice, PreviewGraph  what the picker previews, and the sample graph in the preview
   Settings, InstallException
   GraphPalette, GraphColours (middleware), SkinResolver, SkinInjector
@@ -475,8 +517,8 @@ gave:
 Verification at the time: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
 breaks each defence and requires a failing test (46 caught, 7 documented as
-redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,140 checks and
-134 mutations caught; `sh dev/test.sh all` prints the current figures.)
+redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,311 checks and
+156 mutations caught; `sh dev/test.sh all` prints the current figures.)
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See
 [SECURITY.md](SECURITY.md) for the controls and, as important, what is not

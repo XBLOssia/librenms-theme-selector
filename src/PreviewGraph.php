@@ -15,23 +15,35 @@ namespace Xblossia\ThemeSelector;
 final class PreviewGraph
 {
     private const DEFAULTS = [
-        'BACK' => '1C1C1C', 'GRID' => '3A3A3A', 'MGRID' => '555555', 'FONT' => 'CCCCCC',
-        'IN' => ['A5D6A7', '4CAF50', '2E7D32'], 'OUT' => ['90CAF9', '42A5F5', '1565C0'],
+        Modes::DARK => [
+            'BACK' => '1C1C1C', 'GRID' => '3A3A3A', 'MGRID' => '555555', 'FONT' => 'CCCCCC',
+            'IN' => ['A5D6A7', '4CAF50', '2E7D32'], 'OUT' => ['90CAF9', '42A5F5', '1565C0'],
+        ],
+        Modes::LIGHT => [
+            'BACK' => 'F4F4F4', 'GRID' => 'C8C8C8', 'MGRID' => 'FF9999', 'FONT' => '000000',
+            'IN' => ['C8E6C9', '66BB6A', '2E7D32'], 'OUT' => ['BBDEFB', '42A5F5', '1565C0'],
+        ],
     ];
 
     private const W = 480;
     private const H = 130;
 
-    /** @param array<string, mixed> $palette */
-    public static function svg(array $palette): string
+    /**
+     * @param  array<string, mixed>  $palette
+     * @param  string  $mode  the mode the graph is drawn for: which chrome keys (the `_dark` ones or not) and which stock colours it uses
+     */
+    public static function svg(array $palette, string $mode = Modes::DARK): string
     {
-        $chrome = is_string($palette['rrdgraph_def_text_dark'] ?? null) ? $palette['rrdgraph_def_text_dark'] : '';
-        $back = self::tag($chrome, 'BACK') ?? self::DEFAULTS['BACK'];
-        $grid = self::tag($chrome, 'GRID') ?? self::DEFAULTS['GRID'];
-        $mgrid = self::tag($chrome, 'MGRID') ?? self::DEFAULTS['MGRID'];
-        $font = self::hex($palette['rrdgraph_def_text_color_dark'] ?? null) ?? self::DEFAULTS['FONT'];
-        $in = self::ramp($palette['graph_colours.port_in'] ?? null, self::DEFAULTS['IN']);
-        $out = self::ramp($palette['graph_colours.port_out'] ?? null, self::DEFAULTS['OUT']);
+        $mode = Modes::valid($mode) ? $mode : Modes::DARK;
+        $d = self::DEFAULTS[$mode];
+        $suffix = $mode === Modes::DARK ? '_dark' : '';
+        $chrome = is_string($palette["rrdgraph_def_text$suffix"] ?? null) ? $palette["rrdgraph_def_text$suffix"] : '';
+        $back = self::tag($chrome, 'BACK') ?? $d['BACK'];
+        $grid = self::tag($chrome, 'GRID') ?? $d['GRID'];
+        $mgrid = self::tag($chrome, 'MGRID') ?? $d['MGRID'];
+        $font = self::hex($palette["rrdgraph_def_text_color$suffix"] ?? null) ?? $d['FONT'];
+        $in = self::ramp($palette['graph_colours.port_in'] ?? null, $d['IN']);
+        $out = self::ramp($palette['graph_colours.port_out'] ?? null, $d['OUT']);
 
         $left = 40;
         $right = self::W - 10;

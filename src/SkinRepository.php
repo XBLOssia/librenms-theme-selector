@@ -34,7 +34,7 @@ class SkinRepository
 {
     public const PUBLIC_DIR = 'css/custom/theme-selector';
 
-    /** @var array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, installed_at: ?string, updated_at: ?string, modes: string[]}>|null */
+    /** @var array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, installed_at: ?string, updated_at: ?string, mode: string, family: string, modes: string[]}>|null */
     private ?array $skins = null;
 
     public function __construct(
@@ -100,7 +100,7 @@ class SkinRepository
     }
 
     /**
-     * @return array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, installed_at: ?string, updated_at: ?string, modes: string[]}> by id, sorted by name
+     * @return array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, installed_at: ?string, updated_at: ?string, mode: string, family: string, modes: string[]}> by id, sorted by name
      */
     public function all(): array
     {
@@ -116,6 +116,7 @@ class SkinRepository
             }
             $manifest = json_decode((string) @file_get_contents("$this->publicDir/skins/$id/skin.json"), true);
             $manifest = is_array($manifest) ? $manifest : [];
+            $mode = Modes::valid($manifest['mode'] ?? null) ? $manifest['mode'] : (Modes::valid(($manifest['modes'] ?? [])[0] ?? null) ? $manifest['modes'][0] : Modes::DARK);
             $skins[$id] = [
                 'id' => $id,
                 'name' => is_string($manifest['name'] ?? null) ? $manifest['name'] : ucfirst($id),
@@ -125,7 +126,9 @@ class SkinRepository
                 'source' => 'bundled',
                 'installed_at' => null,
                 'updated_at' => null,
-                'modes' => array_values(array_intersect(['dark', 'light'], (array) ($manifest['modes'] ?? ['dark']))),
+                'mode' => $mode,
+                'family' => is_string($manifest['family'] ?? null) ? $manifest['family'] : '',
+                'modes' => [$mode],
             ];
         }
 
@@ -142,7 +145,9 @@ class SkinRepository
                 'source' => 'uploaded',
                 'installed_at' => self::stamp($row['created_at'] ?? null),
                 'updated_at' => self::stamp($row['updated_at'] ?? null),
-                'modes' => ['dark'],
+                'mode' => Modes::valid($row['mode'] ?? null) ? $row['mode'] : Modes::DARK,
+                'family' => (string) ($row['family'] ?? ''),
+                'modes' => [Modes::valid($row['mode'] ?? null) ? $row['mode'] : Modes::DARK],
                 'license' => (string) ($row['license'] ?? ''),
                 'license_text' => (string) ($row['license_text'] ?? ''),
                 'textures' => array_values(array_filter((array) ($row['textures'] ?? []), 'is_array')),
@@ -171,21 +176,23 @@ class SkinRepository
     }
 
     /**
-     * Webroot-relative URLs of the base stylesheet and the skin's token file,
-     * in load order, each with a cache-buster. Empty if either is missing: a
-     * token file without the base, or the base without tokens, would
-     * half-apply.
+     * Webroot-relative URLs of the base stylesheet and the skin's token file for one slot (light
+     * or dark mode), in load order, each with a cache-buster. A skin is written for one mode; in
+     * the other slot it is served as its mirror (same rules, the other selector), and the base
+     * has a light twin. Empty if any is missing: a token file without the base, or the base
+     * without tokens, would half-apply.
      *
      * @return string[]
      */
-    public function stylesheetUrls(string $id): array
+    public function stylesheetUrls(string $id, string $slot = Modes::DARK): array
     {
-        if (! self::isValidId($id)) {
+        if (! self::isValidId($id) || ! Modes::valid($slot) || ! $this->exists($id)) {
             return [];
         }
 
+        $native = $this->all()[$id]['mode'] ?? Modes::DARK;
         $urls = [];
-        foreach (['base.css', "skins/$id/skin.css"] as $file) {
+        foreach ([$slot === Modes::DARK ? 'base.css' : 'base-light.css', "skins/$id/" . ($native === $slot ? 'skin.css' : 'skin.mirror.css')] as $file) {
             $path = "$this->publicDir/$file";
             if (! is_file($path) || is_link($path)) {
                 return [];

@@ -254,6 +254,15 @@ Rules, as for the other layers:
 * The tile size is capped because it sizes a fixed layer. A percentage would size it by the viewport
   and a huge tile would allocate a huge texture.
 
+## Light mode
+
+The ornament layers work in light mode the same way: the light twin of `base.css` (see
+[PLUGIN.md](PLUGIN.md), "Light and dark") has every rule above under `html:not(.dark)`, and its gate
+is `html:not(.dark):has(link[data-ts-orn-light])`. The plugin marks a skin's link `data-ts-orn` in
+the dark slot and `data-ts-orn-light` in the light slot, so a dark skin's ornaments don't switch on
+the light slot's. An uploaded skin always gets the layer in whichever slot it is in; a bundled skin
+asks for it in `features.json`.
+
 ## Roadmap to parity with the bundled skins
 
 | Bundled skin does this | With | Status |

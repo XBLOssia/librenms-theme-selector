@@ -9,7 +9,7 @@ namespace Xblossia\ThemeSelector\Skin;
 final class CompiledSkin
 {
     /**
-     * @param  array{id: string, name: string, description: string, author: string, version: string, license: string, modes: string[]}  $manifest
+     * @param  array{id: string, name: string, description: string, author: string, version: string, license: string, family: string, mode: string, modes: string[]}  $manifest
      * @param  array<string, string|string[]>  $graph  validated graph palette, possibly empty
      */
     public function __construct(
@@ -21,6 +21,8 @@ final class CompiledSkin
         public readonly string $licenseText = '',
         /** @var array<int, array{name: string, width: int, height: int, bytes: int}> */
         public readonly array $textures = [],
+        /** The same rules for the other mode (Modes::mirror), published beside skin.css so the skin can be put in either slot. */
+        public readonly string $mirror = '',
     ) {
     }
 

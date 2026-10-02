@@ -31,6 +31,16 @@ $put('good-graph.zip', $std('slate-graph', $css, [['name' => 'graph.conf', 'data
 $put('good-linky.zip', $std('linky', $css));
 $put('good-font.zip', $std('with-font', "@font-face {\n  font-family: \"Test Face\";\n  src: url(\"fonts/test.woff2\") format(\"woff2\");\n}\n" . $css, [['name' => 'fonts/test.woff2', 'data' => fake_font('wOF2', 500), 'method' => 8]]));
 
+// A skin written for light mode: the same tokens under html:not(.dark), and a light graph palette.
+$lightCss = str_replace('html.dark', 'html:not(.dark)', $css);
+$lightStd = fn (string $id, string $cssText, array $manifestExtra = [], array $extra = []) => array_merge([
+    ['name' => 'skin.json', 'data' => good_manifest(array_merge(['id' => $id, 'name' => ucwords(str_replace('-', ' ', $id)), 'mode' => 'light', 'family' => 'Test Family'], $manifestExtra)), 'method' => 8],
+    ['name' => 'skin.css', 'data' => $cssText, 'method' => 8],
+], $extra);
+$lightGraph = [['name' => 'graph.conf', 'data' => "rrdgraph_def_text=-c BACK#FFEECC -c GRID#AA8844 -c MGRID#996633\nrrdgraph_def_text_color=332200\ngraph_colours.greens=[\"223311\",\"334422\",\"445533\"]\n", 'method' => 8]];
+$put('good-light.zip', $lightStd('paper-teal', $lightCss, [], $lightGraph));
+$put('good-light-v2.zip', $lightStd('paper-teal', str_replace('#2ec4b6', '#ffb000', $lightCss), [], $lightGraph));
+
 // ---- valid but not allowed -------------------------------------------------------
 $put('collide-bundled.zip', $std('terran', $css));
 $put('reserved-id.zip', $std('none', $css));
@@ -92,6 +102,12 @@ $put('evil-texture-name.zip', $std('evil', $css, [['name' => 'textures/shell.php
 $put('evil-texture-unused.zip', $std('evil', $css, [['name' => 'textures/tile.png', 'data' => $tile, 'method' => 8]]));
 
 // ---- hostile: the stylesheet -----------------------------------------------------
+$put('evil-mode-light-over-dark.zip', $lightStd('evil', $css));
+$put('evil-mode-dark-over-light.zip', $std('evil', $lightCss));
+$put('evil-mode-both-wrappers.zip', $std('evil', $css . $lightCss));
+$put('evil-mode-light-selector.zip', $lightStd('evil', "html:not(.dark), body { --ts-bg: #fff; }\n"));
+$put('evil-mode-light-breakout.zip', $lightStd('evil', "html:not(.dark) {\n  --ts-bg: red; } body { display: none } html:not(.dark) {\n}\n"));
+$put('evil-mode-unknown.zip', $lightStd('evil', $lightCss, ['mode' => 'sepia']));
 $put('evil-css-url.zip', $std('evil', "html.dark {\n  --ts-navbar-bg-image: url(http://evil.example/beacon.png);\n  --ts-bg: #000;\n}\n"));
 $put('evil-css-import.zip', $std('evil', "@import url(http://evil.example/x.css);\n" . $css));
 $put('evil-css-breakout.zip', $std('evil', "html.dark {\n  --ts-bg: red; } body { display: none } html.dark {\n}\n"));

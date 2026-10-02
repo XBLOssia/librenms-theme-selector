@@ -1,0 +1,10 @@
+{
+  "id": "clock-tower-daylight",
+  "name": "Clock Tower Daylight",
+  "description": "Natural light on parchment and walnut, with brass fittings. The daytime face of the Clock Tower family.",
+  "author": "XBLOssia",
+  "version": "1.0.0",
+  "license": "MIT",
+  "mode": "light",
+  "family": "Clock Tower"
+}

@@ -2,6 +2,8 @@
 
 namespace Xblossia\ThemeSelector\Skin;
 
+use Xblossia\ThemeSelector\Modes;
+
 /**
  * Turns a skin bundle into something safe to publish, or explains why not.
  *
@@ -75,7 +77,15 @@ final class SkinCompiler
             $report->error('bundle', 'has textures totalling ' . $textureBytes . ' bytes once cleaned; the limit is ' . Limits::TEXTURES_TOTAL);
         }
 
-        $css = (new TokenFile($this->catalog, $mode))->compile($files['skin.css'], $fonts, $report, $textures);
+        $skinMode = $manifest['mode'] ?? Modes::DARK;
+        $css = (new TokenFile($this->catalog, $mode))->compile($files['skin.css'], $fonts, $report, $textures, $skinMode);
+        // The same rules for the other mode, so the skin can be put in either slot. It is derived from
+        // the validated stylesheet by swapping one selector, and checked again as the stylesheet it is.
+        $mirror = $css === null ? null : Modes::mirror($css);
+        if ($css !== null && ($mirror === null || ($mode === Mode::Upload && ! OutputGuard::safe($mirror, substr_count($css, '@font-face'), count($textures), Modes::other($skinMode))))) {
+            $report->error('skin.css', 'could not be prepared for the other mode (this is a bug; please report it)');
+            $css = null;
+        }
 
         $graph = [];
         if (isset($files['graph.conf'])) {
@@ -97,10 +107,11 @@ final class SkinCompiler
             $manifest,
             $css,
             $graph,
-            hash('sha256', json_encode([$manifest, $css, $graph, $licenseText])),
+            hash('sha256', json_encode([$manifest, $css, $mirror, $graph, $licenseText])),
             count($fonts),
             $licenseText,
             array_map(fn (string $file, array $t) => ['name' => substr($file, 9, -4), 'width' => $t['width'], 'height' => $t['height'], 'bytes' => strlen($t['png'])], array_keys($textures), array_values($textures)),
+            (string) $mirror,
         );
     }
 }

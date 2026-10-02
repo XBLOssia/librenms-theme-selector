@@ -78,8 +78,11 @@ ramp() {   # ramp <json-array> <index>  ->  bare hex
 render() {  # render <skin> <width> <height> <suffix>
   skin="$1"; w="$2"; h="$3"; sfx="$4"
   gc="$REPO/skins/$skin/graph.conf"
+  # A skin's palette is for the mode it is written for: the _dark pair for a dark skin, the plain pair for a light one.
   chrome="$(conf_val rrdgraph_def_text_dark "$gc")"
   fontc="$(conf_val rrdgraph_def_text_color_dark "$gc")"
+  [ -n "$chrome" ] || chrome="$(conf_val rrdgraph_def_text "$gc")"
+  [ -n "$fontc" ] || fontc="$(conf_val rrdgraph_def_text_color "$gc")"
   pin="$(conf_val graph_colours.port_in "$gc")"
   pout="$(conf_val graph_colours.port_out "$gc")"
 
@@ -121,7 +124,7 @@ render() {  # render <skin> <width> <height> <suffix>
 }
 
 echo "Rendering demo graphs into $OUT"
-for skin in terran protoss zerg digital-rain; do
+for skin in terran protoss zerg digital-rain clock-tower-daylight clock-tower-lantern; do
   [ -f "$REPO/skins/$skin/graph.conf" ] || continue
   render "$skin" 480 130 ""
   render "$skin" 860 180 "-wide"

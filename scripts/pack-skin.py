@@ -5,8 +5,8 @@
 
 The directory holds exactly:
 
-    skin.json     required   id and name are required; description, author, version, license are optional
-    skin.css      required   html.dark { --ts-*: ...; --p-*: ...; } and @font-face
+    skin.json     required   id and name are required; description, author, version, license, family and mode ("dark" or "light") are optional
+    skin.css      required   html.dark { --ts-*: ...; --p-*: ...; } (or html:not(.dark) { ... } for a light-mode skin) and @font-face
     graph.conf    optional   graph colour palette
     LICENSE.txt   optional   licence notice for the fonts (stored and shown to admins, never served)
     fonts/*.woff2 optional   the fonts skin.css refers to (also .woff)

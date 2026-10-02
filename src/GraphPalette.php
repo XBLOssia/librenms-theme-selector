@@ -5,6 +5,7 @@ namespace Xblossia\ThemeSelector;
 use App\Facades\LibrenmsConfig;
 use App\Models\Config as ConfigModel;
 use Xblossia\ThemeSelector\Graph\PortSeriesSupport;
+use Xblossia\ThemeSelector\Skin\GraphConf;
 
 /**
  * A skin's graph palette, and how it reaches LibreNMS's graph code.
@@ -49,14 +50,20 @@ class GraphPalette
     }
 
     /**
-     * The skin's palette limited to keys LibreNMS will use: the ones it declares, and the
-     * graph_colours.port_in/port_out pair when something honours them (see PORT_STOCK).
+     * The skin's palette for graphs drawn in one mode, limited to keys LibreNMS will use: the
+     * ones it declares, and the graph_colours.port_in/port_out pair when something honours them
+     * (see PORT_STOCK).
+     *
+     * A graph is drawn light or dark (the request's `style`), and a skin's palette is tuned for
+     * the mode the skin is written for: it applies in that mode, and in the other the graphs stay
+     * as they are without it. In a mode only that mode's chrome keys apply (the `_dark` ones for
+     * dark graphs, the others for light); the series ramps are the same keys in both.
      *
      * @return array<string, string|array<int, string>>
      */
-    public function palette(?string $skinId): array
+    public function palette(?string $skinId, string $mode = Modes::DARK): array
     {
-        if ($skinId === null) {
+        if ($skinId === null || ! $this->skins->exists($skinId) || ($this->skins->all()[$skinId]['mode'] ?? Modes::DARK) !== $mode) {
             return [];
         }
 
@@ -64,9 +71,36 @@ class GraphPalette
 
         return array_filter(
             $this->skins->graphPalette($skinId),
-            fn ($key) => array_key_exists($key, $definitions) || (isset(self::PORT_STOCK[$key]) && $this->portSeriesHonoured()),
+            fn ($key) => $this->forMode($key, $mode)
+                && (array_key_exists($key, $definitions) || (isset(self::PORT_STOCK[$key]) && $this->portSeriesHonoured())),
             ARRAY_FILTER_USE_KEY,
         );
+    }
+
+    /**
+     * Does this key matter to graphs drawn in $mode: the series ramps always, the chrome and its
+     * text colour only for their own mode.
+     */
+    private function forMode(string $key, string $mode): bool
+    {
+        if (in_array($key, GraphConf::CHROME_KEYS, true) || in_array($key, GraphConf::FONT_KEYS, true)) {
+            return str_ends_with($key, '_dark') === ($mode === Modes::DARK);
+        }
+
+        return true;
+    }
+
+    /**
+     * What the persistent config holds when the instance defaults are $dark and $light: the dark
+     * default's palette for dark graphs, the light default's for light ones. The series ramps are
+     * one set of keys for both, and graphs nobody asked for in a mode (an alert email, the API)
+     * are drawn light, so where both defaults set one the light default's wins.
+     *
+     * @return array<string, string|array<int, string>>
+     */
+    public function defaultsPalette(?string $dark, ?string $light): array
+    {
+        return $this->palette($light, Modes::LIGHT) + $this->palette($dark, Modes::DARK);
     }
 
     /**
@@ -83,11 +117,13 @@ class GraphPalette
     }
 
     /**
+     * Write the instance defaults' palettes into the persistent config (see defaultsPalette).
+     *
      * @return string[] keys applied
      */
-    public function apply(?string $skinId): array
+    public function apply(?string $dark, ?string $light = null): array
     {
-        $palette = $this->palette($skinId);
+        $palette = $this->defaultsPalette($dark, $light);
 
         /** @var array<string, array{override: bool, value: mixed}> $originals */
         $originals = $this->settings->get(Settings::GRAPH_ORIGINALS, []);
@@ -127,25 +163,28 @@ class GraphPalette
     }
 
     /**
-     * What to set, in memory, for a request whose user resolves to $skinId
-     * when the persistent config holds $defaultSkinId's palette. Empty when
-     * they are the same: the config is already right.
+     * What to set, in memory, for a graph drawn in $mode for a user whose skin in that mode is
+     * $skinId, when the persistent config holds the palettes of the defaults $defaultDark and
+     * $defaultLight. Empty when the config is already right.
      *
-     * A key the user's skin doesn't set but the default's does goes back to
-     * its stock value, so a user who chose stock LibreNMS gets stock graphs.
+     * A key the user's skin doesn't set but the config does goes back to its stock value, so a
+     * user who chose stock LibreNMS gets stock graphs. Only keys that matter in $mode are
+     * considered (the other mode's chrome never affects this graph).
      *
      * @return array<string, string|array<int, string>>
      */
-    public function overridesFor(?string $skinId, ?string $defaultSkinId): array
+    public function overridesFor(?string $skinId, string $mode, ?string $defaultDark, ?string $defaultLight): array
     {
-        if ($skinId === $defaultSkinId) {
-            return [];
+        $wanted = $this->palette($skinId, $mode);
+        $held = array_filter($this->defaultsPalette($defaultDark, $defaultLight), fn ($key) => $this->forMode($key, $mode), ARRAY_FILTER_USE_KEY);
+
+        $overrides = [];
+        foreach ($wanted as $key => $value) {
+            if (! array_key_exists($key, $held) || $held[$key] !== $value) {
+                $overrides[$key] = $value;
+            }
         }
-
-        $wanted = $this->palette($skinId);
-        $overrides = $wanted;
-
-        foreach (array_keys($this->palette($defaultSkinId)) as $key) {
+        foreach (array_keys($held) as $key) {
             if (! array_key_exists($key, $wanted)) {
                 $overrides[$key] = $this->stockValue($key);
             }

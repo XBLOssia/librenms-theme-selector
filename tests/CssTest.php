@@ -18,11 +18,11 @@ function catalog(): TokenCatalog
 /**
  * @param  array<string, string>  $fonts
  */
-function css_compile(string $css, array $fonts = [], Mode $mode = Mode::Upload, ?Report &$report = null): ?string
+function css_compile(string $css, array $fonts = [], Mode $mode = Mode::Upload, ?Report &$report = null, string $skinMode = 'dark'): ?string
 {
     $report = new Report();
 
-    return (new TokenFile(catalog(), $mode))->compile($css, $fonts, $report);
+    return (new TokenFile(catalog(), $mode))->compile($css, $fonts, $report, [], $skinMode);
 }
 
 /** A block of html.dark declarations. */

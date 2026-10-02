@@ -74,8 +74,8 @@ function test_modes(): void
         }
     }
     $keptCss = implode("\n", $kept);
-    T::ok('the fences in base.css are balanced and hold only the dark map', $balanced && ! $inside && $fenced !== [] && count(array_filter($fenced, fn ($l) => $l !== '' && ! str_starts_with($l, ' ') && ! str_starts_with($l, '}') && ! str_contains($l, 'leaflet'))) === 0);
-    T::ok('the dark map is in the dark base and not in the twin', str_contains($base, 'leaflet-tile') && ! str_contains($twin, 'leaflet') && ! str_contains($twin, 'ts:dark-only'));
+    T::ok('the fences in base.css are balanced and hold only the dark attribution bar', $balanced && ! $inside && $fenced !== [] && count(array_filter($fenced, fn ($l) => $l !== '' && ! str_starts_with($l, ' ') && ! str_starts_with($l, '}') && ! str_contains($l, 'leaflet'))) === 0);
+    T::ok('the black attribution bar is in the dark base and not in the twin; the tile filter is in both (a token)', str_contains($base, 'leaflet-control-attribution') && ! str_contains($twin, 'leaflet-control-attribution') && str_contains($twin, 'leaflet-tile') && ! str_contains($twin, 'ts:dark-only'));
     T::ok('the twin has no html.dark left', ! str_contains($twin, 'html.dark'));
     T::ok('every html.dark outside the fences became html:not(.dark)', substr_count($twin, 'html:not(.dark)') === substr_count($keptCss, 'html.dark'), substr_count($twin, 'html:not(.dark)') . ' vs ' . substr_count($keptCss, 'html.dark'));
     T::ok('the ornament gate looks for the light slot\'s own mark', substr_count($twin, 'link[data-ts-orn-light]') === substr_count($keptCss, 'link[data-ts-orn]') && ! str_contains($twin, 'link[data-ts-orn]'));
@@ -275,14 +275,15 @@ function test_light_css(): void
     $bad = [];
     foreach (array_filter(array_map('trim', explode(';', $rules[0][2]))) as $d) {
         [$name, $value] = array_map('trim', explode(':', $d, 2)) + ['', ''];
-        if (preg_match('/^--(tw-color-[a-z]+-\d+|ts-light-n\d+)\z/', $name) !== 1) {
+        if (preg_match('/^--(tw-color-[a-z]+-\d+|ts-light-n\d+|ts-map-tile-filter)\z/', $name) !== 1) {
             $bad[] = $name;
         }
         if (str_starts_with($name, '--ts-light-')) {
             $own[$name] = true;
         }
     }
-    T::ok('the root block sets only Tailwind colour variables and its own helpers', $bad === [], implode(', ', $bad));
+    T::ok('the root block sets only Tailwind colour variables, its own helpers and the map filter', $bad === [], implode(', ', $bad));
+    T::ok('the light twin\'s map is unfiltered by default, so a skin chooses its own map', str_contains($rules[0][2], '--ts-map-tile-filter: none;'));
     T::ok('and has many (the scales it maps)', substr_count($rules[0][2], '--tw-color-') > 60);
     $cat = catalog();
     $bad = [];
@@ -370,4 +371,20 @@ function test_clock_tower(): void
             return $lum($skins['daylight'][1]['skin.css']) > 0.7 && $lum($skins['lantern'][1]['skin.css']) < 0.15;
         })());
     }
+}
+
+/*
+ * Stock dark markup hard-codes a few light greys that are unreadable on a skin whose surfaces are light (a
+ * light skin in the dark slot). The base answers them with the skin's own roles, in both modes.
+ */
+function test_stock_greys(): void
+{
+    T::group('stock greys: answered with roles, in the dark base and its twin');
+    $base = (string) file_get_contents(__DIR__ . '/../base/base.css');
+    $twin = Modes::lightBase($base);
+    foreach (['html.dark' => $base, 'html:not(.dark)' => $twin] as $wrap => $css) {
+        T::ok("$wrap: a sortable table header's text is the skin's dim text, not tw_dark.css's fixed grey", str_contains($css, "$wrap .bootgrid-table th > .column-header-anchor {\n  color: var(--ts-text-dim);\n}"));
+        T::ok("$wrap: Tailwind's quiet greys (gray-400, gray-500) are the skin's muted text", str_contains($css, '--tw-color-gray-400: var(--ts-text-mute);') && str_contains($css, '--tw-color-gray-500: var(--ts-text-mute);'));
+    }
+    T::ok('the tile filter is a token read by the map in both modes, and the twin defaults it to none', str_contains($twin, "html:not(.dark) .leaflet-tile {\n  filter: var(--ts-map-tile-filter);") && str_contains((string) file_get_contents(__DIR__ . '/../base/light.css'), '--ts-map-tile-filter: none;'));
 }

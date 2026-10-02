@@ -33,7 +33,7 @@ PALETTES = {
         bg='#ece0c8', surface='#f8f1e1', raised='#efe3cb', hover='#e4d3ae', line='#c9ad7c', line_strong='#a37b3a',
         text='#3b2a1c', dim='#58422d', mute='#664d34', bright='#1f130a',
         brass='#9a6a1c', brass_hi='#c99a3c', brass_dim='#c9ad7c',
-        link='#7a3412', link_hover='#5a2208', accent='#8a5a14', highlight='#b4801e',
+        link='#7a3412', link_hover='#5a2208', accent='#7a4f10', highlight='#b4801e',
         success='#3d6a28', warning='#8c5900', danger='#a02e1e', info='#2b5f7c', danger_text='#8e2418',
         label_success='#3d6a28', label_danger='#a02e1e', label_warning='#c78a14', label_info='#2b5f7c', label_default='#7a6446',
         on_label='#fff8e8', on_warn='#2a1a05',
@@ -402,7 +402,7 @@ def contrast_problems(p):
     grounds = ['bg', 'surface', 'raised', 'hover']
     for fg in ('text', 'dim', 'mute', 'bright', 'link', 'accent', 'danger_text', 'success', 'warning', 'danger', 'info'):
         for bg in grounds:
-            if fg in ('success', 'warning', 'danger', 'info', 'accent') and bg in ('bg', 'hover'):
+            if fg in ('success', 'warning', 'danger', 'info') and bg in ('bg', 'hover'):
                 continue
             r = ratio(p[fg], p[bg])
             if r < 4.5:

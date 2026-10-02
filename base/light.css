@@ -106,6 +106,10 @@ html:not(.dark) {
   --tw-color-orange-400: var(--ts-warning);
   --tw-color-orange-600: var(--ts-warning);
   --tw-color-yellow-600: var(--ts-warning);
+
+  /* The map: left as LibreNMS draws it. (The dark base inverts and dims the tiles by default; a dark skin
+     in this slot sets its own filter, and its map is dark.) */
+  --ts-map-tile-filter: none;
 }
 
 /* Stock light markup paints some surfaces with the plain white utility (`white` itself is kept, for

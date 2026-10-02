@@ -956,6 +956,11 @@ html.dark .bootgrid-header, html.dark .bootgrid-footer {
 html.dark .bootgrid-table th {
   color: var(--ts-accent);
 }
+/* tw_dark.css paints a table's sortable header text a fixed light grey (#bfc0c0), which is unreadable on a
+ * skin whose surfaces are light (a light skin in the dark slot). */
+html.dark .bootgrid-table th > .column-header-anchor {
+  color: var(--ts-text-dim);
+}
 html.dark .bootgrid-table td {
   color: var(--ts-text);
 }
@@ -1309,7 +1314,6 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 html.dark ::-webkit-scrollbar-corner {
   background: var(--ts-scrollbar-corner-bg);
 }
-/* ts:dark-only: the dark map. The light twin of this file leaves the map as LibreNMS draws it. */
 html.dark .leaflet-container {
   background: var(--ts-surface);
 }
@@ -1318,7 +1322,6 @@ html.dark .leaflet-bar a, html.dark .leaflet-control-layers, html.dark .leaflet-
   color: var(--ts-text);
   border-color: var(--ts-border);
 }
-/* ts:end-dark-only */
 html.dark .panel-primary, html.dark .panel-success, html.dark .panel-info, html.dark .panel-warning, html.dark .panel-danger {
   background-color: var(--ts-surface);
 }
@@ -1646,7 +1649,8 @@ html.dark .bootstrap-switch.bootstrap-switch-focused {
   border-color: var(--ts-accent);
   box-shadow: var(--ts-switch-focus-shadow);
 }
-/* ts:dark-only: the dark map's tiles (inverted and dimmed), overlay and attribution. */
+/* The map's tiles are filtered by a token: the dark base's default inverts and dims them, and the light twin's
+ * default (base/light.css) is none, so a skin chooses its own map in either mode. */
 html.dark .leaflet-tile {
   filter: var(--ts-map-tile-filter);
 }
@@ -1654,6 +1658,7 @@ html.dark .leaflet-overlay-pane path {
   stroke: var(--ts-accent);
   stroke-opacity: .85;
 }
+/* ts:dark-only: the black attribution bar of the dark map. The light twin leaves it as LibreNMS draws it. */
 html.dark .leaflet-control-attribution {
   background: rgba(0, 0, 0, .6) !important;
   color: var(--ts-text-mute) !important;
@@ -1965,6 +1970,10 @@ html.dark {
   --tw-color-red-500: var(--ts-danger-text);
   --tw-color-red-400: var(--ts-danger-text);
   --tw-color-blue-400: var(--ts-link);
+  /* Stock markup greys its quiet text (`tw:text-gray-400`, `-500`) with Tailwind's own greys, which is a mid
+     grey on any ground: the skin's own muted text instead. */
+  --tw-color-gray-400: var(--ts-text-mute);
+  --tw-color-gray-500: var(--ts-text-mute);
 }
 @layer utilities {
   html.dark .panel[class*="tw:rounded"] {

@@ -82,7 +82,7 @@ final class SkinCompiler
         // The same rules for the other mode, so the skin can be put in either slot. It is derived from
         // the validated stylesheet by swapping one selector, and checked again as the stylesheet it is.
         $mirror = $css === null ? null : Modes::mirror($css);
-        if ($css !== null && ($mirror === null || ($mode === Mode::Upload && ! OutputGuard::safe($mirror, count($fonts), count($textures), Modes::other($skinMode))))) {
+        if ($css !== null && ($mirror === null || ($mode === Mode::Upload && ! OutputGuard::safe($mirror, substr_count($css, '@font-face'), count($textures), Modes::other($skinMode))))) {
             $report->error('skin.css', 'could not be prepared for the other mode (this is a bug; please report it)');
             $css = null;
         }

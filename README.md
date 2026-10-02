@@ -32,7 +32,7 @@ asset ports.
 | **Protoss** | Chamfered, gold-bracketed | Void blue + keratinous gold, psionic flame | Cinzel + Rajdhani |
 | **Zerg** | Asymmetric, grown, uneven | Creep purple + bone, ichor green, ember orange | Metamorphous + Chakra Petch |
 | **Digital Rain** | Square, torn corners, scanlined | Phosphor green on black, amber and red for alarms | System monospace (Share Tech Mono when installed) |
-| **Clock Tower Daylight** (light) | Double-ruled, leaf-cornered, gilt-bracketed | Parchment, walnut and brass | Playfair Display + Libre Baskerville when installed, system serifs otherwise |
+| **Clock Tower Daylight** (light) | Double-ruled, leaf-cornered, gilt-bracketed | Parchment, walnut and brass | Playfair Display + Libre Baskerville |
 | **Clock Tower Lantern** (dark) | The same room at night | Umber, candle cream, amber glow | The same |
 
 Terran, Protoss and Zerg were installed and verified on a production instance (2026-09-29). Digital Rain and the Clock Tower skins are newer and have been checked on the development instance only.
@@ -104,7 +104,7 @@ cogwheels behind the page. **Daylight** is natural light on parchment and walnut
 **Lantern** is the same room at night, lit from inside: umber surfaces, candle-cream text, an amber
 glow on the brass that settles slowly (a nine-second fade, never a flash), for dark mode. Outbound
 traffic on graphs is brass and inbound is olive green, which differ in lightness as well as hue.
-Both are generated from one template by [scripts/make-clock-tower.py](scripts/make-clock-tower.py), which also
+Type is Playfair Display for headings (with Libre Baskerville's digits, because Playfair's old-style figures turn a 0 into an o) and Libre Baskerville for text, both bundled. Both are generated from one template by [scripts/make-clock-tower.py](scripts/make-clock-tower.py), which also
 checks that every text colour is at least 4.5:1 on its ground, and each is valid as an upload.
 
 ![The Clock Tower Daylight skin on a LibreNMS dashboard](docs/img/dashboard-clock-tower-daylight.png)
@@ -221,12 +221,12 @@ frame against a clean futuristic sans for the data. Zerg puts a gnarled organic
 display face on the frame and keeps a readable angular sans on the data — the
 weirdness lives in the geometry instead, which is what keeps it usable.
 
-Terran, Protoss and Zerg bundle their faces, so this works with no setup and no external
+Terran, Protoss, Zerg and both Clock Tower skins bundle their faces, so this works with no setup and no external
 requests — which matters on an air-gapped NOC box, where a Google Fonts
 `@import` would silently degrade exactly where it is least convenient to
 debug. Details, sizes, licensing and how to swap a face:
 [terran](skins/terran/FONTS.md) · [protoss](skins/protoss/FONTS.md) ·
-[zerg](skins/zerg/FONTS.md). Digital Rain asks for Share Tech Mono and falls back to the
+[zerg](skins/zerg/FONTS.md) · [clock tower](skins/clock-tower-daylight/FONTS.md). Digital Rain asks for Share Tech Mono and falls back to the
 system monospace until that font is bundled.
 
 ---

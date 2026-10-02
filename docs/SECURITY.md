@@ -50,8 +50,8 @@ guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 2,271 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (155 flaws caught, 9 documented as
+`php tests/run.php` runs 2,311 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (156 flaws caught, 9 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 (Counts as of 2026-10-02; `sh dev/test.sh all` prints the current ones.)
 Run all of it with `sh dev/test.sh all`.

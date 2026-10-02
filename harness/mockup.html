@@ -129,7 +129,8 @@
   // (base.css), not the one that declares it, so a skin's --tx-<name>: url("textures/<name>.png")
   // would point into base/. The plugin embeds textures as data: URLs when it publishes; here, point
   // them at the skin's folder instead.
-  if (!special) { mirrored = mirrored.replace(/url\("textures\//g, 'url("../skins/' + skin + '/textures/'); }
+  // (Fonts too: an inline stylesheet resolves url("fonts/...") against harness/.)
+  if (!special) { mirrored = mirrored.replace(/url\("(textures|fonts)\//g, 'url("../skins/' + skin + '/$1/'); }
   var orn = ORNAMENTS.indexOf(skin) !== -1 ? (mode === 'light' ? ' data-ts-orn-light' : ' data-ts-orn') : '';
   if (mode === 'light') {
     document.documentElement.classList.remove('dark');

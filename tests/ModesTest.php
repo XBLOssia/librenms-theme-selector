@@ -116,6 +116,10 @@ function test_modes(): void
     $legacy = $compiler->compileFiles(['skin.json' => good_manifest(['modes' => ['light']]), 'skin.css' => light('--ts-bg: #fff;')], $rep);
     T::ok('the older "modes": ["light"] spelling still means light', $legacy !== null && $legacy->manifest['mode'] === 'light', implode(' | ', $rep->errors()));
 
+    $face = fn (string $range) => "@font-face {\n  font-family: \"Two Faces\";\n  src: url(\"fonts/one.woff2\") format(\"woff2\");\n  font-weight: 700;\n  unicode-range: $range;\n}\n";
+    $rep = new Report();
+    $two = $compiler->compileFiles(['skin.json' => good_manifest(['mode' => 'light']), 'skin.css' => $face('U+0000-002F, U+003A-10FFFF') . $face('U+0030-0039') . light('--ts-bg: #fff;', '--ts-font-display: "Two Faces", serif;'), 'fonts/one.woff2' => fake_font('wOF2', 500)], $rep);
+    T::ok('one font file may serve two faces (split by unicode-range), and the skin still gets its mirror', $two !== null && substr_count($two->css, '@font-face') === 2 && substr_count($two->mirror, '@font-face') === 2 && $two->fontCount === 1 && Modes::nativeOf($two->mirror) === 'dark', implode(' | ', $rep->errors()));
     T::group('modes: skin.json');
     $r = new Report();
     $m = Manifest::parse(good_manifest(['mode' => 'light']), $r);
@@ -284,6 +288,9 @@ function test_clock_tower(): void
         foreach (glob("$dir/textures/*.png") ?: [] as $png) {
             $files['textures/' . basename($png)] = (string) file_get_contents($png);
         }
+        foreach (glob("$dir/fonts/*.woff2") ?: [] as $font) {
+            $files['fonts/' . basename($font)] = (string) file_get_contents($font); // the OFL notices stay bundled-only
+        }
         $rep = new Report();
         $skin = $compiler->compileFiles($files, $rep); // as an upload: features.json is the one thing it can't carry
         T::ok("clock-tower-$name compiles as an upload", $skin !== null, implode(' | ', $rep->errors()));
@@ -298,7 +305,17 @@ function test_clock_tower(): void
         $other = $mode === 'light' ? ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'] : ['rrdgraph_def_text', 'rrdgraph_def_text_color'];
         T::ok("clock-tower-$name's graph palette has its own mode's chrome, the ramps and the port series, and not the other mode's chrome",
             count(array_diff($chrome, array_keys($skin->graph))) === 0 && isset($skin->graph['graph_colours.port_in'], $skin->graph['graph_colours.port_out'], $skin->graph['graph_colours.greens']) && count(array_intersect($other, array_keys($skin->graph))) === 0);
-        T::ok("clock-tower-$name sets no fonts it does not ship (the system serifs are the fallback)", $skin->fontCount === 0 || is_dir("$dir/fonts"));
+        T::ok("clock-tower-$name ships its three font files, each with an OFL notice beside them", $skin->fontCount === 3 && count(glob("$dir/fonts/*.woff2") ?: []) === 3 && count(glob("$dir/fonts/OFL-*.txt") ?: []) === 2);
+        T::ok("clock-tower-$name's stylesheet names the fonts it ships and no others", (function () use ($files, $dir) {
+            preg_match_all('#url\("fonts/([^"]+)"\)#', $files['skin.css'], $m);
+            $m[1] = array_values(array_unique($m[1])); // one file may serve two faces (the display face is split by unicode-range)
+            sort($m[1]);
+            $have = array_map('basename', glob("$dir/fonts/*.woff2") ?: []);
+            sort($have);
+
+            return $m[1] === $have;
+        })());
+        T::ok("clock-tower-$name has a FONTS.md", is_file("$dir/FONTS.md"));
     }
     if (count($skins) === 2) {
         $names = fn (string $css): array => (function () use ($css) {

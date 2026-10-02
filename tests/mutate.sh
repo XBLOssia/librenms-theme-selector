@@ -270,6 +270,8 @@ run_with src/SkinPublisher.php "s#\$this->write(dirname(\$target) . '/skin.mirro
 run_with src/PreviewGraph.php "s#\$suffix = \$mode === Modes::DARK ? '_dark' : '';#\$suffix = '_dark';#" "modes: a light graph is drawn from the dark chrome keys"
 run_with src/Skin/GraphConf.php "s#public const CHROME_KEYS = \['rrdgraph_def_text', 'rrdgraph_def_text_dark'\];#public const CHROME_KEYS = ['rrdgraph_def_text_dark'];#" "modes: graph.conf refuses the light chrome"
 
+run_with src/Skin/SkinCompiler.php "s#substr_count(\$css, '@font-face'), count(\$textures), Modes::other#count(\$fonts), count(\$textures), Modes::other#" "modes: guard the mirror against one face per font file"
+
 wait
 n=1
 while [ "$n" -le "$IDX" ]; do

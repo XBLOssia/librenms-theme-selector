@@ -11,8 +11,8 @@ walnut; Lantern is the same room at night, lit from inside: umber and candle cre
 Everything the skins set is an ordinary token an uploaded skin may set, so either could be uploaded as a
 bundle (without features.json, which only bundled skins have). The one image in each, a faint tile of
 cogwheels, is computed here from fixed numbers: no source art, nothing to credit. The type is Playfair
-Display for headings and Libre Baskerville for text when they are available, and the system's serifs
-otherwise (neither is bundled yet).
+Display for headings and Libre Baskerville for text, bundled in each skin's fonts/ with their OFL notices
+(scripts/fetch-fonts.ps1 fetches them), and the system's serifs if they fail to load.
 
 Needs numpy and Pillow to write the textures (development only; the plugin never runs this); --check needs
 neither.
@@ -90,8 +90,41 @@ CSS = Template(r'''/*
  *
  * Every token here is one an uploaded skin may set (the same file validates as an upload), plus the
  * texture textures/gears.png, computed by the script. The type is Playfair Display for headings and
- * Libre Baskerville for text when they are available, and the system's serifs otherwise.
+ * Libre Baskerville for text (both SIL OFL, bundled in fonts/), and the system's serifs if they fail to load.
+ * Playfair Display's figures are old-style (a 0 looks like an o, a 1 like an l), which is wrong for
+ * hostnames and counters, so the display face is Playfair for everything but the digits 0-9, which come
+ * from Libre Baskerville Bold (two @font-face blocks, split by unicode-range).
  */
+@font-face {
+  font-family: "Clock Tower Display";
+  src: url("fonts/PlayfairDisplay-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-002F, U+003A-10FFFF;
+}
+@font-face {
+  font-family: "Clock Tower Display";
+  src: url("fonts/LibreBaskerville-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Clock Tower Text";
+  src: url("fonts/LibreBaskerville-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clock Tower Text";
+  src: url("fonts/LibreBaskerville-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 $wrap {
   /* Palette */
   --p-bg: $bg;
@@ -115,8 +148,8 @@ $wrap {
   --p-glow: $glow;
   --p-shade: $shade;
   --p-shade-strong: $shade_strong;
-  --p-display: "Playfair Display", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
-  --p-serif: "Libre Baskerville", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --p-display: "Clock Tower Display", "Playfair Display", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --p-serif: "Clock Tower Text", "Libre Baskerville", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
   --p-mono: "Courier Prime", "Courier New", Courier, ui-monospace, monospace;
   --p-wash: $wash;
   --p-page: $page;
@@ -293,6 +326,60 @@ $marker_breathe_decl
 ''')
 
 
+FONTS_MD = Template(r'''# Fonts — Clock Tower ($name)
+
+**The fonts ship with the skin. There is nothing to install.**
+
+They sit inside the skin folder, so nothing is fetched at run time: no Google Fonts request, nothing for
+the end user to do. (The folder alone does not apply a skin: it needs the plugin and `base/base.css`, see
+the README.) Both Clock Tower skins carry the same three files.
+
+## The two voices
+
+| Token | Face | Role | Applied to |
+|---|---|---|---|
+| `--p-display` | Playfair Display 700 | A high-contrast Victorian display serif: the clock face | Navbar, panel and widget headings, table headings, tabs |
+| `--p-serif` | Libre Baskerville 400/700 | A sturdy, open book serif that holds up at 13-14px | Everything else: table cells, labels, inputs, text |
+
+Both are named in `skin.css` by private family names (`Clock Tower Display`, `Clock Tower Text`), with the
+real names and then the system serifs (Palatino, Book Antiqua, Georgia) behind them, so a failed load
+degrades to a serif and never to a sans. Code and `pre` use the system's Courier.
+
+Playfair Display is only used at header sizes. Its hairlines are too fine for a dense table, and its figures
+are old-style (a 0 reads as an o, a 1 as an l), which is wrong for hostnames and counters: so the display face
+is Playfair for every character except the digits 0-9, which come from Libre Baskerville Bold (two
+`@font-face` blocks for `Clock Tower Display`, split by `unicode-range`).
+
+## What ships
+
+```
+skins/$id/fonts/
+  PlayfairDisplay-Bold.woff2       22.7 KB
+  LibreBaskerville-Regular.woff2   19.6 KB
+  LibreBaskerville-Bold.woff2      20.0 KB
+  OFL-PlayfairDisplay.txt
+  OFL-LibreBaskerville.txt
+```
+
+Only the `latin` subset is bundled, as Google Fonts serves it (about 15-25 KB a file instead of several
+hundred). `scripts/fetch-fonts.ps1` regenerates them reproducibly:
+
+```
+powershell -ExecutionPolicy Bypass -File scripts/fetch-fonts.ps1 -Skins clock-tower-daylight,clock-tower-lantern
+```
+
+## Licences
+
+Both faces are SIL Open Font License 1.1, which permits redistribution with the notice. The notices
+are in `fonts/`. The OFL's reserved font names are "Playfair Display" and "Libre Baskerville"; the
+files are served unmodified, and the private family names above are CSS aliases, not renamed fonts.
+
+## Swapping a face
+
+Change the `src` of the `@font-face` blocks in `skin.css` (and the file in `fonts/`), or edit the
+template in `scripts/make-clock-tower.py` and regenerate: both skins are written from it.
+''')
+
 def lum(h):
     c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
     c = [v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4 for v in c]
@@ -378,6 +465,7 @@ def outputs():
         d = os.path.join('skins', p['id'])
         out[os.path.join(d, 'skin.json')] = SKIN_JSON.substitute(p)
         out[os.path.join(d, 'features.json')] = FEATURES_JSON
+        out[os.path.join(d, 'FONTS.md')] = FONTS_MD.substitute(p)
         out[os.path.join(d, 'skin.css')] = CSS.substitute(dict(p, **decls(p)))
         out[os.path.join(d, 'graph.conf')] = graph_conf(p)
     return out

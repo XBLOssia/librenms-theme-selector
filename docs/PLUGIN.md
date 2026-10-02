@@ -517,8 +517,8 @@ gave:
 Verification at the time: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
 breaks each defence and requires a failing test (46 caught, 7 documented as
-redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,271 checks and
-155 mutations caught; `sh dev/test.sh all` prints the current figures.)
+redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,311 checks and
+156 mutations caught; `sh dev/test.sh all` prints the current figures.)
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See
 [SECURITY.md](SECURITY.md) for the controls and, as important, what is not

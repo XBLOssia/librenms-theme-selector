@@ -237,10 +237,11 @@ dark".
 
 **Open, in the order I would take them:**
 
-1. **Clock Tower**, the first real light skin (ornate serifs, filigree, browns and creams), as a family:
-   Daylight (light, "natural light") and Lantern (dark, "lit from inside"), maybe more palettes.
-   Needs two or three OFL serif faces (a download needs an explicit yes) and a light-mode audit of
-   its own.
+1. **Clock Tower** (built 2026-10-03: Daylight for light mode, Lantern for dark, one template). Still
+   to do: bundle its fonts (Playfair Display and Libre Baskerville, OFL; a download needs an explicit
+   yes, and `FONTS.md` and the licence text go with them). Until then it uses the system serifs, which
+   is what you see on a machine without Georgia or Palatino as a plainer face. More palettes
+   (Sepia?) are one more entry in the script.
 2. **Light variants of Terran, Protoss, Zerg and Digital Rain**, as sibling skins in a family each (the
    same shapes and ornaments, a light palette); until then they are dark skins you can also put in
    the light slot.

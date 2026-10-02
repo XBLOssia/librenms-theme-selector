@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Xblossia\ThemeSelector\Features;
 use Xblossia\ThemeSelector\Modes;
 use Xblossia\ThemeSelector\PreviewGraph;
 use Xblossia\ThemeSelector\Settings;
@@ -262,4 +263,64 @@ function test_light_css(): void
     T::ok('everything it reads is a settable role (or its own helper)', $bad === [], implode(', ', $bad));
     T::ok('the two rules set one property each: background-color and color, to roles', trim($rules[1][2]) === 'background-color: var(--ts-surface);' && trim($rules[2][2]) === 'color: var(--ts-text-bright);');
     T::ok('white is left alone (text on coloured buttons)', ! str_contains($rules[0][2], '--tw-color-white') && ! str_contains($rules[0][2], '--tw-color-black'));
+}
+
+/*
+ * The Clock Tower family: a light skin and a dark skin from one template (scripts/make-clock-tower.py).
+ * Each must be something an upload could be (no structural tokens, no bundled-only features in the
+ * stylesheet), and the two must be one design: the same tokens, in two moods.
+ */
+function test_clock_tower(): void
+{
+    T::group('clock tower: two skins, one family, each valid as an upload');
+    $compiler = new SkinCompiler(catalog());
+    $skins = [];
+    foreach (['daylight' => 'light', 'lantern' => 'dark'] as $name => $mode) {
+        $dir = __DIR__ . "/../skins/clock-tower-$name";
+        $files = [];
+        foreach (['skin.json', 'skin.css', 'graph.conf'] as $f) {
+            $files[$f] = (string) file_get_contents("$dir/$f");
+        }
+        foreach (glob("$dir/textures/*.png") ?: [] as $png) {
+            $files['textures/' . basename($png)] = (string) file_get_contents($png);
+        }
+        $rep = new Report();
+        $skin = $compiler->compileFiles($files, $rep); // as an upload: features.json is the one thing it can't carry
+        T::ok("clock-tower-$name compiles as an upload", $skin !== null, implode(' | ', $rep->errors()));
+        if ($skin === null) {
+            continue;
+        }
+        $skins[$name] = [$skin, $files];
+        T::ok("clock-tower-$name is written for $mode mode and is in the Clock Tower family", $skin->manifest['mode'] === $mode && $skin->manifest['family'] === 'Clock Tower' && $skin->manifest['id'] === "clock-tower-$name");
+        T::ok("clock-tower-$name has a texture and a graph palette", count($skin->textures) === 1 && $skin->textures[0]['name'] === 'gears' && $skin->graph !== []);
+        T::ok("clock-tower-$name asks for the ornament layer (features.json)", Features::parse((string) file_get_contents("$dir/features.json")) === ['ornaments' => true, 'effects' => []]);
+        $chrome = $mode === 'light' ? ['rrdgraph_def_text', 'rrdgraph_def_text_color'] : ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'];
+        $other = $mode === 'light' ? ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'] : ['rrdgraph_def_text', 'rrdgraph_def_text_color'];
+        T::ok("clock-tower-$name's graph palette has its own mode's chrome, the ramps and the port series, and not the other mode's chrome",
+            count(array_diff($chrome, array_keys($skin->graph))) === 0 && isset($skin->graph['graph_colours.port_in'], $skin->graph['graph_colours.port_out'], $skin->graph['graph_colours.greens']) && count(array_intersect($other, array_keys($skin->graph))) === 0);
+        T::ok("clock-tower-$name sets no fonts it does not ship (the system serifs are the fallback)", $skin->fontCount === 0 || is_dir("$dir/fonts"));
+    }
+    if (count($skins) === 2) {
+        $names = fn (string $css): array => (function () use ($css) {
+            preg_match_all('/^  (--ts-[a-z0-9-]+):/m', $css, $m);
+            sort($m[1]);
+
+            return $m[1];
+        })();
+        $a = $names($skins['daylight'][1]['skin.css']);
+        $b = $names($skins['lantern'][1]['skin.css']);
+        // One design in two moods: the same tokens, except that only the lantern breathes (daylight is still).
+        T::ok('the two skins set the same tokens, and only the lantern breathes', array_diff($a, $b) === [] && array_values(array_diff($b, $a)) === ['--ts-frame-breathe', '--ts-heading-marker-breathe'], implode(', ', array_merge(array_diff($a, $b), array_diff($b, $a))));
+        T::ok('they differ in their colours', $skins['daylight'][0]->css !== $skins['lantern'][0]->css && $skins['daylight'][1]['skin.css'] !== $skins['lantern'][1]['skin.css']);
+        T::ok('and the daylight one is light, the lantern one dark, by their grounds', (function () use ($skins) {
+            $lum = function (string $css): float {
+                preg_match('/--p-bg: #([0-9a-f]{6})/', $css, $m);
+                [$r, $g, $b] = array_map('hexdec', str_split($m[1], 2));
+
+                return (0.2126 * $r + 0.7152 * $g + 0.0722 * $b) / 255;
+            };
+
+            return $lum($skins['daylight'][1]['skin.css']) > 0.7 && $lum($skins['lantern'][1]['skin.css']) < 0.15;
+        })());
+    }
 }

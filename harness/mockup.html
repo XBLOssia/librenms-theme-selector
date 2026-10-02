@@ -102,9 +102,9 @@
        ?skin=example    examples/minimal: the 20 core roles and nothing else
        ?skin=defaults   base.css alone, no token file -->
 <script>
-  var SKINS = ['terran', 'protoss', 'zerg', 'digital-rain'];
+  var SKINS = ['terran', 'protoss', 'zerg', 'digital-rain', 'clock-tower-daylight', 'clock-tower-lantern'];
   // Bundled skins whose features.json asks for the ornament layer: the plugin marks their link data-ts-orn.
-  var ORNAMENTS = ['digital-rain'];
+  var ORNAMENTS = ['digital-rain', 'clock-tower-daylight', 'clock-tower-lantern'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'terran').toLowerCase();
   var special = skin === 'example' || skin === 'example-light' || skin === 'defaults';
   if (!special && SKINS.indexOf(skin) === -1) skin = 'terran';
@@ -114,39 +114,33 @@
                : skin === 'example-light' ? '../examples/minimal-light/skin.css'
                : skin === 'defaults' ? null
                : '../skins/' + skin + '/skin.css';
-  // ?mode=light puts the page in light mode, the way the plugin does: the base's light twin (every
-  // html.dark selector becomes html:not(.dark), plus base/light.css) and the skin's rules under the
-  // same swapped selector, so any skin can be looked at in either mode. Done here in the browser
-  // because the harness has no PHP; the plugin does the same substitution when it publishes
-  // (src/Modes.php).
-  var mode = new URLSearchParams(location.search).get('mode') === 'light' ? 'light' : 'dark';
+  // The skin is shown in its own mode unless ?mode=dark|light says otherwise. For the other mode the
+  // page does what the plugin does (src/Modes.php): the base's light twin (every html.dark selector
+  // becomes html:not(.dark), plus base/light.css), and the skin's rules under the swapped selector,
+  // so any skin can be looked at in either mode. Done here in the browser because the harness has no PHP.
   function fetchText(url) { var x = new XMLHttpRequest(); x.open('GET', url + bust, false); x.send(); return x.responseText; }
-  if (mode === 'light') {
-    document.documentElement.classList.remove('dark');
-    var swap = function (css) { return css.replace(/^html\.dark \{$/mg, 'html:not(.dark) {').replace(/^html:not\(\.dark\) \{$/mg, 'html:not(.dark) {'); };
-    var base = fetchText('../base/base.css').split('html.dark:has(link[data-ts-orn])').join('html.dark:has(link[data-ts-orn-light])').split('html.dark').join('html:not(.dark)');
-    document.write('<style id="base-light">' + base + '\n' + fetchText('../base/light.css') + '</style>');
-    if (skinHref) {
-      document.write('<style id="skin-css">' + swap(fetchText(skinHref)) + '</style>');
-      if (ORNAMENTS.indexOf(skin) !== -1) { document.write('<link rel="stylesheet" data-ts-orn-light href="data:text/css,">'); }
-    }
-  } else {
-    document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
-                   (skinHref ? '<link id="skin-css" rel="stylesheet"' + (ORNAMENTS.indexOf(skin) !== -1 ? ' data-ts-orn' : '') + ' href="' + skinHref + bust + '">' : ''));
-  }
+  var skinCss = skinHref ? fetchText(skinHref) : '';
+  var native = /^html:not\(\.dark\) \{$/m.test(skinCss) ? 'light' : 'dark';
+  var asked = new URLSearchParams(location.search).get('mode');
+  var mode = (asked === 'light' || asked === 'dark') ? asked : native;
+  var mirrored = mode === native ? skinCss
+    : native === 'dark' ? skinCss.replace(/^html\.dark \{$/mg, 'html:not(.dark) {') : skinCss.replace(/^html:not\(\.dark\) \{$/mg, 'html.dark {');
   // A url() in a custom property is resolved against the stylesheet that USES the variable
   // (base.css), not the one that declares it, so a skin's --tx-<name>: url("textures/<name>.png")
   // would point into base/. The plugin embeds textures as data: URLs when it publishes; here, point
-  // them at the skin's folder, relative to base.css (which is where the browser resolves them from).
-  if (skinHref && !special) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', skinHref + bust, false);
-    xhr.send();
-    var fixes = '';
-    (xhr.responseText.match(/--tx-[a-z0-9-]+: url\("textures\/[a-z0-9-]+\.png"\);/g) || []).forEach(function (d) {
-      fixes += d.replace('url("textures/', 'url("../skins/' + skin + '/textures/');
-    });
-    if (fixes) document.write('<style id="skin-textures">' + (mode === 'light' ? 'html:not(.dark)' : 'html.dark') + '{' + fixes + '}</style>');
+  // them at the skin's folder instead.
+  if (!special) { mirrored = mirrored.replace(/url\("textures\//g, 'url("../skins/' + skin + '/textures/'); }
+  var orn = ORNAMENTS.indexOf(skin) !== -1 ? (mode === 'light' ? ' data-ts-orn-light' : ' data-ts-orn') : '';
+  if (mode === 'light') {
+    document.documentElement.classList.remove('dark');
+    var base = fetchText('../base/base.css').split('html.dark:has(link[data-ts-orn])').join('html.dark:has(link[data-ts-orn-light])').split('html.dark').join('html:not(.dark)');
+    document.write('<style id="base-light">' + base + '\n' + fetchText('../base/light.css') + '</style>');
+  } else {
+    document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">');
+  }
+  if (skinHref) {
+    document.write('<style id="skin-css">' + mirrored + '</style>');
+    if (orn) { document.write('<link rel="stylesheet"' + orn + ' href="data:text/css,">'); }
   }
 </script>
 </head>

@@ -7,6 +7,9 @@ use Xblossia\ThemeSelector\Http\Controllers\PickerController;
 Route::middleware(['web', 'auth'])->group(function (): void {
     Route::get('plugin/theme-selector', [PickerController::class, 'index'])->name('theme-selector.index');
     Route::post('plugin/theme-selector', [PickerController::class, 'store'])->name('theme-selector.store');
+    Route::get('plugin/theme-selector/preview/{id}', [PickerController::class, 'preview'])
+        ->where('id', '[a-z0-9][a-z0-9-]{0,62}')
+        ->name('theme-selector.preview');
 });
 
 // Instance-wide settings and skin management: LibreNMS's own admin role

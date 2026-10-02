@@ -17,6 +17,9 @@ use Throwable;
  */
 class SkinInjector
 {
+    /** The request attribute the preview controller sets to show one skin on its sample page. */
+    public const PREVIEW = 'theme-selector.preview';
+
     public function __construct(
         private readonly SkinResolver $resolver,
         private readonly SkinRepository $skins,
@@ -36,8 +39,16 @@ class SkinInjector
                 return;
             }
 
-            // The login page has no user: it gets the instance default.
-            $skin = $this->resolver->forUser(Auth::user());
+            // The picker's preview page names the skin to show, as a request attribute that only
+            // the preview controller sets (never read from the URL). It shows that skin, or stock
+            // for 'none', whatever the visitor has chosen.
+            $previewing = request()->attributes->get(self::PREVIEW);
+            if (is_string($previewing)) {
+                $skin = $previewing !== PreviewChoice::STOCK && $this->skins->exists($previewing) ? $previewing : null;
+            } else {
+                // The login page has no user: it gets the instance default.
+                $skin = $this->resolver->forUser(Auth::user());
+            }
             $urls = $skin === null ? [] : $this->skins->stylesheetUrls($skin);
 
             $html = '<meta name="theme-selector" content="' . e($skin ?? 'none') . '">';
@@ -53,7 +64,7 @@ class SkinInjector
             $view->getFactory()->startPush('styles', $html . "\n");
 
             // A bundled skin's page effects (Effects) go at the end of the body, after the page.
-            if ($skin !== null) {
+            if ($skin !== null && ! is_string($previewing)) {
                 $effects = $this->effects->html(
                     $this->skins->features($skin)['effects'],
                     request()->is('device/*'),

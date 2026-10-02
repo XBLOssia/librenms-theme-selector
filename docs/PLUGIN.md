@@ -95,7 +95,7 @@ Resolution order: user pref → plugin's admin default → none (stock).
   everything (`AppServiceProvider.php:249-266`).
 - Spatie permission `plugin.admin` exists; upstream plugin admin routes use
   `can:plugin.admin` (`routes/web.php:309`).
-- Plugin routes: picker under `['web','auth']`; upload/delete/default under
+- Plugin routes: picker and its preview page under `['web','auth']`; upload/delete/default under
   `can:admin` — the core admin role, by decision.
 - Type-hint `authorize()` as `Illuminate\Contracts\Auth\Authenticatable`.
   `App\Models\User` silently injects an unauthenticated model (lesson from the
@@ -250,6 +250,42 @@ beat stock in both modes.
 
 ---
 
+## The picker and its preview
+
+**Plugins → Theme Selector** has, for everyone, a "Your skin" panel: a dropdown (instance
+default, stock LibreNMS, then bundled and installed skins in groups) and a **Preview** that
+shows the selection in a frame with its description, author, version, source and install date,
+and an **Apply to my account** button. Looking changes nothing: applying is its own POST, and the
+button is off when the previewed skin is the one you already have. Admins also get the instance
+default and an "Installed skins" list: filter by name, author or id; show bundled or uploaded
+only; sort by name, author, version, source or install date; 10 or 25 a page (or all) inside a
+scrolling frame, with a Preview link on each row. All of that is plain DOM work over rows the
+server already rendered (a skin list is at most 50 uploaded skins plus the bundled ones); without
+JavaScript the list shows every row and the preview is the `?preview=<choice>` form.
+
+**How the preview works.** There is no screenshot to supply and none to go stale. The frame
+loads `GET plugin/theme-selector/preview/{id}` (`['web','auth']`, any signed-in user, `id` an
+installed skin or `none`): a sample page (navbar, a graph, a table, labels, buttons, tabs, an
+alert) built on the real layout, so the real navbar and stylesheets are there, with invented
+content, forced to dark mode, and with the one named skin on it. `SkinInjector` shows that skin
+because the controller sets a request attribute after checking the id; nothing in a URL can
+make any other page show a skin it wasn't asked to, and the preview never touches the
+visitor's own preference. The frame is scaled down, cannot be clicked or focused, and has no
+scrollbar. Ornaments, fonts, textures and the drifting rain all show, because it is the real
+stylesheet. The sample graph is inline SVG drawn from the skin's own graph palette
+(`PreviewGraph`: the ground, grid and text colours and the port in and out tones, each accepted
+only as hex digits); real graphs are rrdtool images of real devices, so this is the same
+colours on invented traffic. Page effects (the white rabbit) are never added to a preview.
+
+**Install date.** Uploaded skins show when they were installed (the registry's `created_at`;
+replacing a skin keeps it, and the tooltip also gives the day it was replaced). Bundled skins
+ship with the plugin and have none.
+
+**Why not a required screenshot or one made at install.** A required `preview.png` would be a
+new file type in the upload path (to validate and re-encode), would be easy to make
+misleading, and would go stale on every edit. Making one at install needs a headless browser
+on the LibreNMS server. The live sample page needs neither.
+
 ## Repo layout
 
 The repo becomes the plugin package. Skins, harness and docs stay.
@@ -262,13 +298,14 @@ src/
                              value grammar, font/graph/manifest checks, output guard
   SkinInstaller, SkinRegistry, SkinRepository, SkinPublisher, DefaultSkin
   Features, Effects          what a bundled skin may ask for (features.json) and the page effects
+  PreviewChoice, PreviewGraph  what the picker previews, and the sample graph in the preview
   Settings, InstallException
   GraphPalette, GraphColours (middleware), SkinResolver, SkinInjector
   Graph/                     port series recolouring: RecolouringRrd, PortSeries, PortSeriesSupport
   Http/Controllers/PickerController.php
   Console/                   theme-selector:publish, theme-selector:validate
 routes/web.php
-resources/views/             the picker and admin page
+resources/views/             the picker and admin page, and the preview's sample page
 resources/token-catalog.json which tokens exist / which uploads may set (generated)
 resources/effects/           reviewed page-effect markup (white-rabbit.html)
 database/migrations/         settings and uploaded-skin tables

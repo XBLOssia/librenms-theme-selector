@@ -145,8 +145,11 @@ every skin deploy look like it hadn't worked.)
 
 ## Custom skins (admins)
 
-**Plugins → Theme Selector → Custom skins** lists every skin (bundled and
-uploaded) and takes a `.zip` to add another. What a bundle contains and the
+**Plugins → Theme Selector → Installed skins** lists every skin (bundled and
+uploaded) with its source and install date, can be filtered, sorted and paged,
+has a Preview link on each row, and takes a `.zip` to add another. (The preview
+is one more route: if you cache routes with `php artisan route:cache`, run it
+again after updating or the preview frame shows a 404.) What a bundle contains and the
 rules it must follow are in [AUTHORING.md](AUTHORING.md); why those rules exist,
 and what is and isn't defended, is in [SECURITY.md](SECURITY.md).
 

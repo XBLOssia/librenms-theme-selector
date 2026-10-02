@@ -34,7 +34,7 @@ class SkinRepository
 {
     public const PUBLIC_DIR = 'css/custom/theme-selector';
 
-    /** @var array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, modes: string[]}>|null */
+    /** @var array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, installed_at: ?string, updated_at: ?string, modes: string[]}>|null */
     private ?array $skins = null;
 
     public function __construct(
@@ -100,7 +100,7 @@ class SkinRepository
     }
 
     /**
-     * @return array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, modes: string[]}> by id, sorted by name
+     * @return array<string, array{id: string, name: string, description: string, author: string, version: string, source: string, installed_at: ?string, updated_at: ?string, modes: string[]}> by id, sorted by name
      */
     public function all(): array
     {
@@ -123,6 +123,8 @@ class SkinRepository
                 'author' => is_string($manifest['author'] ?? null) ? $manifest['author'] : '',
                 'version' => is_string($manifest['version'] ?? null) ? $manifest['version'] : '',
                 'source' => 'bundled',
+                'installed_at' => null,
+                'updated_at' => null,
                 'modes' => array_values(array_intersect(['dark', 'light'], (array) ($manifest['modes'] ?? ['dark']))),
             ];
         }
@@ -138,6 +140,8 @@ class SkinRepository
                 'author' => $row['author'],
                 'version' => $row['version'],
                 'source' => 'uploaded',
+                'installed_at' => self::stamp($row['created_at'] ?? null),
+                'updated_at' => self::stamp($row['updated_at'] ?? null),
                 'modes' => ['dark'],
                 'license' => (string) ($row['license'] ?? ''),
                 'license_text' => (string) ($row['license_text'] ?? ''),
@@ -148,6 +152,12 @@ class SkinRepository
         uasort($skins, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
 
         return $this->skins = $skins;
+    }
+
+    /** A database timestamp as "Y-m-d H:i:s", or null if it is missing or not one. */
+    private static function stamp(mixed $value): ?string
+    {
+        return is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $value) ? substr($value, 0, 19) : null;
     }
 
     public function exists(?string $id): bool

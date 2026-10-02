@@ -12,9 +12,12 @@ use InvalidArgumentException;
 use Throwable;
 use Xblossia\ThemeSelector\DefaultSkin;
 use Xblossia\ThemeSelector\InstallException;
+use Xblossia\ThemeSelector\PreviewChoice;
+use Xblossia\ThemeSelector\PreviewGraph;
 use Xblossia\ThemeSelector\Skin\Limits;
 use Xblossia\ThemeSelector\Skin\Report;
 use Xblossia\ThemeSelector\Skin\SkinCompiler;
+use Xblossia\ThemeSelector\SkinInjector;
 use Xblossia\ThemeSelector\SkinInstaller;
 use Xblossia\ThemeSelector\SkinRepository;
 use Xblossia\ThemeSelector\SkinResolver;
@@ -24,14 +27,41 @@ class PickerController extends Controller
 {
     public function index(Request $request, SkinRepository $skins, SkinResolver $resolver): View
     {
+        // ?preview=<choice> opens the page with that choice already previewed: the link for
+        // "Preview" on a row of the skin list, and what the form does without JavaScript.
+        $previewChoice = $request->query('preview');
+        $previewChoice = is_string($previewChoice) ? $previewChoice : null;
+        $previewTarget = $previewChoice === null ? null
+            : PreviewChoice::target($previewChoice, $resolver->default(), fn (string $id): bool => $skins->exists($id));
+
         return view(ThemeSelectorProvider::PLUGIN_NAME . '::picker', [
             'skins' => $skins->all(),
             'choice' => $resolver->choice($request->user()),
             'default' => $resolver->default(),
             'defaultName' => $skins->name($resolver->default()),
+            'previewChoice' => $previewTarget === null ? null : $previewChoice,
+            'previewTarget' => $previewTarget,
             'uploadsAvailable' => function_exists('inflate_init'),
             'uploadLimit' => intdiv(Limits::ARCHIVE_BYTES, 1024 * 1024),
             'phpLimit' => ini_get('upload_max_filesize'),
+        ]);
+    }
+
+    /**
+     * The sample page the picker shows in its preview frame, with one skin on it. Any signed-in
+     * user may ask for any installed skin (they can pick any of them anyway); it shows invented
+     * content only. The skin is named to SkinInjector by a request attribute set here, after the
+     * id has been checked, so nothing else can make a page show a skin it wasn't asked to.
+     */
+    public function preview(Request $request, string $id, SkinRepository $skins): View
+    {
+        abort_unless($id === PreviewChoice::STOCK || $skins->exists($id), 404);
+        $request->attributes->set(SkinInjector::PREVIEW, $id);
+        $stock = $id === PreviewChoice::STOCK;
+
+        return view(ThemeSelectorProvider::PLUGIN_NAME . '::preview', [
+            'name' => $stock ? 'Stock LibreNMS' : $skins->name($id),
+            'graph' => PreviewGraph::svg($stock ? [] : $skins->graphPalette($id)),
         ]);
     }
 

@@ -70,10 +70,13 @@ final class Modes
     /**
      * The base stylesheet's twin for light mode: every rule that applies to `html.dark` applies to
      * `html:not(.dark)` instead, and the ornament gate looks for the light slot's own mark
-     * (`data-ts-orn-light`), so a dark skin's ornaments don't switch the light ones on.
+     * (`data-ts-orn-light`), so a dark skin's ornaments don't switch the light ones on. Blocks fenced
+     * `ts:dark-only` in base.css (the dark map: inverted tiles and a black attribution bar) are
+     * dropped: a light page keeps LibreNMS's own map.
      */
     public static function lightBase(string $base): string
     {
+        $base = (string) preg_replace('#/\* ts:dark-only[^*]*\*/.*?/\* ts:end-dark-only \*/\n?#s', '', $base);
         $base = str_replace('html.dark:has(link[data-ts-orn])', 'html.dark:has(link[data-ts-orn-light])', $base);
 
         return str_replace(self::DARK_SELECTOR, self::LIGHT_SELECTOR, $base);

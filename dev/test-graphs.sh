@@ -86,6 +86,7 @@ differ() { [ "$1" != "$2" ] && echo ok || echo no; }
 # for the other's: dev-admin plays "user A", dev-user plays "user B".
 login dev-admin; login dev-user
 set_default ""
+post dev-admin /plugin/theme-selector/default "default_light="   # both modes start with no default
 
 echo "== default: none (config holds stock)"
 STOCK_GREENS=$(cfg graph_colours.greens)
@@ -126,7 +127,7 @@ echo "== default cleared"
 set_default ""
 check "persistent greens back to stock (before the light-mode section)" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
 
-echo "== light mode: each mode's graphs follow that mode's skin, and a palette applies in the mode its skin is written for"
+echo "== light mode: each mode's graphs follow the skin chosen for that mode, whichever mode the skin was written for"
 FXG=/tmp/ts-fixtures-graphs; rm -rf "$FXG"; php /plugin/dev/make-fixtures.php "$FXG" >/dev/null
 upload_skin() { # file
   tok=$(curl -s -c "$(jar dev-admin)" -b "$(jar dev-admin)" -H "X-Dev-User: dev-admin" $B/plugin/theme-selector | grep -o 'name="_token" value="[^"]*"' | head -1 | cut -d'"' -f4)
@@ -150,9 +151,9 @@ for T in port_bits port_errors; do
   echo "  $T: light stock=$L_STOCK paper=$L_PAPER | dark stock=$D_STOCK zerg=$D_ZERG"
   check "$T: a light skin in the light slot changes light graphs" "$(differ "$L_PAPER" "$L_STOCK")"
   check "$T: and leaves dark graphs alone (stock)" "$(same "$D_WITH_LIGHT" "$D_STOCK")"
-  check "$T: a light skin in the dark slot changes nothing: its palette is for light graphs" "$(same "$D_PAPER_DARKSLOT" "$D_STOCK")"
+  check "$T: a light skin in the dark slot colours dark graphs (its light chrome carries over, so the graphs match the page)" "$(differ "$D_PAPER_DARKSLOT" "$D_STOCK")"
   check "$T: ... and light graphs follow the light slot (empty here), so stock" "$(same "$L_PAPER_DARKSLOT" "$L_STOCK")"
-  check "$T: a dark skin in the light slot changes nothing in light graphs (its palette is for dark graphs)" "$(same "$L_ZERG_LIGHTSLOT" "$L_STOCK")"
+  check "$T: a dark skin in the light slot colours light graphs (its dark chrome carries over)" "$(differ "$L_ZERG_LIGHTSLOT" "$L_STOCK")"
   check "$T: and in the dark slot it still changes dark graphs" "$(differ "$D_ZERG" "$D_STOCK")"
 done
 check "no leak: persistent greens unchanged by light-mode requests" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
@@ -171,6 +172,12 @@ check "a user who chose stock for light gets stock light graphs despite the defa
 set_default_light ""
 check "clearing the light default restores the config" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
 check "no graph_colours/rrdgraph override rows left" "$([ "$(q "select count(*) from config where config_name like 'graph_colours.%' or config_name like 'rrdgraph_def_text%'")" = 0 ] && echo ok || echo no)"
+set_default paper-teal
+check "a light skin as the DARK default writes its light chrome into the dark keys (any skin may be any mode's default)" "$([ "$(cfg rrdgraph_def_text_color_dark)" = 332200 ] && echo ok || echo no)"
+post dev-user /plugin/theme-selector "skin=&skin_light="
+check "a user following that default gets coloured dark graphs and stock light ones" "$(if [ "$(gstyle dev-user port_bits dark)" != "$D_STOCK" ] && [ "$(gstyle dev-user port_bits light)" = "$L_STOCK" ]; then echo ok; else echo no; fi)"
+set_default ""
+check "clearing it restores the config" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
 post dev-admin /plugin/theme-selector "skin=&skin_light="
 post dev-user /plugin/theme-selector "skin=&skin_light="
 post dev-admin /plugin/theme-selector/skins/paper-teal/delete ""

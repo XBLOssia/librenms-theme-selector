@@ -55,15 +55,32 @@ function test_modes(): void
     T::group('modes: the light twin of the base stylesheet');
     $base = (string) file_get_contents(__DIR__ . '/../base/base.css');
     $twin = Modes::lightBase($base);
+    // Blocks fenced `ts:dark-only` (the dark map) are the one thing the twin leaves out.
+    $kept = [];
+    $fenced = [];
+    $inside = false;
+    $balanced = true;
+    foreach (explode("\n", $base) as $line) {
+        if (str_starts_with($line, '/* ts:dark-only')) {
+            $balanced = $balanced && ! $inside;
+            $inside = true;
+        } elseif (str_starts_with($line, '/* ts:end-dark-only')) {
+            $balanced = $balanced && $inside;
+            $inside = false;
+        } elseif ($inside) {
+            $fenced[] = $line;
+        } else {
+            $kept[] = $line;
+        }
+    }
+    $keptCss = implode("\n", $kept);
+    T::ok('the fences in base.css are balanced and hold only the dark map', $balanced && ! $inside && $fenced !== [] && count(array_filter($fenced, fn ($l) => $l !== '' && ! str_starts_with($l, ' ') && ! str_starts_with($l, '}') && ! str_contains($l, 'leaflet'))) === 0);
+    T::ok('the dark map is in the dark base and not in the twin', str_contains($base, 'leaflet-tile') && ! str_contains($twin, 'leaflet') && ! str_contains($twin, 'ts:dark-only'));
     T::ok('the twin has no html.dark left', ! str_contains($twin, 'html.dark'));
-    T::ok('every html.dark became html:not(.dark)', substr_count($twin, 'html:not(.dark)') === substr_count($base, 'html.dark'), substr_count($twin, 'html:not(.dark)') . ' vs ' . substr_count($base, 'html.dark'));
-    T::ok('the ornament gate looks for the light slot\'s own mark', substr_count($twin, 'link[data-ts-orn-light]') === substr_count($base, 'link[data-ts-orn]') && ! str_contains($twin, 'link[data-ts-orn]'));
+    T::ok('every html.dark outside the fences became html:not(.dark)', substr_count($twin, 'html:not(.dark)') === substr_count($keptCss, 'html.dark'), substr_count($twin, 'html:not(.dark)') . ' vs ' . substr_count($keptCss, 'html.dark'));
+    T::ok('the ornament gate looks for the light slot\'s own mark', substr_count($twin, 'link[data-ts-orn-light]') === substr_count($keptCss, 'link[data-ts-orn]') && ! str_contains($twin, 'link[data-ts-orn]'));
     T::ok('the dark base is not touched by making the twin', str_contains($base, 'html.dark') && ! str_contains($base, 'html:not(.dark)') && ! str_contains($base, 'data-ts-orn-light'));
-    T::ok('the twin changes nothing but those', str_replace(['html:not(.dark)', 'link[data-ts-orn-light]'], ['html.dark', 'link[data-ts-orn]'], $twin) === $base);
-    $twinLines = explode("\n", $twin);
-    $baseLines = explode("\n", $base);
-    T::ok('the same lines, in the same order (a rule can only gain the other mode\'s selector)', count($twinLines) === count($baseLines));
-
+    T::ok('the twin changes nothing but those substitutions and the fenced blocks', str_replace(['html:not(.dark)', 'link[data-ts-orn-light]'], ['html.dark', 'link[data-ts-orn]'], $twin) === $keptCss);
     T::group('modes: a skin written for light');
     $out = css_compile(light('--ts-bg: #fff;', '--ts-text: #222;'), [], Mode::Upload, $r, 'light');
     T::ok('a light skin is accepted', $out !== null, implode(' | ', $r->errors()));
@@ -141,6 +158,19 @@ function test_modes(): void
     }
     T::ok('the stored form keeps the light keys too', isset(GraphConf::fromStored(['rrdgraph_def_text' => '-c BACK#FFFFFF', 'rrdgraph_def_text_color' => '222222'])['rrdgraph_def_text_color']));
 
+    T::group('modes: a skin colours the graphs of the mode it is put in, whichever it was written for');
+    $darkSkin = ['rrdgraph_def_text_dark' => '-c BACK#111111', 'rrdgraph_def_text_color_dark' => 'EEEEEE', 'graph_colours.greens' => ['111111', '222222', '333333']];
+    $lightSkin = ['rrdgraph_def_text' => '-c BACK#FFFFFF', 'rrdgraph_def_text_color' => '222222', 'graph_colours.greens' => ['AAAAAA', 'BBBBBB', 'CCCCCC']];
+    T::ok('a dark skin in the dark slot: its own dark chrome', (function () use ($darkSkin) { $o = GraphConf::forMode($darkSkin, 'dark'); ksort($o); $d = $darkSkin; ksort($d); return $o === $d; })());
+    $lightFromDark = GraphConf::forMode($darkSkin, 'light');
+    T::ok('a dark skin in the light slot: its dark chrome carried over to light graphs, and its ramps', (function () use ($lightFromDark) { ksort($lightFromDark); return $lightFromDark === ['graph_colours.greens' => ['111111', '222222', '333333'], 'rrdgraph_def_text' => '-c BACK#111111', 'rrdgraph_def_text_color' => 'EEEEEE']; })(), json_encode($lightFromDark));
+    $darkFromLight = GraphConf::forMode($lightSkin, 'dark');
+    T::ok('a light skin in the dark slot: its light chrome carried over to dark graphs', (function () use ($darkFromLight) { ksort($darkFromLight); return $darkFromLight === ['graph_colours.greens' => ['AAAAAA', 'BBBBBB', 'CCCCCC'], 'rrdgraph_def_text_color_dark' => '222222', 'rrdgraph_def_text_dark' => '-c BACK#FFFFFF']; })(), json_encode($darkFromLight));
+    T::ok('a light skin in the light slot: as it is', (function () use ($lightSkin) { $o = GraphConf::forMode($lightSkin, 'light'); ksort($o); $d = $lightSkin; ksort($d); return $o === $d; })());
+    $both = $darkSkin + ['rrdgraph_def_text' => '-c BACK#FFFFFF', 'rrdgraph_def_text_color' => '000000'];
+    T::ok('a skin that gives both modes\' chrome uses each for its own mode', GraphConf::forMode($both, 'light')['rrdgraph_def_text'] === '-c BACK#FFFFFF' && GraphConf::forMode($both, 'dark')['rrdgraph_def_text_dark'] === '-c BACK#111111' && ! isset(GraphConf::forMode($both, 'light')['rrdgraph_def_text_dark']) && ! isset(GraphConf::forMode($both, 'dark')['rrdgraph_def_text']));
+    T::ok('a skin with no chrome at all gives only its ramps', GraphConf::forMode(['graph_colours.greens' => ['111111', '222222', '333333']], 'light') === ['graph_colours.greens' => ['111111', '222222', '333333']]);
+    T::ok('an empty palette gives nothing', GraphConf::forMode([], 'dark') === [] && GraphConf::forMode([], 'light') === []);
     T::group('modes: the sample graph in light');
     $svg = PreviewGraph::svg(['rrdgraph_def_text' => '-c BACK#FAF3E0 -c GRID#D8C9A8 -c MGRID#B89B5E', 'rrdgraph_def_text_color' => '3B2A1A', 'graph_colours.port_in' => ['C8D8B0', '7A9A4A', '4F6B2A']], 'light');
     T::ok('the light keys are used for a light graph', str_contains($svg, '#FAF3E0') && str_contains($svg, '#D8C9A8') && str_contains($svg, '#3B2A1A') && str_contains($svg, '#7A9A4A'));

@@ -251,8 +251,8 @@ dark".
    in stock light mode too (core's `lnms-btn-badge`, `tw:text-gray-500` captions). Run
    `harness/audit.js` with a dark skin in the light slot, then with each light skin, on `/`,
    `/devices`, `/alert-rules`, `/eventlog`, a device and its graphs page, and the settings pages.
-5. **Graph palettes across modes.** A skin's palette applies only in the mode it is written for; a
-   family could share ramps between its variants.
+5. **Graph ramps across modes.** A skin in the other slot lends its own chrome and ramps (the ramps
+   were tuned for the skin's own ground); a family could carry a ramp set for each mode.
 
 ## Bundled-only features (parity backlog)
 

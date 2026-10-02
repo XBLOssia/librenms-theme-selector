@@ -1309,6 +1309,7 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 html.dark ::-webkit-scrollbar-corner {
   background: var(--ts-scrollbar-corner-bg);
 }
+/* ts:dark-only: the dark map. The light twin of this file leaves the map as LibreNMS draws it. */
 html.dark .leaflet-container {
   background: var(--ts-surface);
 }
@@ -1317,6 +1318,7 @@ html.dark .leaflet-bar a, html.dark .leaflet-control-layers, html.dark .leaflet-
   color: var(--ts-text);
   border-color: var(--ts-border);
 }
+/* ts:end-dark-only */
 html.dark .panel-primary, html.dark .panel-success, html.dark .panel-info, html.dark .panel-warning, html.dark .panel-danger {
   background-color: var(--ts-surface);
 }
@@ -1644,6 +1646,7 @@ html.dark .bootstrap-switch.bootstrap-switch-focused {
   border-color: var(--ts-accent);
   box-shadow: var(--ts-switch-focus-shadow);
 }
+/* ts:dark-only: the dark map's tiles (inverted and dimmed), overlay and attribution. */
 html.dark .leaflet-tile {
   filter: var(--ts-map-tile-filter);
 }
@@ -1658,6 +1661,7 @@ html.dark .leaflet-control-attribution {
 html.dark .leaflet-control-attribution a {
   color: var(--ts-text-dim) !important;
 }
+/* ts:end-dark-only */
 html.dark .device-image, html.dark img.os-icon {
   border-radius: var(--ts-radius-sm);
   padding: 2px;

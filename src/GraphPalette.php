@@ -54,25 +54,26 @@ class GraphPalette
      * ones it declares, and the graph_colours.port_in/port_out pair when something honours them
      * (see PORT_STOCK).
      *
-     * A graph is drawn light or dark (the request's `style`), and a skin's palette is tuned for
-     * the mode the skin is written for: it applies in that mode, and in the other the graphs stay
-     * as they are without it. In a mode only that mode's chrome keys apply (the `_dark` ones for
-     * dark graphs, the others for light); the series ramps are the same keys in both.
+     * A graph is drawn light or dark (the request's `style`), and the skin chosen for that mode
+     * colours it, whichever mode the skin was written for: what the skin gives for the other mode's
+     * chrome is used for this one (GraphConf::forMode), so a light skin put in the dark slot draws
+     * its light chrome on dark-mode graphs, and the graphs match the page. In a mode only that
+     * mode's chrome keys apply (the `_dark` ones for dark graphs, the others for light); the series
+     * ramps are the same keys in both.
      *
      * @return array<string, string|array<int, string>>
      */
     public function palette(?string $skinId, string $mode = Modes::DARK): array
     {
-        if ($skinId === null || ! $this->skins->exists($skinId) || ($this->skins->all()[$skinId]['mode'] ?? Modes::DARK) !== $mode) {
+        if ($skinId === null || ! $this->skins->exists($skinId)) {
             return [];
         }
 
         $definitions = LibrenmsConfig::getDefinitions();
 
         return array_filter(
-            $this->skins->graphPalette($skinId),
-            fn ($key) => $this->forMode($key, $mode)
-                && (array_key_exists($key, $definitions) || (isset(self::PORT_STOCK[$key]) && $this->portSeriesHonoured())),
+            GraphConf::forMode($this->skins->graphPalette($skinId), $mode),
+            fn ($key) => array_key_exists($key, $definitions) || (isset(self::PORT_STOCK[$key]) && $this->portSeriesHonoured()),
             ARRAY_FILTER_USE_KEY,
         );
     }

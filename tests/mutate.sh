@@ -267,6 +267,9 @@ run_with src/SkinRepository.php "s#\$slot === Modes::DARK ? 'base.css' : 'base-l
 run_with src/SkinPublisher.php "s#Modes::lightBase(\$contents) . \"\\\\n\" . \$extra#Modes::lightBase(\$contents)#" "modes: the light base is published without the light-only mapping"
 run_with src/SkinPublisher.php "s# || \$relative === 'light.css'##" "modes: light.css is published as a file of its own"
 run_with src/SkinPublisher.php "s#\$this->write(dirname(\$target) . '/skin.mirror.css', \$mirror);#;#" "modes: a bundled skin is published without its mirror"
+run_with src/SkinPublisher.php "s#^        \$this->backfillMirrors(\$uploaded);#        ;#" "modes: skins uploaded earlier are not given a mirror"
+run_with src/SkinPublisher.php "s#if (OutputGuard::safe(\$css, \$faces, \$textures, \$native) \&\& OutputGuard::safe(\$mirror, \$faces, \$textures, Modes::other(\$native))) {#if (true) {#" "modes: a backfilled mirror is not checked"
+run_with src/SkinPublisher.php "s# || file_exists(\"\$dir/skin.mirror.css\") || is_link(\"\$dir/skin.mirror.css\")) {#) {#" "modes: a backfill overwrites a mirror that is there"
 run_with src/PreviewGraph.php "s#\$suffix = \$mode === Modes::DARK ? '_dark' : '';#\$suffix = '_dark';#" "modes: a light graph is drawn from the dark chrome keys"
 run_with src/Skin/GraphConf.php "s#public const CHROME_KEYS = \['rrdgraph_def_text', 'rrdgraph_def_text_dark'\];#public const CHROME_KEYS = ['rrdgraph_def_text_dark'];#" "modes: graph.conf refuses the light chrome"
 

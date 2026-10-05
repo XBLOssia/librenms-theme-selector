@@ -3,6 +3,7 @@
 namespace Xblossia\ThemeSelector;
 
 use RuntimeException;
+use Xblossia\ThemeSelector\Skin\OutputGuard;
 use Xblossia\ThemeSelector\Skin\PngTexture;
 use Xblossia\ThemeSelector\Skin\Report;
 
@@ -22,8 +23,8 @@ class SkinPublisher
 {
     private const MARKER = '.bundled.json';
 
-    /** Bumped when what is published from the same package files changes (here: base-light.css and skin.mirror.css). */
-    private const FORMAT = 2;
+    /** Bumped when what is published from the same package files changes (2: base-light.css and skin.mirror.css; 3: mirrors made for skins uploaded earlier). */
+    private const FORMAT = 3;
 
     /** Files a skin directory may publish, by extension. */
     private const SKIN_FILES = ['css', 'json', 'conf'];
@@ -90,6 +91,8 @@ class SkinPublisher
             $this->copy($source, "$this->publicDir/$relative");
         }
 
+        $this->backfillMirrors($uploaded);
+
         $skins = $this->bundledSkins();
 
         // A skin dropped from the package since the last publish.
@@ -103,6 +106,36 @@ class SkinPublisher
             'fingerprint' => $this->fingerprint($files),
             'skins' => $skins,
         ], JSON_PRETTY_PRINT));
+    }
+
+    /**
+     * A skin uploaded before light and dark slots existed has no mirror, and without one it can't
+     * be put in the other slot (the page would get no skin at all there). Make it from the
+     * stylesheet already on disk, which was validated when it was installed. It is checked again
+     * as an installer would check it, and the mirror too, and nothing is written otherwise.
+     *
+     * @param  string[]  $uploaded  ids of the uploaded skins
+     */
+    private function backfillMirrors(array $uploaded): void
+    {
+        foreach ($uploaded as $id) {
+            $dir = "$this->publicDir/skins/$id";
+            if (! SkinRepository::isValidId($id) || is_link($dir) || ! is_file("$dir/skin.css") || is_link("$dir/skin.css")
+                || file_exists("$dir/skin.mirror.css") || is_link("$dir/skin.mirror.css")) {
+                continue;
+            }
+            $css = (string) @file_get_contents("$dir/skin.css");
+            $native = Modes::nativeOf($css);
+            $mirror = Modes::mirror($css);
+            if ($native === null || $mirror === null) {
+                continue;
+            }
+            $faces = substr_count($css, '@font-face');
+            $textures = (int) preg_match_all('#^  --tx-[a-z0-9][a-z0-9-]{0,40}: url\("data:image/png;#m', $css);
+            if (OutputGuard::safe($css, $faces, $textures, $native) && OutputGuard::safe($mirror, $faces, $textures, Modes::other($native))) {
+                $this->write("$dir/skin.mirror.css", $mirror);
+            }
+        }
     }
 
     /**

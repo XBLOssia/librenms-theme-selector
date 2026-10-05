@@ -159,7 +159,10 @@ and what is and isn't defended, is in [SECURITY.md](SECURITY.md).
   but run it now). Until it has run, uploading a light-mode skin is refused rather than recorded as
   dark. Everyone's existing choice becomes their dark-mode skin and the instance default becomes the
   dark-mode default; light mode stays stock until someone chooses a light skin. The update also
-  publishes `base-light.css` and a `skin.mirror.css` beside every skin.
+  publishes `base-light.css` and a `skin.mirror.css` beside every skin. A skin uploaded before the
+  update has no mirror on disk; the first request after the next update makes one from its
+  installed stylesheet (checked as an install checks it), so it can be used in either slot without
+  being uploaded again.
 - **Installing changes nobody's view.** The skin appears in everyone's "Your
   skin" list. Try it yourself, then make it the instance default if you want it
   to be everyone's.

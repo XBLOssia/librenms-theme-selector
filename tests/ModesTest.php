@@ -241,6 +241,22 @@ function test_modes(): void
 
         return $pub->syncIfNeeded() === false;
     })());
+
+    // Skins uploaded before the slots existed: a stylesheet, no mirror.
+    $reg2 = new FakeRegistry();
+    $legacy = ['legacy' => "html.dark {\n  --ts-bg: #123;\n}\n", 'tampered' => "html.dark {\n  --ts-bg: url(https://example.test/x.png);\n}\n", 'done' => "html.dark {\n  --ts-bg: #456;\n}\n", 'wrongmode' => "body {\n}\n"];
+    foreach ($legacy as $id => $css) {
+        $reg2->rows[$id] = ['id' => $id, 'name' => $id, 'description' => '', 'author' => '', 'version' => '1.0.0', 'graph' => []];
+        mkdir("$out/skins/$id", 0755, true);
+        file_put_contents("$out/skins/$id/skin.css", $css);
+    }
+    file_put_contents("$out/skins/done/skin.mirror.css", 'kept');
+    (new SkinPublisher("$root2/package", $out, $reg2))->syncNow();
+    T::ok('an uploaded skin with no mirror is given one', file_get_contents("$out/skins/legacy/skin.mirror.css") === "html:not(.dark) {\n  --ts-bg: #123;\n}\n");
+    T::ok('its own stylesheet is left as it was', file_get_contents("$out/skins/legacy/skin.css") === $legacy['legacy']);
+    T::ok('a mirror that is already there is left alone', file_get_contents("$out/skins/done/skin.mirror.css") === 'kept');
+    T::ok('a stylesheet that would not pass the installer is given none', ! file_exists("$out/skins/tampered/skin.mirror.css"));
+    T::ok('a stylesheet for neither mode is given none', ! file_exists("$out/skins/wrongmode/skin.mirror.css"));
     rmrf($root2);
 
     T::group('modes: the bundled skins');

@@ -5,25 +5,20 @@ again. The one host that ran the older `install.sh` setup has been migrated;
 what happened is recorded at the end of this page.
 
 Needs PHP 8.2 or newer and a LibreNMS with the package plugin system. Written against
-LibreNMS master @ `63e0394` (2026-09-17). Install, uninstall, graph colours and the live
-skin audit were re-run on a stock LibreNMS 26.9.1.1 (the `dev/` image, and a second,
-clean container for the install and uninstall) on 2026-10-02.
+LibreNMS master @ `63e0394` (2026-09-17). Install, the nightly update, uninstall, graph colours
+and the live skin audit were re-run on a stock LibreNMS 26.9.1.1 (the `dev/` image, and a clean
+container for the install, update and uninstall: `sh dev/test-update.sh`) on 2026-10-05.
 
 ---
 
 ## Deployed instances
 
-| LibreNMS version | Devices | Install | Status |
-|---|---|---|---|
-| `26.8.1-147-g63e0394bd1` (as of the migration; it has been updated since) | ~1,400 | Plugin (`dev-main`) | Migrated 2026-09-28/29 from `install.sh`; SSO login only |
+One production instance runs the plugin (`dev-main`), migrated from the older `install.sh` setup
+on 2026-09-28/29 and updated since, by the nightly run and by hand. It is deliberately not
+described further here: a production monitoring box, with an exact software version and a size,
+in a public repository is free reconnaissance for no benefit to anyone reading this.
 
-The instance itself is deliberately not named here. It is a production
-monitoring box, and pairing a resolvable hostname with an exact software
-version in a public repository is free reconnaissance for no benefit to
-anyone reading this.
-
-Because logins there go straight to Microsoft SSO, the login page never
-renders on that host.
+Its login page is not covered by anything checked here (it never renders on that host).
 
 ---
 
@@ -32,11 +27,12 @@ renders on that host.
 On the LibreNMS host, as the `librenms` user, from `/opt/librenms`:
 
 ```bash
-php scripts/composer_wrapper.php config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
+php scripts/composer_wrapper.php config --global repositories.theme-selector '{"type":"vcs","url":"https://github.com/XBLOssia/librenms-theme-selector","no-api":true}'
 ./lnms plugin:add xblossia/librenms-theme-selector dev-main
 ./lnms migrate --force
 php artisan route:cache
 ./lnms theme-selector:publish
+./lnms theme-selector:status
 ```
 
 1. **The repository goes in the global Composer config**, through the same
@@ -44,14 +40,20 @@ php artisan route:cache
    downloads `composer.phar`), and not in LibreNMS's
    `composer.json`. `daily.sh` resets `composer.json` on every update; an entry
    there disappears, and the failed `composer require` that follows can take
-   other packages down with it (the Network Command Suite deploy lost M365 SSO
-   this way).
+   other packages down with it (another plugin deploy lost its SSO login this
+   way). **`"no-api": true` makes Composer fetch the repository with plain `git`
+   instead of GitHub's API.** The API is rate limited for anonymous callers, and when
+   the limit is hit `plugin:add` fails with "Could not authenticate against github.com"
+   (reproduced on a clean container with a cold Composer cache; with `no-api` the same install
+   works with no token). The same repository entry serves the nightly update, so this is also
+   what keeps that from failing on a busy night. Needs `git` on the host (LibreNMS requires it).
+   If you installed with the plain `vcs <url>` form, switch: re-run the first command above.
 2. **`plugin:add`** runs `composer require` and records the package in
    `composer.plugins.json`, which `daily.sh` reads to reinstall plugins after
    each update. The plugin is enabled by default.
 3. **`migrate`** creates the plugin's two tables, `theme_selector_settings` (the
-   instance default and the recorded original graph colours) and
-   `theme_selector_skins` (uploaded skins), in four migrations.
+   instance defaults and the recorded original graph colours) and
+   `theme_selector_skins` (uploaded skins), in five migrations.
    `plugin:add` doesn't run migrations; `daily.sh` does, so this step only
    saves waiting for the next nightly run.
 4. **`route:cache`** rebuilds LibreNMS's route cache. Production installs
@@ -59,32 +61,39 @@ php artisan route:cache
    packages register, so without this the Theme Selector page is a 404 even
    though the plugin is enabled. `lnms plugin:enable` rebuilds the cache;
    `plugin:add` doesn't. (Found on the production migration, 2026-09-28.)
-5. **`theme-selector:publish`** copies the base stylesheet and bundled skins
+5. **`theme-selector:publish`** copies the base stylesheets and bundled skins
    into `html/css/custom/theme-selector/`. The first page load after any
    plugin update does this anyway; running it by hand confirms the directory
    is writable by `librenms`.
+6. **`theme-selector:status`** changes nothing and checks the result: the installed
+   version, that `composer.plugins.json` will keep it across `daily.sh` runs, that the
+   migrations have run, that the published files are current and writable, and that
+   LibreNMS's route cache includes the page. It exits non-zero if anything needs
+   fixing. Run it again after any update.
 
 Then, in the web UI:
 
-- **Plugins → Theme Selector.** Every user picks a skin here: the instance
-  default, stock LibreNMS, or a named skin.
-- **Instance default** (admins only, on the same page): what users who haven't
-  chosen get, and what the login page shows. Its graph palette also becomes
-  the instance's graph colours; see [Graph colours](#graph-colours).
-
-Skins apply in dark mode. A user on **Preferences → Theme → Light** sees stock
-LibreNMS whatever they picked.
+- **Plugins → Theme Selector.** Every user picks a skin for **light mode** and one for
+  **dark mode** (the instance default, stock LibreNMS, or a named skin; any skin can go in either
+  slot), previews each on a sample page, and presses **Apply**. LibreNMS decides light or dark
+  per user (Preferences → Theme, or the device's own setting), and the page uses the skin for
+  whichever it is.
+- **Instance defaults** (admins only, on the same page): what users who haven't chosen get in
+  each mode, and what the login page shows. Their graph palettes also become the instance's
+  graph colours; see [Graph colours](#graph-colours).
 
 ### Where things live
 
 | What | Where |
 |---|---|
 | Plugin code | `vendor/xblossia/librenms-theme-selector` (Composer) |
-| Published skins | `html/css/custom/theme-selector/` (gitignored by LibreNMS), with two bookkeeping files, `.bundled.json` and `.install.lock` |
-| Instance default, graph originals | table `theme_selector_settings` |
-| Uploaded skins (name, graph palette, textures, licence notice, SHA-256) | table `theme_selector_skins`; each one's generated `skin.css` is under `html/css/custom/theme-selector/skins/<id>/` |
-| Each user's choice | `users_prefs`, key `theme_selector.skin` |
-| Graph colours | LibreNMS config rows (`graph_colours.*`, `rrdgraph_def_text_dark`, `rrdgraph_def_text_color_dark`) |
+| Update source | `composer.plugins.json` (the constraint `daily.sh` reinstalls from), and the Composer repository entry in the global config (`COMPOSER_HOME`) |
+| Published skins | `html/css/custom/theme-selector/` (gitignored by LibreNMS): `base.css`, `base-light.css`, `skins/<id>/`, and two bookkeeping files, `.bundled.json` (what was published, at which version) and `.install.lock` |
+| Instance defaults, graph originals | table `theme_selector_settings` |
+| Uploaded skins (name, mode, family, graph palette, textures, licence notice, SHA-256) | table `theme_selector_skins`; each one's generated `skin.css` and `skin.mirror.css` are under `html/css/custom/theme-selector/skins/<id>/` |
+| Each user's choices | `users_prefs`, keys `theme_selector.skin` (dark mode) and `theme_selector.skin_light` (light mode) |
+| Graph colours | LibreNMS config rows (`graph_colours.*`, `rrdgraph_def_text`, `rrdgraph_def_text_color`, `rrdgraph_def_text_dark`, `rrdgraph_def_text_color_dark`) |
+| Audit trail | `ThemeSelector:` lines in `logs/librenms.log` |
 
 No LibreNMS core file is touched. Outside its own files the plugin changes only:
 `composer.json` and `composer.lock` (edited by `plugin:add`; `daily.sh` resets and
@@ -96,50 +105,167 @@ patch](#legacy-the-port-graph-core-patch-not-needed) did edit a core file; it is
 
 ## Updates
 
-**LibreNMS updates:** `daily.sh` resets `composer.json`, pulls, then
-re-requires every package in `composer.plugins.json` and runs
-`composer install --no-dev` and `lnms migrate` (`daily.sh` lines 302 and 361-368 in 26.9.1.1). The
-plugin survives, and `html/css/custom/` survives because `daily.sh` never runs
-`git clean`.
+### Automatic: LibreNMS's own update does it
 
-**Plugin updates:** installed as `dev-main`. On each update run, `daily.sh`
-resets `composer.lock` and re-requires every plugin
-(`FORCE=1 composer require ... xblossia/librenms-theme-selector:dev-main`), so
-it resolves the latest `main`. To update immediately, re-run the same
-`plugin:add`, as `librenms` in `/opt/librenms`:
+Nothing extra is needed. Installed as `dev-main`, the plugin is recorded in
+`composer.plugins.json`, and `daily.sh` (run nightly by LibreNMS's scheduler or cron) does this
+on every run, whether or not LibreNMS itself had anything new:
+
+1. clears LibreNMS's caches and resets `composer.json` and `composer.lock`;
+2. pulls LibreNMS;
+3. in its `post-pull` phase, re-requires every plugin in `composer.plugins.json`
+   (`FORCE=1 composer require --update-no-dev --no-install xblossia/librenms-theme-selector:dev-main`),
+   which resolves the newest commit on `main`, then runs `composer install --no-dev`, whose own
+   scripts rebuild the route cache **with the plugin's current routes in it**;
+4. runs `lnms migrate`, so a new table or column is created.
+
+The first web request after that publishes the new stylesheets into the webroot (as the web
+server user, which is why that directory must be writable by it), and logs one line,
+
+```
+ThemeSelector: updated from dev-main@f84876e to dev-main@668fa5f
+```
+
+(PHP keeps compiled code for `opcache.revalidate_freq` seconds, 60 in LibreNMS's Docker image and 2
+by default in PHP, so the first requests after an update may still run the old code for that long.)
+So `grep 'ThemeSelector: updated' /opt/librenms/logs/librenms.log` is the record that an update
+landed. (The first update after a host moves to a version that records this has no "from" and
+logs nothing.) This path is rehearsed end to end on a clean LibreNMS by `sh dev/test-update.sh`,
+which runs LibreNMS's real `daily.sh post-pull` against a moving git source and checks the lock,
+the migration, the route cache, the publish and the log line.
+
+What this means in practice:
+
+- **A merge to `main` reaches the host the next night**, not instantly. For the same reason, a
+  broken commit on `main` reaches it too. If you would rather update on purpose, follow release
+  tags instead of the branch (see "Following releases" below).
+- **A night the source can't be reached does not remove the plugin, if Composer has a cached copy.**
+  With the `"no-api": true` repository entry from [Install](#install), Composer fetches with `git`
+  and keeps a mirror of the repository in its cache (`~librenms/.composer/cache/vcs/`). When GitHub
+  can't be reached it prints "Failed to update ..., package information from this repository may be
+  outdated", resolves from the mirror it has, and the plugin stays. Rehearsed against the real GitHub
+  (`TS_NETWORK=1 sh dev/test-update.sh`). `theme-selector:status` warns if that cache or the entry's
+  git mode is missing.
+- **The plugin is removed, until a later night succeeds, when `composer require` fails and Composer
+  has nothing to fall back on.** `daily.sh` puts `composer.lock` back to LibreNMS's own before it
+  requests plugins; if the request fails, `composer install` installs from that stock lock, which has
+  no plugin, and removes it. `daily.sh` still reports OK. LibreNMS carries on with stock styling
+  (pages render; per-user graph colours go, while the instance defaults' palettes stay in LibreNMS's
+  config), `composer.plugins.json` still lists the plugin, and the next successful run installs it
+  again. Three things cause it: the **cache is cold** (a first update after the cache was cleared, a
+  new `COMPOSER_HOME`, a rebuilt container) **and** the source is unreachable that night; the
+  repository entry **still uses GitHub's API** (the plain `vcs` form) and hits its anonymous limit;
+  or a **commit on `main` makes the require itself fail** (an invalid `composer.json`, a constraint
+  the host can't meet). The first two are covered by the `no-api` entry and a warm cache; the third
+  needs release tags and CI (ROADMAP). For all of them there is the safety net below.
+- **It does nothing if LibreNMS updates are switched off** (`daily.sh` then only migrates), or if
+  nothing runs `daily.sh`. Check with `grep -c daily.sh /etc/cron.d/librenms` or
+  `systemctl list-timers | grep librenms`, as under the legacy patch section below.
+
+### Immediately: scripts/update.sh
+
+To update now instead of tonight, as the `librenms` user:
+
+```bash
+sudo -u librenms /opt/librenms/vendor/xblossia/librenms-theme-selector/scripts/update.sh
+```
+
+It runs `./lnms plugin:add xblossia/librenms-theme-selector <what the plugin follows now>`,
+`./lnms migrate --force`, `php artisan route:cache` (only if LibreNMS has a route cache),
+`./lnms theme-selector:publish`, and ends with `./lnms theme-selector:status`. Safe to run any
+time and again. It refuses to run as root (it would leave root-owned files in the webroot).
+Pass a constraint to change what the plugin follows: `update.sh dev-main`, `update.sh '^1.0'`.
+Or run the same steps by hand:
 
 ```bash
 ./lnms plugin:add xblossia/librenms-theme-selector dev-main
-```
-
-(Plain `composer update` is refused: LibreNMS's Composer hooks block it unless
-`FORCE=1` is set.)
-
-**After an update that adds routes or tables, do these as well.** Production
-caches its routes, and Laravel ignores a package's new routes while a cache
-exists (the same reason the install includes `route:cache`), so an update that
-adds a page needs the cache rebuilt, and one that adds a table needs a
-migration (`daily.sh` runs migrations nightly, but not immediately):
-
-```bash
 ./lnms migrate --force
 php artisan route:cache
+./lnms theme-selector:publish
+./lnms theme-selector:status
 ```
 
-Licence notices (an optional `LICENSE.txt` in a bundle) add a `license_text`
-column to `theme_selector_skins`. Run `php artisan migrate --force` after
-updating; until it has run, uploads fail. Textures add a `textures` column the
-same way; an upload still installs before that migration has run, and only the
-texture list on the admin page is missing.
+(Plain `composer update` is refused: LibreNMS's Composer hooks block it unless `FORCE=1` is set.)
 
-The upload page shipped this way: it added the `theme_selector_skins` table and
-three routes. Until `route:cache` is re-run, the admin section of the picker
-page can't build its upload and delete links.
+**Why `migrate` and `route:cache` are in there.** `plugin:add` runs neither. Production caches
+its routes, and Laravel ignores a package's routes while a cache exists, so an update that adds a
+page needs the cache rebuilt, and one that adds a table or column needs the migration (`daily.sh`
+runs both of those for you overnight, as above, but not at once). Until `route:cache` is re-run,
+the picker's newer links (upload, delete, preview) can 404. The two columns added for licence
+notices and textures, and the `mode`/`family` columns, behave the same: until the migration has run,
+uploads fail or a light skin is refused rather than recorded wrongly.
 
 The next page load republishes changed skins. Every stylesheet link carries a
 `?v=<mtime>` cache-buster, so browsers fetch the new files without a hard
 refresh. (The old `webui.custom_css` setup had no cache-buster, which made
 every skin deploy look like it hadn't worked.)
+
+### A safety net: scripts/ensure-installed.sh (optional)
+
+For the nights the plugin is removed anyway. It runs between nights, from cron, and does one thing:
+if the plugin is listed in `composer.plugins.json` (so it is meant to be installed) but is not in
+`vendor/`, it runs the same `plugin:add`, then migrates, rebuilds the route cache if there is one and
+publishes. It does nothing, silently, when the plugin is installed (one `stat`); it never brings back a
+plugin removed on purpose (`plugin:remove` takes it out of `composer.plugins.json`); it stands aside
+while `daily.sh` or Composer is running; it refuses to run as root; and when it acts or fails it says so
+on standard output and in `logs/theme-selector-ensure.log` (which LibreNMS's log rotation covers). If
+the source is still unreachable it fails with exit 1 and changes nothing, and tries again at the next
+run.
+
+It has to live outside the package, because the package is what is missing when it matters. Install a
+root-owned copy and run it hourly as `librenms`:
+
+```bash
+sudo install -m 0755 -o root -g root /opt/librenms/vendor/xblossia/librenms-theme-selector/scripts/ensure-installed.sh /usr/local/sbin/theme-selector-ensure.sh
+echo '17 * * * * librenms /usr/local/sbin/theme-selector-ensure.sh' | sudo tee /etc/cron.d/theme-selector-ensure
+```
+
+(The copy goes stale only if the script itself changes; the script's header says when to refresh it.)
+Rehearsed on a clean LibreNMS: silent when installed; fails safely, with LibreNMS's composer files
+untouched, while the source is away; restores the plugin when it is back; and leaves a plugin removed on
+purpose removed.
+
+### Checking: theme-selector:status
+
+```bash
+./lnms theme-selector:status
+```
+
+Prints one line per check, `ok`, `WARN` or `FAIL`, and exits non-zero on a `FAIL`:
+
+| Check | A failure means |
+|---|---|
+| installed | (information) the version Composer has: `dev-main@668fa5f` for a branch, `1.2.0 (668fa5f)` for a release |
+| update source | not in `composer.plugins.json`: **the next `daily.sh` removes the plugin**. Fix: `./lnms plugin:add xblossia/librenms-theme-selector dev-main` |
+| repository | (warning) no Composer repository entry found for the plugin in the global config of the user running this, or an entry that goes through GitHub's API (rate limited: `plugin:add` and the nightly update can fail with "Could not authenticate against github.com"). Fix: the first command under [Install](#install) |
+| repository cache | (warning) Composer has no cached copy of the repository, so a night the source can't be reached would remove the plugin. The next successful update fills it |
+| database | a plugin migration has not run: `./lnms migrate --force` |
+| published skins | the directory is not writable by this user, so an update can't republish; or the files are older than the package (a page load republishes) |
+| routes | LibreNMS's route cache was built without the plugin's page: `php artisan route:cache` |
+
+If the plugin is not installed at all, `lnms` has no `theme-selector` commands. That is the
+signature of a night the plugin was removed (above): the safety net restores it within the hour, or
+run `./lnms plugin:add xblossia/librenms-theme-selector dev-main`.
+
+### Following releases instead of the branch
+
+`dev-main` takes every merge. To take only tagged releases, install with a version range, which
+`daily.sh` then keeps following:
+
+```bash
+./lnms plugin:add xblossia/librenms-theme-selector '^1.0'
+```
+
+(Composer discovers tags from the repository itself; this needs the repository to have release
+tags, which it does not have yet. A pin such as `1.2.0` stays put until you change it.)
+`theme-selector:status` reports which of the three you are on.
+
+### A LibreNMS update on its own
+
+`daily.sh` resets `composer.json`, pulls, then re-requires every package in
+`composer.plugins.json` and runs `composer install --no-dev` and `lnms migrate` (`daily.sh` lines 302
+and 361-368 in 26.9.1.1). The plugin survives, and `html/css/custom/` survives because `daily.sh`
+never runs `git clean`.
 
 ---
 
@@ -171,8 +297,9 @@ and what is and isn't defended, is in [SECURITY.md](SECURITY.md).
   colours are restored. Bundled skins can't be removed.
 - **Uploading the same `id` again replaces the skin** (its palette is re-applied
   if it is the default). Up to 50 uploaded skins at once.
-- **What ends up on disk:** for each uploaded skin, one generated `skin.css` in
-  `html/css/custom/theme-selector/skins/<id>/`, and a row in
+- **What ends up on disk:** for each uploaded skin, two generated files in
+  `html/css/custom/theme-selector/skins/<id>/`: `skin.css` (for the mode it is written for) and
+  `skin.mirror.css` (the same rules for the other mode), and a row in
   `theme_selector_skins` holding its name, graph palette, texture list, licence notice, SHA-256 and who installed it.
   Nothing you upload is stored or served as-is, and fonts are embedded in that
   stylesheet. A bundle's `LICENSE.txt` lives only in the database and is shown
@@ -225,10 +352,9 @@ them. Where reality differed from the plan:
 
 Checked on the host: the skin loads after any `custom_css`, a second account
 gets the instance default, each user's graphs follow their own skin, and the
-navbar stays pinned in all three skins. Not checked: the login page (SSO), and
-a full `daily.sh` cycle, which is covered by `composer.plugins.json`; after the
-first nightly run, `grep theme-selector /opt/librenms/composer.plugins.json`
-and confirm a skin still applies.
+navbar stays pinned in all three skins. Not checked there: the login page (it never renders on that host). A full
+`daily.sh` cycle is now rehearsed on a clean LibreNMS by `sh dev/test-update.sh`; see
+[Updates](#updates).
 
 The old copy at `/opt/librenms-skins` can be deleted if it is still there.
 
@@ -262,9 +388,10 @@ no cache to clear.
   plugin itself, with no change to LibreNMS: see "Port traffic series" below. If core
   ever changes the lines it matches, those series fall back to stock colours and the
   chrome around them still follows the skin.
-- Graph chrome uses the `*_dark` settings, so it only follows a skin for users
-  on the dark theme.
-- The `graph_colours.*` ramps and the `*_dark` keys are the only settings the
+- LibreNMS draws a graph light or dark by the request's own `style`, so the chrome comes from the
+  skin in that mode's slot (`rrdgraph_def_text` and `_color` for light, the `_dark` pair for dark);
+  a skin that lacks the other mode's chrome lends its own.
+- The `graph_colours.*` ramps and the four `rrdgraph_def_text*` keys are the only settings the
   plugin ever touches, and only from a skin's `graph.conf` (any other key in that
   file is an error: an uploaded skin is refused, and the unit tests fail for a bundled one).
 
@@ -444,7 +571,7 @@ patch. Some are expected; one is a real problem. From a production host:
 
 | Message | Meaning | Action |
 |---|---|---|
-| **WARN: Your database schema has extra migrations** (the plugin's four) | LibreNMS compares the `migrations` table with its own migration files and does not know about a plugin's. The text about switching from the daily to the stable release does not apply. | Cosmetic. Nothing to do; it stays for as long as the plugin is installed. |
+| **WARN: Your database schema has extra migrations** (the plugin's five) | LibreNMS compares the `migrations` table with its own migration files and does not know about a plugin's. The text about switching from the daily to the stable release does not apply. | Cosmetic. Nothing to do; it stays for as long as the plugin is installed. |
 | **WARN: Your local git contains modified files**: `composer.json`, `composer.lock` | `lnms plugin:add` runs `composer require`, which edits both. `daily.sh` resets them and re-requires every plugin (`composer.plugins.json`), so they don't stop updates. | Expected. |
 | **...and** `includes/html/graphs/generic_data.inc.php`, `resources/definitions/config_definitions.json` | The core patch. `config_definitions.json` is the old two-file patch's second file, and **it is what stops `daily.sh`** when upstream edits it. | `generic_data.inc.php` stays listed while the one-file patch is applied; that is only safe where `daily-wrapper.sh` starts `daily.sh`, and on a scheduler install it should be reverted. `config_definitions.json` should not be listed once you have followed "If the patch is already on a host". |
 | **FAIL: files owned by a different user than `librenms`**: `/opt/librenms/minimal.zip` | A stray file, almost certainly the zip from an earlier `pack-skin.py examples/minimal` run in that directory. It is not part of LibreNMS and nothing uses it, but validate says it "will stop you updating automatically". | `ls -l /opt/librenms/minimal.zip`, then remove it (`sudo rm`) or `sudo chown librenms:librenms` it. Run `pack-skin.py` from a scratch directory, not from `/opt/librenms`. |
@@ -465,12 +592,14 @@ that would make LibreNMS read these colours itself was drafted and deliberately 
 
 ## Uninstall
 
-Tested end to end on a clean LibreNMS 26.9.1.1: install, set a default and a user choice,
-uninstall as below, reinstall. As `librenms` in `/opt/librenms`:
+Tested end to end on a clean LibreNMS 26.9.1.1 (`sh dev/test-update.sh`): install, set a default
+for each mode and a user choice for each, uninstall as below, check that nothing of the plugin is
+left. As `librenms` in `/opt/librenms`:
 
-1. **Clear the instance default** (Plugins → Theme Selector → None). This restores the graph
-   colours. Skipping it leaves the last default's palette in LibreNMS config, and removing the
-   plugin first loses the record of the originals (see "Plugin already removed" below).
+1. **Clear both instance defaults** (Plugins → Theme Selector → Instance defaults: None for light
+   mode and for dark mode). This restores the graph colours. Skipping it leaves the last default's
+   palette in LibreNMS config, and removing the plugin first loses the record of the originals (see
+   "Plugin already removed" below).
 2. **Remove the plugin and its files:**
 
 ```bash
@@ -484,13 +613,14 @@ php scripts/composer_wrapper.php config --global --unset repositories.theme-sele
    keeps routes to the removed controller until something rebuilds it (`route:list` fails with
    it in that state), so `route:cache` goes right after. The last line removes the Composer
    repository entry that the install added.
-3. **Optional: remove the data.** The tables, `theme_selector.skin` rows in `users_prefs`, the
-   plugin's four rows in `migrations`, and its row in `plugins` stay behind, harmlessly:
+3. **Optional: remove the data.** The tables, the `theme_selector.skin` and `theme_selector.skin_light`
+   rows in `users_prefs`, the plugin's five rows in `migrations`, and its row in `plugins` stay
+   behind, harmlessly:
 
 ```sql
 DROP TABLE theme_selector_settings;
 DROP TABLE theme_selector_skins;
-DELETE FROM users_prefs WHERE pref = 'theme_selector.skin';
+DELETE FROM users_prefs WHERE pref LIKE 'theme_selector.%';
 DELETE FROM migrations WHERE migration LIKE '%theme_selector%';
 DELETE FROM plugins WHERE plugin_name = 'ThemeSelector';
 ```
@@ -501,7 +631,7 @@ DELETE FROM plugins WHERE plugin_name = 'ThemeSelector';
    about the extra migrations until they are gone.)
 
 **Plugin already removed, default never cleared.** The `graph_colours.*`,
-`rrdgraph_def_text_dark` and `rrdgraph_def_text_color_dark` rows stay in the `config` table,
+`rrdgraph_def_text*` rows (four of them: light and dark) stay in the `config` table,
 and the record of their originals went with the table. List them, then erase the ones you did
 not set yourself (a key that had an override before you installed anything is the one to keep):
 
@@ -522,17 +652,21 @@ is cleared, which needs the plugin enabled. `./lnms plugin:enable ThemeSelector`
 | Question | Answer |
 |---|---|
 | Core files modified? | None |
-| Database schema changed? | Two tables of its own, `theme_selector_settings` and `theme_selector_skins` |
+| Database schema changed? | Two tables of its own, `theme_selector_settings` and `theme_selector_skins` (five migrations) |
 | Files outside `html/css/custom/`? | The Composer package under `vendor/`, `composer.json`/`composer.lock`/`composer.plugins.json`, and the route cache |
 | Services restarted or installed? | None |
 | Affects polling, discovery, alerting? | Not their behaviour: the plugin's store subclass overrides only `graph()`. Alert emails and chat messages that embed a graph use the instance default's colours, port series included |
-| Affects other users? | Only through the instance default and the graph palette; each user's own choice affects only them |
+| Affects other users? | Only through the instance defaults (one per mode) and the graph palette; each user's own choices affect only them |
 | Can a skin break a page? | The code that adds the stylesheet catches every error and falls back to stock styling. CSS itself can't break PHP. |
 
 ### If something looks wrong
 
-1. **Stock styling everywhere.** The user is on Light, has chosen stock, or
-   there's no default. Check Plugins → Theme Selector. If the page source has
+1. **Stock styling everywhere.** The user has chosen stock for the mode they are in (light or
+   dark), or there's no default for it. Check Plugins → Theme Selector. If it was working
+   yesterday and `./lnms theme-selector:status` says `There are no commands defined in the
+   "theme-selector" namespace`, the plugin was removed overnight because its source couldn't be
+   reached (see [Updates](#updates)): run `./lnms plugin:add xblossia/librenms-theme-selector dev-main`, or install
+   the optional safety net, which does it for you. If the page source has
    no `data-theme-selector` links, check `/opt/librenms/logs/librenms.log` for
    `ThemeSelector:` lines.
 2. **Skin half-applied, or 404s for `theme-selector/...` files.** Publishing
@@ -545,7 +679,12 @@ is cleared, which needs the plugin enabled. `./lnms plugin:enable ThemeSelector`
    check under [Port traffic series](#port-traffic-series). `no` means core changed its RRD store
    (port series stay stock until the plugin is updated; the rest of the graph still follows the
    skin); `yes` means check that the skin sets `graph_colours.port_in` / `port_out`.
-5. **`plugin:add` fails with "Host key verification failed".** Composer fell back to SSH after
-   GitHub's anonymous API limit was used up (it happens after several installs from one
-   address). Wait for the limit to reset, or give Composer a token:
+5. **`plugin:add` fails with "Could not authenticate against github.com" or "Host key
+   verification failed".** Composer hit GitHub's anonymous API limit (it happens after several
+   installs from one address) and fell back to asking for a token or to SSH. Switch the
+   repository entry to git mode, which makes no API calls (the first command under
+   [Install](#install), with `"no-api":true`). Or give Composer a token:
    `php scripts/composer_wrapper.php config --global github-oauth.github.com <token>`.
+6. **Is the nightly update working?** `grep 'ThemeSelector: updated' /opt/librenms/logs/librenms.log`
+   shows each update that landed, and `./lnms theme-selector:status` shows the version and what
+   `daily.sh` will do with it.

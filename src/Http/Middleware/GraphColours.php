@@ -43,7 +43,8 @@ class GraphColours
                 if ($user !== null) {
                     // LibreNMS draws a graph light or dark by the request's own `style`, else the
                     // session's (GraphParameters), so that decides which of the user's two skins applies.
-                    $style = (string) ($request->input('style') ?: session('applied_site_style'));
+                    $style = $request->input('style') ?: session('applied_site_style');
+                    $style = is_string($style) ? $style : '';
                     $mode = $style === 'dark' ? Modes::DARK : Modes::LIGHT;
                     $overrides = $this->palette->overridesFor(
                         $this->resolver->forUser($user, $mode),

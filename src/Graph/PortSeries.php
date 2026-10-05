@@ -83,7 +83,7 @@ final class PortSeries
         }
         $tones = [];
         for ($k = 0; $k < 3; $k++) {
-            if (! is_string($palette[$k]) || ! preg_match('/^[0-9A-Fa-f]{6}$/', $palette[$k])) {
+            if (! is_string($palette[$k]) || ! preg_match('/^[0-9A-Fa-f]{6}\z/', $palette[$k])) {
                 return null;
             }
             $tones[] = strtoupper($palette[$k]);

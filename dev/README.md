@@ -71,6 +71,7 @@ sh dev/test.sh            # PHP lint, unit tests, token catalog check
 sh dev/test.sh mutate     # break each defence in turn; every one must be caught
 sh dev/test.sh live       # end to end against this instance: the legacy patch tooling, graphs, port colours, then uploads
 sh dev/test.sh all
+sh dev/test.sh update     # install, the nightly update, a night the source is unreachable, update.sh, status, uninstall: on a clean LibreNMS of its own
 ```
 
 Run from WSL/Linux with Docker. **The unit and mutation runs are sealed**: a
@@ -80,6 +81,14 @@ is deliberately broken, so they must never be able to reach the repository. (A
 mutation run once followed a symlink to `/` in the old, writable setup and
 deleted a bind-mounted copy of this repository, so don't loosen this.) The live
 tests need this stack up; its container mounts the repository read-only as well.
+
+**The update rehearsal** (`sh dev/test.sh update`) is the one test that does not use this stack. It
+starts a clean LibreNMS of its own (`dev/compose-clean.yml`: no plugin, no bind mount, nothing like this
+instance's path repository) and installs the plugin from a local git repository the test builds from
+the working tree. Then it moves `main` forward and runs LibreNMS's real `daily.sh post-pull`, as the
+nightly update does, and checks the lock, the migration, the route cache, the publish and the log line;
+it makes the source unreachable for a night and checks what that does; it runs `scripts/update.sh` and
+the status command; and it follows the uninstall steps in DEPLOYMENT.md and checks nothing is left.
 
 **Speed.** `all` takes about two and a half minutes: unit first, then the mutation
 check and the live suites at the same time (the mutation check is sealed and never

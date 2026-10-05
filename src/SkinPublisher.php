@@ -35,6 +35,8 @@ class SkinPublisher
         private readonly string $packageRoot,
         private readonly string $publicDir,
         private readonly SkinRegistry $registry,
+        /** What Composer says this package is (for example `dev-main@668fa5f`): recorded with each publish and part of its fingerprint. */
+        private readonly ?string $version = null,
     ) {
     }
 
@@ -55,6 +57,34 @@ class SkinPublisher
         $this->sync($files, $marker['skins'] ?? []);
 
         return true;
+    }
+
+    /** Whether what is in the webroot is what this package would publish now (a few stat calls). */
+    public function isCurrent(): bool
+    {
+        return (($this->readMarker()['fingerprint'] ?? null) === $this->fingerprint($this->packageFiles()));
+    }
+
+    /** The package version recorded by the last publish, if any. */
+    public function publishedVersion(): ?string
+    {
+        $version = $this->readMarker()['version'] ?? null;
+
+        return is_string($version) ? $version : null;
+    }
+
+    /** When the last publish happened (ISO 8601, UTC), if recorded. */
+    public function publishedAt(): ?string
+    {
+        $at = $this->readMarker()['published_at'] ?? null;
+
+        return is_string($at) ? $at : null;
+    }
+
+    /** The version this publisher was given. */
+    public function version(): ?string
+    {
+        return $this->version;
     }
 
     /**
@@ -81,7 +111,8 @@ class SkinPublisher
 
         // A directory an admin's upload owns is never written to or removed,
         // even if a later package version ships a skin with the same id.
-        $uploaded = array_keys($this->registry->all());
+        // (strval: PHP turns an all-digit id into an integer array key, which strict in_array would never match.)
+        $uploaded = array_map('strval', array_keys($this->registry->all()));
         $skip = fn (string $relative): bool => preg_match('#^skins/([^/]+)/#', $relative, $m) === 1 && in_array($m[1], $uploaded, true);
 
         foreach ($files as $relative => $source) {
@@ -97,7 +128,8 @@ class SkinPublisher
 
         // A skin dropped from the package since the last publish.
         foreach (array_diff($previousSkins, $skins) as $gone) {
-            if (! in_array($gone, $uploaded, true)) {
+            // The list comes from a file on disk: only ever a skin directory's own name, never a path.
+            if (SkinRepository::isValidId($gone) && ! in_array($gone, $uploaded, true)) {
                 $this->removeDirectory("$this->publicDir/skins/$gone");
             }
         }
@@ -105,6 +137,8 @@ class SkinPublisher
         $this->write("$this->publicDir/" . self::MARKER, json_encode([
             'fingerprint' => $this->fingerprint($files),
             'skins' => $skins,
+            'version' => $this->version,
+            'published_at' => gmdate('c'),
         ], JSON_PRETTY_PRINT));
     }
 
@@ -132,7 +166,9 @@ class SkinPublisher
             }
             $faces = substr_count($css, '@font-face');
             $textures = (int) preg_match_all('#^  --tx-[a-z0-9][a-z0-9-]{0,40}: url\("data:image/png;#m', $css);
-            if (OutputGuard::safe($css, $faces, $textures, $native) && OutputGuard::safe($mirror, $faces, $textures, Modes::other($native))) {
+            // The existence check is repeated here, as late as possible, so a mirror an install has put in
+            // place since the first check is not overwritten with one made from the skin it replaced.
+            if (OutputGuard::safe($css, $faces, $textures, $native) && OutputGuard::safe($mirror, $faces, $textures, Modes::other($native)) && ! file_exists("$dir/skin.mirror.css")) {
                 $this->write("$dir/skin.mirror.css", $mirror);
             }
         }
@@ -200,11 +236,11 @@ class SkinPublisher
             $parts[] = $relative . ':' . @filesize($source) . ':' . @filemtime($source);
         }
 
-        return sha1(self::FORMAT . "\n" . implode("\n", $parts));
+        return sha1(self::FORMAT . "\n" . $this->version . "\n" . implode("\n", $parts));
     }
 
     /**
-     * @return array{fingerprint?: string, skins?: string[]}
+     * @return array{fingerprint?: string, skins?: string[], version?: string|null, published_at?: string}
      */
     private function readMarker(): array
     {

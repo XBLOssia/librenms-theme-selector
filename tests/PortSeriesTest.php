@@ -157,7 +157,7 @@ function test_port_series(): void
         'null' => null, 'a string' => 'AA0001', 'an empty list' => [], 'two tones' => ['AA0001', 'AA0002'],
         'a non-hex tone' => ['AA0001', 'zzzzzz', 'AA0003'], 'a tone with a #' => ['#AA0001', 'AA0002', 'AA0003'],
         'a tone with alpha' => ['AA0001', 'AA0002', 'AA000388'], 'a short tone' => ['AA0001', 'AA002', 'AA0003'],
-        'a number' => [111111, 222222, 333333], 'nested' => [['AA0001'], 'AA0002', 'AA0003'], 'an injection' => ['AA0001', 'AA0002', "AA0003:\nHRULE"],
+        'a number' => [111111, 222222, 333333], 'nested' => [['AA0001'], 'AA0002', 'AA0003'], 'an injection' => ['AA0001', 'AA0002', "AA0003:\nHRULE"], 'a tone with a trailing newline' => ['AA0001', 'AA0002', "AA0003\n"],
     ] as $label => $bad) {
         T::ok("$label leaves the series as core drew them", PortSeries::recolour($stock('', 'bits'), $bad, $bad) === $stock('', 'bits'));
     }

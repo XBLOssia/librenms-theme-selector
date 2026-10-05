@@ -9,6 +9,7 @@ use LibreNMS\Interfaces\Plugins\Hooks\MenuEntryHook;
 use LibreNMS\Interfaces\Plugins\PluginManagerInterface;
 use Throwable;
 use Xblossia\ThemeSelector\Console\PublishCommand;
+use Xblossia\ThemeSelector\Console\StatusCommand;
 use Xblossia\ThemeSelector\Console\ValidateCommand;
 use Xblossia\ThemeSelector\Graph\PortSeriesSupport;
 use Xblossia\ThemeSelector\Graph\RecolouringRrd;
@@ -39,6 +40,7 @@ class ThemeSelectorProvider extends ServiceProvider
             $root,
             public_path(SkinRepository::PUBLIC_DIR),
             $app->make(SkinRegistry::class),
+            Status::installedVersion(),
         ));
         $this->app->singleton(SkinInstaller::class, fn ($app) => new SkinInstaller(
             public_path(SkinRepository::PUBLIC_DIR),
@@ -66,7 +68,7 @@ class ThemeSelectorProvider extends ServiceProvider
         }
 
         if ($this->app->runningInConsole()) {
-            $this->commands([PublishCommand::class, ValidateCommand::class]);
+            $this->commands([PublishCommand::class, StatusCommand::class, ValidateCommand::class]);
         } else {
             $this->publishSkins();
         }
@@ -124,12 +126,17 @@ class ThemeSelectorProvider extends ServiceProvider
      * Republish the bundled skins after a package update. Runs on web
      * requests, as the webserver user that serves the files; a failure (most
      * likely permissions) is logged and the page carries on with whatever is
-     * already published.
+     * already published. The first publish after the package's version changes
+     * is logged, so the log shows when an update (by daily.sh or by hand) landed.
      */
     private function publishSkins(): void
     {
         try {
-            $this->app->make(SkinPublisher::class)->syncIfNeeded();
+            $publisher = $this->app->make(SkinPublisher::class);
+            $before = $publisher->publishedVersion();
+            if ($publisher->syncIfNeeded() && $before !== null && $publisher->version() !== null && $before !== $publisher->version()) {
+                Log::warning('ThemeSelector: updated from ' . $before . ' to ' . $publisher->version());
+            }
         } catch (Throwable $e) {
             Log::warning('ThemeSelector: publishing skins failed: ' . $e->getMessage());
         }

@@ -1,0 +1,54 @@
+# A clean LibreNMS with NO plugin, for rehearsing install, the nightly update and uninstall
+# (dev/test-update.sh). Not the dev instance: that one has this repo bind-mounted as a path
+# repository, which is nothing like a real install. Throwaway; no ports are published.
+
+name: theme-selector-clean
+
+services:
+  db:
+    image: mariadb:10
+    command:
+      - "mysqld"
+      - "--innodb-file-per-table=1"
+      - "--lower-case-table-names=0"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    volumes:
+      - "db:/var/lib/mysql"
+    environment:
+      - "TZ=UTC"
+      - "MARIADB_RANDOM_ROOT_PASSWORD=yes"
+      - "MYSQL_DATABASE=librenms"
+      - "MYSQL_USER=librenms"
+      - "MYSQL_PASSWORD=clean-pass"
+
+  redis:
+    image: redis:7.2-alpine
+
+  librenms:
+    image: librenms/librenms:26.9.1.1
+    hostname: librenms
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - "librenms:/data"
+      # Read-only: the test builds its own git source from a copy.
+      - "..:/plugin:ro"
+    environment:
+      - "TZ=UTC"
+      - "PUID=1000"
+      - "PGID=1000"
+      - "DB_HOST=db"
+      - "DB_NAME=librenms"
+      - "DB_USER=librenms"
+      - "DB_PASSWORD=clean-pass"
+      - "DB_TIMEOUT=60"
+      - "CACHE_DRIVER=redis"
+      - "SESSION_DRIVER=redis"
+      - "REDIS_HOST=redis"
+      - "MEMORY_LIMIT=512M"
+
+volumes:
+  db:
+  librenms:

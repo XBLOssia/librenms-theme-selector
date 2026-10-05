@@ -146,6 +146,14 @@ class PickerController extends Controller
             return back()->withErrors(['default' => 'Saving the default failed; see the LibreNMS log.']);
         }
 
+        // A default decides what everyone who has not chosen sees, and rewrites LibreNMS's graph colours.
+        Log::warning('ThemeSelector: default skins set', [
+            'dark' => $default->current(Modes::DARK),
+            'light' => $default->current(Modes::LIGHT),
+            'user' => $request->user()->username ?? $request->user()->user_id,
+            'ip' => $request->ip(),
+        ]);
+
         $dark = $skins->name($default->current(Modes::DARK));
         $light = $skins->name($default->current(Modes::LIGHT));
 

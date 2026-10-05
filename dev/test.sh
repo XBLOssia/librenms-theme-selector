@@ -5,6 +5,7 @@
 #   sh dev/test.sh mutate     break each defence in turn; each must be caught
 #   sh dev/test.sh live       end-to-end against the running dev instance
 #   sh dev/test.sh all        unit, then mutation and live at the same time
+#   sh dev/test.sh update     install, the nightly update and uninstall on a clean LibreNMS (its own stack, ~4 min; not part of `all`)
 #
 # Run from WSL or Linux with Docker. The unit and mutation runs execute in a
 # throwaway container that is SEALED: the repository is mounted read-only, the
@@ -79,5 +80,6 @@ case "${1:-unit}" in
   mutate) mutate ;;
   live) live ;;
   all) all ;;
-  *) echo "usage: sh dev/test.sh [unit|mutate|live|all]" >&2; exit 2 ;;
+  update) sh "$ROOT/dev/test-update.sh" ;;
+  *) echo "usage: sh dev/test.sh [unit|mutate|live|all|update]" >&2; exit 2 ;;
 esac

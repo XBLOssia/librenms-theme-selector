@@ -90,7 +90,7 @@
                             @foreach(collect($slot['choices'])->groupBy('group') as $group => $list)
                                 <optgroup label="{{ $group }}">
                                     @foreach($list as $c)
-                                        <option value="{{ $c['value'] }}" @selected($c['value'] === $slot['selected'])
+                                        <option value="{{ $c['value'] }}" @selected((string) $c['value'] === (string) $slot['selected'])
                                                 data-name="{{ $c['name'] }}" data-desc="{{ $c['desc'] }}" data-meta="{{ $c['meta'] }}"
                                                 data-src="{{ route('theme-selector.preview', ['id' => $c['target'], 'mode' => $mode]) }}">{{ $c['label'] }}</option>
                                     @endforeach
@@ -173,7 +173,7 @@
                     <select name="{{ $field }}" id="ts-default-{{ $mode }}" class="form-control" style="margin-right:12px">
                         <option value="" @selected($modes[$mode]['default'] === null)>None (stock LibreNMS)</option>
                         @foreach($skins as $id => $skin)
-                            <option value="{{ $id }}" @selected($modes[$mode]['default'] === $id)>{{ $skin['name'] }}{{ $skin['mode'] === $mode ? '' : ' (written for ' . $skin['mode'] . ')' }}</option>
+                            <option value="{{ $id }}" @selected((string) $modes[$mode]['default'] === (string) $id)>{{ $skin['name'] }}{{ $skin['mode'] === $mode ? '' : ' (written for ' . $skin['mode'] . ')' }}</option>
                         @endforeach
                     </select>
                 @endforeach

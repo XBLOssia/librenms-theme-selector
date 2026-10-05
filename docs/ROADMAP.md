@@ -2,15 +2,18 @@
 
 Where the project actually stands, and what to pick up next.
 
-Last updated 2026-10-02. Surveyed against LibreNMS master @ `63e0394` (2026-09-17); coverage, the
-live audit and the install were re-run on release 26.9.1 (the `26.9.1.1` dev image) on 2026-10-02, and
-the numbers in FINDINGS.md were re-measured (see "Re-measured on 2026-10-02" there).
+Last updated 2026-10-05. Surveyed against LibreNMS master @ `63e0394` (2026-09-17); coverage, the
+live audit and the install were re-run on release 26.9.1 (the `26.9.1.1` dev image) on 2026-10-02
+(coverage again on 2026-10-05: unchanged, 92/92 and 179/218), the numbers in FINDINGS.md were
+re-measured (see "Re-measured on 2026-10-02" there), and install, the nightly update and uninstall
+were rehearsed on a clean 26.9.1.1 on 2026-10-05 (`sh dev/test-update.sh`).
 
 ---
 
 ## Honest status
 
-Three skins are complete, verified and installable. But "complete" means the
+Six skins (Terran, Protoss, Zerg, Digital Rain, and Clock Tower in a light and a dark mood) are complete,
+verified and installable. But "complete" means the
 application frame — navbar, panels, tables, buttons, forms, alerts, labels,
 tabs, modals. It does not mean every component.
 
@@ -64,9 +67,9 @@ Treat coverage as a floor, and the live audit as the actual test.
 
 ## Done — deployed and walked
 
-Zerg, Protoss and Terran have all run on a live production instance — LibreNMS
-`26.8.1-147-g63e0394bd1`, the exact commit the skins were built against, around
-1,400 devices. It now runs as the Theme Selector plugin; see
+Zerg, Protoss and Terran have all run on a live production instance (the
+LibreNMS commit the skins were built against was `63e0394`). It now runs as the
+Theme Selector plugin; see
 [DEPLOYMENT.md](DEPLOYMENT.md).
 
 Walking real pages is what produced everything in the Completed section below,
@@ -253,6 +256,26 @@ dark".
    `/devices`, `/alert-rules`, `/eventlog`, a device and its graphs page, and the settings pages.
 5. **Graph ramps across modes.** A skin in the other slot lends its own chrome and ramps (the ramps
    were tuned for the skin's own ground); a family could carry a ramp set for each mode.
+
+## Updates
+
+Automatic and rehearsed: LibreNMS's `daily.sh` updates the plugin from `main` nightly, runs its migrations
+and rebuilds the route cache; `theme-selector:status` and `scripts/update.sh` check and do the same on
+demand ([DEPLOYMENT.md](DEPLOYMENT.md#updates)). Open, in the order they would matter:
+
+1. ~~**A night the source is unreachable removes the plugin.**~~ Narrowed and covered (2026-10-05). With
+   the `"no-api": true` entry and a warm Composer cache an unreachable GitHub is survived; the plugin is
+   removed only with a cold cache, the API-mode entry, or a commit on `main` that makes `composer require`
+   fail. `theme-selector:status` warns about the first two, and the optional `scripts/ensure-installed.sh`
+   (cron) restores the plugin whatever the cause. What is left is the bad commit, below.
+2. **Release tags.** `dev-main` ships every merge the next night. Tagging releases would let a host follow
+   `^1.0` and take only what has been cut; `status` already understands pins and ranges. Needs a version
+   scheme and a habit of tagging. This is what stops one bad commit on `main` from removing the plugin on
+   every host the same night.
+3. **CI on pull requests** (unit and mutation checks run locally today, sealed, by hand) and a protected
+   `main`, which matters more now that merging to it reaches hosts overnight (SECURITY.md, item 9).
+
+---
 
 ## Bundled-only features (parity backlog)
 

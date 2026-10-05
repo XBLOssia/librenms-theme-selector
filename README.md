@@ -15,10 +15,11 @@ Skins can carry a repeating texture, cut corners and frame ornaments
 It needs PHP 8.2 or newer and a LibreNMS with the package plugin system.
 
 All artwork is original: CSS (gradients, shadows, generated geometry) and one
-small PNG texture per skin (diamond plate, crystal, creep, falling glyphs) that
+small PNG texture per skin (diamond plate, crystal, creep, falling glyphs, cogwheels) that
 [scripts/make-textures.py](scripts/make-textures.py),
-[scripts/make-creep.py](scripts/make-creep.py) and
-[scripts/make-rain.py](scripts/make-rain.py) compute from fixed numbers. No
+[scripts/make-creep.py](scripts/make-creep.py),
+[scripts/make-rain.py](scripts/make-rain.py) and
+[scripts/make-clock-tower.py](scripts/make-clock-tower.py) compute from fixed numbers. No
 Blizzard assets are used or redistributed. These are "inspired by" skins, not
 asset ports.
 
@@ -35,7 +36,7 @@ asset ports.
 | **Clock Tower Daylight** (light) | Double-ruled, leaf-cornered, gilt-bracketed | Parchment, walnut and brass | Playfair Display + Libre Baskerville |
 | **Clock Tower Lantern** (dark) | The same room at night | Umber, candle cream, amber glow | The same |
 
-Terran, Protoss and Zerg were installed and verified on a production instance (2026-09-29). Digital Rain and the Clock Tower skins are newer and have been checked on the development instance only.
+Terran, Protoss and Zerg were installed and verified on a production instance (2026-09-29); Digital Rain and the Clock Tower skins have since been installed there too, and had their light/dark and map fixes checked against it.
 They cover **92 of 92** components LibreNMS's dark theme styles, and **179 of 218** once
 you also count the `styles.css` classes the dark theme never touches — most of
 the remainder being dead Observium-era classes. A full survey of
@@ -111,7 +112,16 @@ checks that every text colour is at least 4.5:1 on its ground, and each is valid
 
 ![The Clock Tower Lantern skin on a LibreNMS dashboard](docs/img/dashboard-clock-tower-lantern.png)
 
-**None of these are screenshots of a production instance.** Every hostname,
+### Choosing
+
+**Plugins → Theme Selector** has a list for light mode and one for dark mode. Choosing a skin shows it
+on a sample page before anything is applied; any skin can go in either list (one written for the
+other mode is shown adapted). This is the page with Clock Tower in both: Daylight for light mode,
+Lantern for dark. (Captured from the throwaway Docker dev instance, never a real one.)
+
+![The Theme Selector page, with Clock Tower Daylight and Lantern chosen](docs/img/picker.png)
+
+**None of the dashboard images are screenshots of a production instance.** Every hostname,
 interface, site and number is invented, and the page says so in its own
 header. They are captures of [the offline mockup](#the-dashboard-mockup),
 whose markup is read off a live instance so the rendering is faithful. The
@@ -140,16 +150,23 @@ Theme Selector is a LibreNMS plugin. On the LibreNMS host, as the `librenms`
 user in `/opt/librenms`:
 
 ```bash
-php scripts/composer_wrapper.php config --global repositories.theme-selector vcs https://github.com/XBLOssia/librenms-theme-selector
+php scripts/composer_wrapper.php config --global repositories.theme-selector '{"type":"vcs","url":"https://github.com/XBLOssia/librenms-theme-selector","no-api":true}'
 ./lnms plugin:add xblossia/librenms-theme-selector dev-main
 ./lnms migrate --force
 php artisan route:cache
 ./lnms theme-selector:publish
+./lnms theme-selector:status
 ```
 
-Then **Plugins → Theme Selector**: each user picks a skin for themselves, and
-admins set the instance default (what the login page and users who haven't
-chosen get). Skins apply in dark mode; users on Light see stock LibreNMS.
+Then **Plugins → Theme Selector**: each user picks a skin for light mode and one for dark mode,
+and admins set the instance defaults (what the login page and users who haven't chosen get).
+A mode with no skin chosen and no default is stock LibreNMS.
+
+**Updates are automatic.** LibreNMS's own nightly `daily.sh` re-installs every plugin in
+`composer.plugins.json`, so the plugin follows `main` with no further steps, migrations
+included; `./lnms theme-selector:status` checks it, `scripts/update.sh` does it on demand, and an optional cron
+script (`scripts/ensure-installed.sh`) puts the plugin back if a nightly update ever removes it.
+How that works, and the one night it can go wrong, is in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#updates).
 
 Admins can also add their own skins there as a `.zip`, and remove them again;
 see [docs/AUTHORING.md](docs/AUTHORING.md). Uploads are treated as hostile
@@ -166,10 +183,10 @@ Updates, uninstalling and troubleshooting: **[docs/DEPLOYMENT.md](docs/DEPLOYMEN
 ### Safety
 
 No LibreNMS core file is modified. The plugin adds two tables of its own (the
-instance default, and uploaded skins), copies static files into
+instance defaults, and uploaded skins), copies static files into
 `html/css/custom/theme-selector/` (gitignored by LibreNMS), and stores each user's
-choice in `users_prefs`. Only when an admin sets an instance default does it write
-graph-colour rows (`graph_colours.*`, `rrdgraph_def_text*_dark`) into LibreNMS's
+choices (one per mode) in `users_prefs`. Only when an admin sets an instance default does it write
+graph-colour rows (`graph_colours.*`, `rrdgraph_def_text*`) into LibreNMS's
 config, after recording what they were so it can put them back. It survives
 `daily.sh`, which reinstalls plugins after every update and never runs
 `git clean`.
@@ -347,18 +364,19 @@ src/Graph/                  port traffic series recolouring: RecolouringRrd, Por
 src/Skin/                   the upload validator: zip reader, token-file parser, value grammar, PNG texture reader
 routes/, resources/views/   the Theme Selector page
 resources/token-catalog.json  which tokens exist, and which uploads may set (generated)
-database/migrations/        the plugin's two tables (settings, uploaded skins) and their later columns
+database/migrations/        the plugin's two tables (settings, uploaded skins) and their later columns (five migrations)
 tests/                      php tests/run.php: validator, installer, ornaments, port series, fuzzing; mutate.sh
 base/base.css               the base stylesheet: token defaults + every rule
 base/light.css              light mode only: LibreNMS's stock palette mapped onto a skin's roles (appended to base-light.css)
 skins/<name>/skin.css       a skin: token values, private palette, @font-face
-skins/<name>/skin.json      manifest: name, description, modes
+skins/<name>/skin.json      manifest: name, description, mode (light or dark), family
 skins/<name>/features.json  bundled skins only: opt in to ornaments and page effects (docs/PLUGIN.md)
 skins/<name>/graph.conf     graph palette, applied when it's the instance default
 skins/<name>/fonts/         bundled OFL webfonts + licence notices
 skins/<name>/textures/      the skin's repeating PNG tile (generated; skins/zerg/TEXTURES.md says how)
 skins/<name>/FONTS.md       typography rationale and how to swap faces
 examples/minimal/           the smallest complete skin (sets only the 20 core roles)
+examples/minimal-light/     the same for light mode
 harness/index.html          static preview, real LibreNMS CSS, real DOM
 harness/mockup.html         full dashboard mockup, invented data
 harness/leaks.html          stock backgrounds still showing through, and contrast
@@ -366,10 +384,12 @@ harness/graphs/             rrdtool graphs rendered from a synthetic RRD
 harness/colorway.html       a skin's tokens and graph ramps, rendered
 harness/audit.js            live-page contrast + stock-colour audit
 harness/sync-css.sh         vendor LibreNMS's stylesheets for the harness (gitignored)
-dev/                        Docker LibreNMS for developing the plugin, and its live tests
+dev/                        Docker LibreNMS for developing the plugin, its live tests, and test-update.sh (install, nightly update, uninstall on a clean one)
 scripts/gen-token-docs.py   regenerate docs/TOKENS.md from base.css
 scripts/gen-token-catalog.py  derive the token catalog (settable vs structural) from base.css
 scripts/pack-skin.py        zip a skin folder for upload
+scripts/update.sh           update the plugin now and check it (what daily.sh does overnight)
+scripts/ensure-installed.sh optional cron safety net: put the plugin back if a nightly update removed it
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/make-textures.py    compute the plate, crystal and tile textures
 scripts/make-creep.py       compute the Zerg creep texture

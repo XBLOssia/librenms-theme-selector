@@ -536,9 +536,9 @@ this comes from using it rather than theorising about it.
 - The offer says "I can provide before/after screenshots" rather than claiming
   they exist. Still true, and still the right shape: they are cheap to produce
   once a phase is actually welcomed, and premature otherwise.
-- The old draft disclosed the instance size (1,400+ devices). Removed from the
-  post. It does appear in `DEPLOYMENT.md` and `ROADMAP.md`, which is a
-  deliberate call — a device count without a hostname is scale, not a target.
+- The old draft disclosed the instance size. Removed from the post, and later
+  from `DEPLOYMENT.md` and `ROADMAP.md` too (2026-10-05): pairing a size and an exact
+  build with the rest of this repository narrows down who runs it, for no benefit.
 
 **Sequencing** — *(updated 2026-10-02)* steps 1 and 2 are done. The thread was answered on
 2026-09-22/23 (installable themes are not wanted; built-in colour schemes might be; "please stop

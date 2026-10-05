@@ -26,7 +26,7 @@ Settled 2026-09-25.
 | Question | Decision |
 |---|---|
 | Skin format | **Shared base stylesheet + per-skin token files.** The base maps LibreNMS components onto custom properties; a skin supplies values. |
-| Light mode | **Skins may support both modes.** The format allows a light and a dark token set; the current three stay dark-only for now. |
+| Light mode | **A skin is written for one mode, and any skin can go in either slot.** Each user picks a skin for light and one for dark; the plugin serves the skin's mirror (the same rules, the other selector) for the mode it was not written for. See "Light and dark" below. |
 | Graph colours | **Per user, and the instance default for everything else.** Built in two steps (the default's palette is written to config; each user's own is applied in memory for their graph requests, Phase 5); the port traffic series are recoloured by the plugin's own wrapper, see "Port traffic series without a core patch". |
 | Custom skin upload | **Zip bundle** — manifest, token file, optional fonts, optional graph palette. Validated before install. |
 | Names | Package `xblossia/librenms-theme-selector`. Display name **Theme Selector for LibreNMS**; short name **Theme Selector**, `ThemeSelector` where spaces aren't allowed (plugin name, PHP namespace). |
@@ -98,8 +98,8 @@ Resolution order: user pref → plugin's admin default → none (stock).
 - Plugin routes: picker and its preview page under `['web','auth']`; upload/delete/default under
   `can:admin` — the core admin role, by decision.
 - Type-hint `authorize()` as `Illuminate\Contracts\Auth\Authenticatable`.
-  `App\Models\User` silently injects an unauthenticated model (lesson from the
-  Network Command Suite plugin; upstream PR #20543 is converging on the same).
+  `App\Models\User` silently injects an unauthenticated model (a lesson from
+  another plugin; upstream PR #20543 is converging on the same).
 
 ### Where skin files live
 
@@ -129,12 +129,20 @@ host's nginx config has not been checked.
   the package in the gitignored `composer.plugins.json`.
 - `daily.sh` resets `composer.json`, then re-requires everything in
   `composer.plugins.json` and runs `composer install --no-dev`
-  (`daily.sh:302, 361-367`). **Plugins survive updates.**
+  (`daily.sh:302, 361-367`). **Plugins survive updates, and `dev-main` follows `main` nightly**:
+  the require resolves the newest commit, `composer install`'s own scripts rebuild the route cache
+  with the plugin's current routes, and `lnms migrate` runs the new migrations. The first web request
+  after that republishes the stylesheets (as the web server user) and logs
+  `ThemeSelector: updated from X to Y`; the publisher records the package version in `.bundled.json`
+  and includes it in its fingerprint. `lnms theme-selector:status` checks the result and
+  `scripts/update.sh` does the same steps on demand; both, and a failure mode (a nightly `composer require` that fails with nothing cached removes the plugin until it is put back; `scripts/ensure-installed.sh`
+  is the optional cron safety net), are in docs/DEPLOYMENT.md, "Updates", and
+  rehearsed on a clean LibreNMS by `dev/test-update.sh`.
 - A path or VCS repository must go in the **global** composer config
   (`composer config --global repositories...`), not LibreNMS's `composer.json`.
-  The Network Command Suite deploy learned this the hard way:
+  Another plugin's deploy learned this the hard way:
   the local entry was wiped by `daily.sh` and the failed `composer require`
-  took M365 SSO down with it.
+  took its SSO login down with it.
 
 ### Caveats
 
@@ -351,7 +359,7 @@ src/
   GraphPalette, GraphColours (middleware), SkinResolver, SkinInjector
   Graph/                     port series recolouring: RecolouringRrd, PortSeries, PortSeriesSupport
   Http/Controllers/PickerController.php
-  Console/                   theme-selector:publish, theme-selector:validate
+  Console/                   theme-selector:publish, theme-selector:status, theme-selector:validate
 routes/web.php
 resources/views/             the picker and admin page, and the preview's sample page
 resources/token-catalog.json which tokens exist / which uploads may set (generated)
@@ -400,7 +408,7 @@ Where a skin never declared a property that another skin did, its token file
 now carries the stock value explicitly (measured from the original in the
 harness, or read from stock CSS for elements the harness doesn't render).
 
-**1b — Token API. Done 2026-09-28.** Every one of the 301 tokens (396 now, 31 of them structural) has a
+**1b — Token API. Done 2026-09-28.** Every one of the 301 tokens (399 now, 31 of them structural) has a
 default, in a block at the top of `base.css`; `skin.css` loads after it, so a
 skin sets only what it changes. Defaults, by source:
 
@@ -466,7 +474,7 @@ pending.** On the `dev/` instance:
 record"). Confirmed there: per-user skins, the instance default reaching a
 second account, per-user graph colours, and the pinned navbar with every skin.
 Not verified on production, by choice: the login page (that host sends every
-visitor straight to Microsoft SSO, so it never renders there; the code path is
+visitor straight to its SSO provider, so it never renders there; the code path is
 the one the picker page already exercises, and the Docker instance covers it)
 and a full `daily.sh` cycle (the plugin is recorded in `composer.plugins.json`,
 which `daily.sh` reinstalls from; check after the first nightly run). The old
@@ -510,8 +518,8 @@ gave:
 - a strict zip reader of our own (no extraction, exact name allowlist, cross-
   checked headers, bounded inflation);
 - a token-file grammar of one block type (`html.dark { custom properties }`)
-  plus `@font-face`, with every value tokenised against a short allowlist;
-- a catalog of 305 tokens (then; 396 now) derived from `base.css`, 36 of them *structural* (31 now)
+  plus `@font-face` (a skin is written for one mode: its block is `html.dark` or `html:not(.dark)`), with every value tokenised against a short allowlist;
+- a catalog of 305 tokens (then; 399 now) derived from `base.css`, 36 of them *structural* (31 now)
   (position, size, generated text, clip-path, animation) and bundled-only, so an
   upload can't paint a fake message or hide a control;
 - an independent output guard, a registry table (the row is what makes a
@@ -523,8 +531,8 @@ gave:
 Verification at the time: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
 breaks each defence and requires a failing test (46 caught, 7 documented as
-redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,330 checks and
-162 mutations caught; `sh dev/test.sh all` prints the current figures.)
+redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,413 checks and
+173 mutations caught; `sh dev/test.sh all` prints the current figures.)
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See
 [SECURITY.md](SECURITY.md) for the controls and, as important, what is not
@@ -566,9 +574,9 @@ production host. Graph responses are `Cache-Control: no-cache, private` with
 no validators, so browsers refetch and a skin switch shows on the next load.
 
 Known limits: port traffic series are recoloured by string-matching six options
-(below), so they fall back to stock colours if core changes those lines; chrome only
-follows a skin for users on the dark theme; a user on Light still gets the
-`graph_colours.*` ramps of their skin, which is harmless but not "stock".
+(below), so they fall back to stock colours if core changes those lines; the chrome
+comes from the skin in the slot of the mode LibreNMS draws the graph in (the request's `style`, else the session's), and a skin that lacks that mode's chrome lends its own; the
+`graph_colours.*` ramps are the skin's in either mode.
 
 ### Port traffic series without a core patch
 

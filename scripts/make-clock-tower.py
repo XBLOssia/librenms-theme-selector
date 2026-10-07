@@ -1,12 +1,16 @@
-"""Generate the two Clock Tower skins: skins/clock-tower-daylight/ (light) and skins/clock-tower-lantern/ (dark).
+"""Generate the Clock Tower skins: skins/clock-tower-daylight/ (light), clock-tower-lantern/ and clock-tower-gotham/ (dark).
 
-    python scripts/make-clock-tower.py            # rewrite both skins' skin.css and textures/gears.png
+    python scripts/make-clock-tower.py            # rewrite every skin's files and textures
     python scripts/make-clock-tower.py --check    # exit 1 if the files on disk are not what this would write
 
 One template, two palettes, so the family stays one design: the same shapes (a double rule round every
 panel, gilt corner brackets with a rivet, leaf-shaped corners, a brass strip and a row of dentils on the
 navbar, a block of brass beside each heading) in two moods. Daylight is natural light on parchment and
 walnut; Lantern is the same room at night, lit from inside: umber and candle cream, with an amber glow.
+
+Gotham is the third face of the family and has a template of its own: the great clock at night. A bright
+yellow lamp behind the dial, blue stone in shadow, pointed arches, carved Roman capitals (Cinzel). Its one
+image is a faint wall of masonry with a lit tracery window in it (textures/tracery.png), computed here too.
 
 Everything the skins set is an ordinary token an uploaded skin may set, so either could be uploaded as a
 bundle (without features.json, which only bundled skins have). The one image in each, a faint tile of
@@ -66,7 +70,40 @@ PALETTES = {
         navbar_bg='#1b120a', navbar_text='#ecd9b0',
         map_filter='invert(1) hue-rotate(180deg) sepia(.4) brightness(.72) contrast(1.05) saturate(.55)',
     ),
+    'gotham': dict(
+        id='clock-tower-gotham', name='Clock Tower Gotham', wrap='html.dark', mode='dark', template='gotham', texture='tracery',
+        description='A great clock at night: a bright yellow lamp behind the dial, blue stone in shadow, pointed arches and carved Roman capitals. The gothic face of the Clock Tower family.',
+        mood='the great clock at night: lamp-yellow light, blue stone shadow, gothic tracery, Roman capitals',
+        bg='#050914', surface='#0b1426', raised='#122039', hover='#1b2f52', line='#2c4676', line_strong='#9c8326',
+        text='#e8e4d2', dim='#aebbd8', mute='#8f9dbf', bright='#fff7d6',
+        brass='#e6b82e', brass_hi='#ffdc5e', brass_dim='#5f5020',
+        link='#ffd25e', link_hover='#ffe793', accent='#f0bd30', highlight='#ffcf4a',
+        success='#74d49a', warning='#ffb84a', danger='#ff7d6e', info='#78b4ff', danger_text='#ff9e92',
+        label_success='#2c7d52', label_danger='#b23a30', label_warning='#c68a0d', label_info='#2e5fae', label_default='#33508a',
+        on_label='#f6f8ff', on_warn='#150f02',
+        btn_primary='#2a4a94', on_primary='#fff7d6',
+        glow='rgba(255, 214, 82, .55)', shade='rgba(0, 0, 12, .45)', shade_strong='rgba(0, 0, 12, .65)',
+        wash='linear-gradient(180deg, rgba(120, 160, 255, .08) 0, rgba(120, 160, 255, 0) 62%)',
+        page='radial-gradient(ellipse at 50% -10%, rgba(255, 205, 70, .25) 0, rgba(255, 205, 70, 0) 64%), linear-gradient(180deg, #091330 0, #050914 100%)',
+        pier='#14244a', lamp='#ffd44f', lamp_hi='#fff0b3',
+        gear='156, 186, 255', gear_alpha=0.16, gear2='255, 214, 82', gear2_alpha=0.13, head_glow='0 0 10px rgba(255, 214, 82, .45)',
+        breathe_low='.75', breathe_high='1', frame_breathe='9s', marker_breathe='6s',
+        navbar_bg='#0a1224', navbar_text='#e8e4d2',
+        map_filter='invert(1) hue-rotate(185deg) brightness(.72) contrast(1.05) saturate(.7)',
+        ins=['CFE3FF', '8FBBFF', '5C94F0'], outs=['FFF0B3', 'FFD84D', 'E6B82E'],
+        ramps={
+            'greens': ['D3F0DD', 'A6E0BC', '74D49A', '4DB57A', '36915F', '246A44'],
+            'blues': ['D6E6FF', 'A9C9FF', '78B4FF', '5593E6', '3D74C4', '2A5596'],
+            'purples': ['E3DCFF', 'C5B8F5', '9F8CE6', '7C69C8', '5B4BA3', '41357A'],
+            'oranges': ['FFF0B3', 'FFDC5E', 'FFB84A', 'E6932B', 'BF7118', '8C510E'],
+            'pinks': ['FFD9D3', 'FFB3A8', 'FF7D6E', 'DB5A4C', 'AD4136', '7E2D26'],
+            'default': ['74D49A', '78B4FF', 'FFB84A', 'FF7D6E', 'AEBBD8', 'E6B82E'],
+        },
+    ),
 }
+for _p in PALETTES.values():
+    _p.setdefault('template', 'classic')
+    _p.setdefault('texture', 'gears')
 
 SKIN_JSON = Template('''{
   "id": "$id",
@@ -385,6 +422,325 @@ Change the `src` of the `@font-face` blocks in `skin.css` (and the file in `font
 template in `scripts/make-clock-tower.py` and regenerate: both skins are written from it.
 ''')
 
+GOTHAM_CSS = Template(r'''/*
+ * Clock Tower Gotham ($mood).
+ *
+ * The third skin of the Clock Tower family, and the one that is not the same room: the great clock at
+ * night. A bright yellow lamp behind the dial, blue stone in shadow, pointed arches and Roman capitals.
+ * Where Daylight and Lantern share a brass-and-cogs design, this one is gothic: square stone corners with
+ * a quatrefoil at each, a faint arcade of pointed arches behind every panel heading, a row of lit lancet
+ * windows along the foot of the navbar, and a faint wall of masonry and tracery windows behind the page.
+ * Written by scripts/make-clock-tower.py (the texture too: it is computed from fixed numbers).
+ *
+ * Every token here is one an uploaded skin may set (the same file validates as an upload), plus the
+ * texture textures/tracery.png. The type is Cinzel (carved Roman capitals, the lettering of an inscription)
+ * for headings and Libre Baskerville for text, both SIL OFL, bundled in fonts/, and the system's serifs if
+ * they fail to load. Cinzel's figure 1 is a capital I (right for a Roman numeral, wrong for a hostname), so
+ * the display face is Cinzel for everything but the digits 0-9, which come from Libre Baskerville Bold
+ * (two @font-face blocks, split by unicode-range, as in the other Clock Tower skins).
+ */
+@font-face {
+  font-family: "Clock Tower Display";
+  src: url("fonts/Cinzel-SemiBold.woff2") format("woff2");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-002F, U+003A-10FFFF;
+}
+@font-face {
+  font-family: "Clock Tower Display";
+  src: url("fonts/LibreBaskerville-Bold.woff2") format("woff2");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Clock Tower Text";
+  src: url("fonts/LibreBaskerville-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clock Tower Text";
+  src: url("fonts/LibreBaskerville-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+$wrap {
+  /* Palette */
+  --p-bg: $bg;
+  --p-surface: $surface;
+  --p-raised: $raised;
+  --p-hover: $hover;
+  --p-line: $line;
+  --p-line-strong: $line_strong;
+  --p-text: $text;
+  --p-dim: $dim;
+  --p-mute: $mute;
+  --p-bright: $bright;
+  --p-gilt: $brass;
+  --p-gilt-hi: $brass_hi;
+  --p-gilt-dim: $brass_dim;
+  --p-lamp: $lamp;
+  --p-lamp-hi: $lamp_hi;
+  --p-pier: $pier;
+  --p-link: $link;
+  --p-link-hover: $link_hover;
+  --p-accent: $accent;
+  --p-highlight: $highlight;
+  --p-danger: $danger;
+  --p-glow: $glow;
+  --p-shade: $shade;
+  --p-shade-strong: $shade_strong;
+  --p-display: "Clock Tower Display", Cinzel, "Trajan Pro", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --p-serif: "Clock Tower Text", "Libre Baskerville", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --p-mono: "Courier Prime", "Courier New", Courier, ui-monospace, monospace;
+  --p-wash: $wash;
+  --p-page: $page;
+  --p-lit: linear-gradient(180deg, rgba(255, 205, 70, .20) 0, rgba(255, 205, 70, .05) 100%);
+  --p-lamplight: linear-gradient(0deg, rgba(255, 205, 70, .26) 0, rgba(255, 205, 70, 0) 72%), $wash;
+  --tx-tracery: url("textures/tracery.png");
+
+  /* Core roles */
+  --ts-bg: var(--p-bg);
+  --ts-surface: var(--p-surface);
+  --ts-surface-raised: var(--p-raised);
+  --ts-surface-hover: var(--p-hover);
+  --ts-border: var(--p-line);
+  --ts-text: var(--p-text);
+  --ts-text-dim: var(--p-dim);
+  --ts-text-mute: var(--p-mute);
+  --ts-text-bright: var(--p-bright);
+  --ts-accent: var(--p-accent);
+  --ts-link: var(--p-link);
+  --ts-highlight: var(--p-highlight);
+  --ts-success: $success;
+  --ts-warning: $warning;
+  --ts-danger: $danger;
+  --ts-info: $info;
+  --ts-danger-text: $danger_text;
+  --ts-font-display: var(--p-display);
+  --ts-font-mono: var(--p-mono);
+  --ts-font-code: var(--p-mono);
+  --ts-radius-sm: 0px;
+  --ts-radius-md: 2px;
+  --ts-radius-lg: 2px;
+
+  /* The page: a pool of lamplight from above and a wall of masonry with tracery windows in it. */
+  --ts-map-tile-filter: $map_filter;
+  --ts-body-bg-image: var(--tx-tracery), var(--p-page);
+  --ts-body-bg-size: 128px 256px, 100% 100%, 100% 100%;
+  --ts-body-bg-repeat: repeat, no-repeat, no-repeat;
+
+  /* Type: carved capitals for the chrome, a book serif for the data */
+  --ts-root-font-family: var(--p-serif);
+  --ts-body-font-family: var(--p-serif);
+  --ts-input-font-family: var(--p-serif);
+  --ts-tab-font-family: var(--p-display);
+  --ts-navbar-brand-font-weight: 700;
+  --ts-navbar-brand-letter-spacing: .08em;
+  --ts-navbar-link-font-size: 14px;
+  --ts-navbar-link-letter-spacing: .06em;
+  --ts-panel-heading-font-weight: 700;
+  --ts-panel-heading-letter-spacing: .1em;
+  --ts-widget-title-font-weight: 700;
+  --ts-widget-title-letter-spacing: .1em;
+  --ts-table-head-font-weight: 700;
+  --ts-table-head-letter-spacing: .1em;
+  --ts-table-cell-font-size: 14px;
+  --ts-tab-font-size: 14px;
+  --ts-tab-letter-spacing: .08em;
+  --ts-btn-letter-spacing: .06em;
+  --ts-btn-font-size: 13px;
+  --ts-dropdown-item-font-weight: 400;
+  --ts-navbar-brand-text-shadow: $head_glow;
+  --ts-panel-heading-text-shadow: $head_glow;
+
+  /* Surfaces: square stone with a double rule (a hairline of blue stone inside a gilt edge), a quiet
+     inner sheen, and a deep shadow. */
+  --ts-shadow: 0 1px 3px var(--p-shade);
+  --ts-recess: inset 0 1px 3px var(--p-shade-strong);
+  --ts-bevel: inset 0 1px 0 rgba(160, 190, 255, .12);
+  --ts-panel-bg-image: var(--p-wash);
+  --ts-widget-bg-image: var(--p-wash);
+  --ts-panel-heading-bg-image: var(--p-lit);
+  --ts-widget-title-bg-image: var(--p-lit);
+  --ts-panel-border: 1px solid var(--p-line-strong);
+  --ts-widget-border: 1px solid var(--p-line-strong);
+  --ts-panel-shadow: inset 0 0 0 3px var(--p-surface), inset 0 0 0 4px var(--p-line), 0 3px 12px var(--p-shade-strong);
+  --ts-widget-shadow: inset 0 0 0 3px var(--p-surface), inset 0 0 0 4px var(--p-line), 0 3px 12px var(--p-shade-strong);
+  --ts-panel-heading-border-bottom: 1px solid var(--p-line-strong);
+  --ts-widget-title-border-bottom: 1px solid var(--p-line-strong);
+  --ts-panel-radius-tl: 0px;
+  --ts-panel-radius-tr: 0px;
+  --ts-panel-radius-br: 0px;
+  --ts-panel-radius-bl: 0px;
+  --ts-widget-radius-tl: 0px;
+  --ts-widget-radius-tr: 0px;
+  --ts-widget-radius-br: 0px;
+  --ts-widget-radius-bl: 0px;
+  --ts-navbar-bg-image: var(--p-lamplight);
+  --ts-navbar-border-bottom: 1px solid var(--p-line-strong);
+  --ts-navbar-shadow: 0 3px 10px var(--p-shade-strong);
+  --ts-navbar-link-hover-shadow: inset 0 -2px 0 0 var(--p-gilt);
+  --ts-modal-border: 1px solid var(--p-line-strong);
+  --ts-modal-border-top: 3px double var(--p-gilt);
+  --ts-modal-shadow: 0 8px 28px var(--p-shade-strong);
+  --ts-navbar-dropdown-border: 1px solid var(--p-line-strong);
+  --ts-navbar-dropdown-border-top: 2px solid var(--p-gilt);
+  --ts-navbar-dropdown-shadow: 0 4px 16px var(--p-shade-strong);
+  --ts-alert-badge-border-radius: 2px;
+  --ts-well-border-radius: 0px;
+  --ts-well-border: 1px solid var(--p-line);
+  --ts-alert-border-width: 1px 1px 1px 5px;
+  --ts-label-success-bg: $label_success;
+  --ts-label-success-fg: $on_label;
+  --ts-label-danger-bg: $label_danger;
+  --ts-label-danger-fg: $on_label;
+  --ts-label-warning-bg: $label_warning;
+  --ts-label-warning-fg: $on_warn;
+  --ts-label-info-bg: $label_info;
+  --ts-label-info-fg: $on_label;
+  --ts-label-default-fg: $on_label;
+  --ts-badge-alert: $label_danger;
+  --ts-btn-success-bg: $label_success;
+  --ts-btn-success-fg: $on_label;
+  --ts-btn-warning-bg: $label_warning;
+  --ts-btn-warning-fg: $on_warn;
+  --ts-btn-danger-bg: $label_danger;
+  --ts-pre-bg: var(--p-raised);
+  --ts-pre-border: 1px solid var(--p-line);
+  --ts-code-text: var(--p-text);
+  --ts-progress: var(--p-lamp);
+  --ts-progress-glow-shadow: 0 0 8px var(--p-glow);
+
+  /* Ornaments. A quatrefoil (four small lobes) at each corner of a panel; the arcade of a gothic
+     wall, faint, behind every panel heading, and a lit lancet window set between piers along the foot
+     of the navbar; a gilt line of light along its top. The glow and the slow fade are the lamp
+     settling; every period is over 2s and nothing flashes. */
+  --p-quatrefoil-tl: $quatrefoil_tl;
+  --p-quatrefoil-tr: $quatrefoil_tr;
+  --p-quatrefoil-bl: $quatrefoil_bl;
+  --p-quatrefoil-br: $quatrefoil_br;
+  --ts-frame-tl: var(--p-quatrefoil-tl);
+  --ts-frame-tr: var(--p-quatrefoil-tr);
+  --ts-frame-bl: var(--p-quatrefoil-bl);
+  --ts-frame-br: var(--p-quatrefoil-br);
+  --ts-widget-frame-tl: var(--p-quatrefoil-tl);
+  --ts-widget-frame-tr: var(--p-quatrefoil-tr);
+  --ts-widget-frame-bl: var(--p-quatrefoil-bl);
+  --ts-widget-frame-br: var(--p-quatrefoil-br);
+  --ts-frame-glow: $glow;
+$frame_breathe_decl
+  --ts-heading-marker: linear-gradient(180deg, var(--p-lamp-hi) 0, var(--p-lamp) 100%);
+  --ts-heading-marker-size: 4px 100%;
+  --ts-heading-marker-position: left top;
+  --ts-heading-marker-glow: $glow;
+$marker_breathe_decl
+  --ts-heading-strip: radial-gradient(circle at 0 100%, transparent 20.4px, var(--p-lamp) 20.5px, var(--p-lamp) 22px, transparent 22.2px), radial-gradient(circle at 22px 100%, transparent 20.4px, var(--p-lamp) 20.5px, var(--p-lamp) 22px, transparent 22.2px);
+  --ts-heading-strip-size: 22px 20px;
+  --ts-heading-strip-position: left bottom;
+  --ts-heading-strip-repeat: repeat-x;
+  --ts-heading-strip-opacity: .32;
+  --ts-navbar-strip-top: linear-gradient(90deg, transparent 0, var(--p-lamp) 18%, var(--p-lamp-hi) 50%, var(--p-lamp) 82%, transparent 100%);
+  --ts-navbar-strip-top-size: 100% 2px;
+  --ts-navbar-strip-bottom: radial-gradient(circle at 18px 100%, transparent 13.4px, var(--p-pier) 14.2px), radial-gradient(circle at -2px 100%, transparent 13.4px, var(--p-pier) 14.2px), linear-gradient(0deg, var(--p-lamp) 0, var(--p-lamp-hi) 100%);
+  --ts-navbar-strip-bottom-size: 16px 12px;
+  --ts-navbar-strip-bottom-repeat: repeat-x;
+  --ts-navbar-strip-bottom-opacity: .95;
+  --ts-breathe-low: $breathe_low;
+  --ts-breathe-high: $breathe_high;
+  --ts-alert-glow-period: 3s;
+  --ts-alert-glow-low: rgba(178, 58, 48, .35);
+  --ts-alert-glow-high: rgba(178, 58, 48, .8);
+
+  /* Tables and controls */
+  --ts-table-border: var(--p-line);
+  --ts-table-head-bg: var(--p-raised);
+  --ts-table-head-border-bottom: 2px solid var(--p-line-strong);
+  --ts-table-stripe-odd-bg: var(--p-surface);
+  --ts-table-stripe-even-bg: var(--p-raised);
+  --ts-table-row-hover-bg: var(--p-hover);
+  --ts-table-row-hover-shadow: inset 3px 0 0 0 var(--p-lamp);
+  --ts-table-bg: var(--p-surface);
+  --ts-input-bg: var(--p-surface);
+  --ts-input-border: 1px solid var(--p-line-strong);
+  --ts-input-border-top-color: var(--p-line-strong);
+  --ts-input-shadow: var(--ts-recess);
+  --ts-input-focus-shadow: 0 0 0 2px var(--p-lamp);
+  --ts-addon-border: var(--p-line-strong);
+  --ts-btn-default-border: var(--p-line-strong);
+  --ts-btn-default-hover-shadow: 0 0 8px var(--p-glow);
+  --ts-btn-primary-bg: $btn_primary;
+  --ts-btn-primary-border: var(--p-gilt);
+  --ts-btn-primary-shadow: var(--ts-bevel);
+  --ts-lnms-btn-primary-bg: $btn_primary;
+  --ts-lnms-btn-primary-border: var(--p-gilt);
+  --ts-btn-hover-filter: brightness(1.12);
+  --ts-pagemenu-active-shadow: inset 0 -2px 0 0 var(--p-lamp);
+  --ts-tab-active-border: var(--p-line-strong);
+  --ts-tab-active-border-top: 3px double var(--p-gilt);
+  --ts-tab-active-border-bottom-color: var(--p-surface);
+}
+''')
+
+
+GOTHAM_FONTS_MD = Template(r'''# Fonts — Clock Tower ($name)
+
+**The fonts ship with the skin. There is nothing to install.**
+
+They sit inside the skin folder, so nothing is fetched at run time: no Google Fonts request, nothing for
+the end user to do. (The folder alone does not apply a skin: it needs the plugin and `base/base.css`, see
+the README.)
+
+## The two voices
+
+| Token | Face | Role | Applied to |
+|---|---|---|---|
+| `--p-display` | Cinzel 600 | Carved Roman capitals, the lettering of an inscription: the numerals of a clock face | Navbar, panel and widget headings, table headings, tabs |
+| `--p-serif` | Libre Baskerville 400/700 | A sturdy, open book serif that holds up at 13-14px | Everything else: table cells, labels, inputs, text |
+
+Both are named in `skin.css` by private family names (`Clock Tower Display`, `Clock Tower Text`), with the
+real names and then the system serifs (Palatino, Book Antiqua, Georgia) behind them, so a failed load
+degrades to a serif and never to a sans. Code and `pre` use the system's Courier.
+
+Cinzel is set only in capitals-style headings and chrome: its lower case is small capitals, and its
+figures are lining, so hostnames and counters in headings read correctly.
+
+## What ships
+
+```
+skins/$id/fonts/
+  Cinzel-SemiBold.woff2            14.8 KB
+  LibreBaskerville-Regular.woff2   19.6 KB
+  LibreBaskerville-Bold.woff2      20.0 KB
+  OFL-Cinzel.txt
+  OFL-LibreBaskerville.txt
+```
+
+Only the `latin` subset is bundled, as Google Fonts serves it (about 15-20 KB a file instead of several
+hundred). `scripts/fetch-fonts.ps1` regenerates them reproducibly:
+
+```
+powershell -ExecutionPolicy Bypass -File scripts/fetch-fonts.ps1 -Skins clock-tower-gotham
+```
+
+## Licences
+
+Both faces are SIL Open Font License 1.1, which permits redistribution with the notice. The notices
+are in `fonts/`. The OFL's reserved font names are "Cinzel" and "Libre Baskerville"; the files are served
+unmodified, and the private family names above are CSS aliases, not renamed fonts.
+
+## Swapping a face
+
+Change the `src` of the `@font-face` blocks in `skin.css` (and the file in `fonts/`), or edit the
+template in `scripts/make-clock-tower.py` and regenerate.
+''')
+
+
 def lum(h):
     c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
     c = [v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4 for v in c]
@@ -464,21 +820,105 @@ def gears(p):
     return img
 
 
+def tracery(p):
+    """A 128 x 256 tile of a masonry wall with one lit tracery window in it, faint, in two colours.
+
+    Courses of ashlar 32px high, joints staggered by half a block; a pointed (lancet) window, built the way
+    a mason sets one out (two arcs, each struck from the opposite springing point), with a central mullion and
+    an oculus above; a sill. The glass is a faint wash of the lamp's yellow, the stone lines are the blue of
+    stone in shadow. Nothing touches the vertical edges except the horizontal joints, which repeat, so the
+    tile has no seam.
+    """
+    import numpy as np  # imported here so --check needs nothing but the standard library
+    from PIL import Image
+
+    W, H, S = 128, 256, 4
+    yy, xx = np.mgrid[0:H * S, 0:W * S].astype(np.float64) / S
+    lines = np.zeros((H * S, W * S), dtype=bool)
+    glass = np.zeros((H * S, W * S), dtype=bool)
+    lw = 0.55
+
+    # masonry: horizontal joints every 32px, vertical joints staggered by half a 64px block
+    for k in range(H // 32):
+        y = 32 * k + 31.5
+        lines |= np.abs(yy - y) < lw
+        x0 = 32 + 64 * (k % 2)
+        for x in (x0 % W, (x0 + 64) % W):
+            lines |= (np.abs(xx - (x + 0.5)) < lw) & (yy > 32 * k) & (yy < 32 * k + 31)
+
+    # the window: spring line at y=104, 56 wide, centred at x=64, sill at y=214
+    cx, w, spring, sill = 64.0, 56.0, 104.0, 214.0
+    xl, xr = cx - w / 2, cx + w / 2
+    in_left = (xx - xl) ** 2 + (yy - spring) ** 2 < w ** 2      # circle struck from the left spring point
+    in_right = (xx - xr) ** 2 + (yy - spring) ** 2 < w ** 2
+    body = (xx > xl) & (xx < xr)
+    above = yy <= spring
+    window = np.where(above, in_left & in_right & body, body & (yy < sill))
+    # outline: the window grown by a line's width, less the window shrunk by it
+    def grow(mask, r):
+        m = mask.copy()
+        n = int(r * S)
+        for dy in range(-n, n + 1):
+            for dx in range(-n, n + 1):
+                if dx * dx + dy * dy <= n * n and (dx or dy):
+                    m |= np.roll(np.roll(mask, dy, axis=0), dx, axis=1)
+        return m
+    ring = grow(window, 0.9) & ~window
+    lines |= ring
+    glass |= window
+    # mullion and a sill
+    lines |= (np.abs(xx - cx) < lw) & (yy > spring - 6) & (yy < sill)
+    lines |= (np.abs(yy - (sill + 3)) < lw * 1.2) & (xx > xl - 7) & (xx < xr + 7)
+    # an oculus in the head, and a pair of sub-arches' hint (two short arcs either side of the mullion)
+    r = np.hypot(xx - cx, yy - 78.0)
+    lines |= np.abs(r - 8.0) < lw * 1.1
+    glass &= ~(r < 8.0)
+    glass |= (r < 7.2)
+    lines &= ~(r < 6.4)
+    cover_lines = lines.reshape(H, S, W, S).mean(axis=(1, 3))
+    cover_glass = glass.reshape(H, S, W, S).mean(axis=(1, 3))
+
+    # An indexed PNG: levels 0-15 are the stone-shadow blue, 16-31 the lamp yellow, each with its own alpha.
+    levels = 16
+    li = np.clip(np.rint(cover_lines * (levels - 1)), 0, levels - 1).astype(np.uint8)
+    gi = np.clip(np.rint(cover_glass * (levels - 1)), 0, levels - 1).astype(np.uint8)
+    idx = np.where(li > 0, li, np.where(gi > 0, gi + levels, 0)).astype(np.uint8)
+    img = Image.fromarray(idx, 'P')
+    blue = [int(v) for v in p['gear'].split(',')]
+    yellow = [int(v) for v in p['gear2'].split(',')]
+    img.putpalette(blue * levels + yellow * levels)
+    top_b = int(round(p['gear_alpha'] * 255))
+    top_y = int(round(p['gear2_alpha'] * 255))
+    img.info['transparency'] = bytes([int(round(i / (levels - 1) * top_b)) for i in range(levels)] + [int(round(i / (levels - 1) * top_y)) for i in range(levels)])
+    return img
+
+
 def outputs():
     out = {}
     for key, p in PALETTES.items():
         d = os.path.join('skins', p['id'])
         out[os.path.join(d, 'skin.json')] = SKIN_JSON.substitute(p)
         out[os.path.join(d, 'features.json')] = FEATURES_JSON
-        out[os.path.join(d, 'FONTS.md')] = FONTS_MD.substitute(p)
-        out[os.path.join(d, 'skin.css')] = CSS.substitute(dict(p, **decls(p)))
+        gotham = p['template'] == 'gotham'
+        out[os.path.join(d, 'FONTS.md')] = (GOTHAM_FONTS_MD if gotham else FONTS_MD).substitute(p)
+        out[os.path.join(d, 'skin.css')] = (GOTHAM_CSS if gotham else CSS).substitute(dict(p, **decls(p)))
         out[os.path.join(d, 'graph.conf')] = graph_conf(p)
     return out
+
+
+def quatrefoil(cx, cy):
+    """Four small lobes round a point and a dark eye in the middle: the gothic corner stud. Gradients only."""
+    lobes = [(cx - 4.2, cy), (cx + 4.2, cy), (cx, cy - 4.2), (cx, cy + 4.2)]
+    parts = [f'radial-gradient(circle at {x:g}px {y:g}px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px)' for x, y in lobes]
+    parts.append(f'radial-gradient(circle at {cx:g}px {cy:g}px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px)')
+    return ', '.join(parts)
 
 
 def decls(p):
     """The slow-fade periods, as whole declarations, or nothing when a skin sets none (Daylight does not breathe)."""
     return {
+        'quatrefoil_tl': quatrefoil(8, 8), 'quatrefoil_tr': quatrefoil(24, 8),
+        'quatrefoil_bl': quatrefoil(8, 24), 'quatrefoil_br': quatrefoil(24, 24),
         'frame_breathe_decl': f"  --ts-frame-breathe: {p['frame_breathe']};" if p['frame_breathe'] else '  /* the frame does not breathe in daylight */',
         'marker_breathe_decl': f"  --ts-heading-marker-breathe: {p['marker_breathe']};" if p['marker_breathe'] else '  /* nor the heading marker */',
     }
@@ -502,9 +942,9 @@ def graph_conf(p):
     else:
         chrome = f"rrdgraph_def_text_dark=-c BACK{p['surface'].upper()} -c SHADEA#EEEEEE00 -c SHADEB#EEEEEE00 -c CANVAS#FFFFFF00 -c GRID{p['hover'].upper()} -c MGRID{p['line'].upper()} -c FRAME{p['line'].upper()} -c ARROW{p['brass'].upper()}"
         font = f"rrdgraph_def_text_color_dark={p['text'][1:].upper()}"
-        ins = ['D6E8B4', '9BCB62', '7DB04A']
-        outs = ['FBE3A0', 'F4C75E', 'D4A23A']
-        ramps = {
+        ins = p.get('ins') or ['D6E8B4', '9BCB62', '7DB04A']
+        outs = p.get('outs') or ['FBE3A0', 'F4C75E', 'D4A23A']
+        ramps = p.get('ramps') or {
             'greens': ['D6E8B4', 'B4D88A', '8FBF5A', '6FA03E', '55802E', '3E6022'],
             'blues': ['CFE6F2', '9CCDE4', '7DB4CF', '5C97B5', '437A98', '2F5F7A'],
             'purples': ['F1DDC0', 'E0BC8A', 'CC9A5E', 'B27C42', '906030', '6E4822'],
@@ -552,9 +992,10 @@ def main():
             open(path, 'w', encoding='utf-8', newline='').write(text)
     if not check:
         for key, p in PALETTES.items():
-            tex = os.path.join('skins', p['id'], 'textures', 'gears.png')
+            tex = os.path.join('skins', p['id'], 'textures', p['texture'] + '.png')
             os.makedirs(os.path.dirname(tex), exist_ok=True)
-            gears(p).save(tex, 'PNG', optimize=True, transparency=gears(p).info['transparency'])
+            image = (tracery if p['texture'] == 'tracery' else gears)(p)
+            image.save(tex, 'PNG', optimize=True, transparency=image.info['transparency'])
             print(f'wrote {tex}: {os.path.getsize(tex)} bytes')
     sys.exit(1 if failed else 0)
 

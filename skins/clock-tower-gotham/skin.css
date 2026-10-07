@@ -1,0 +1,263 @@
+/*
+ * Clock Tower Gotham (the great clock at night: lamp-yellow light, blue stone shadow, gothic tracery, Roman capitals).
+ *
+ * The third skin of the Clock Tower family, and the one that is not the same room: the great clock at
+ * night. A bright yellow lamp behind the dial, blue stone in shadow, pointed arches and Roman capitals.
+ * Where Daylight and Lantern share a brass-and-cogs design, this one is gothic: square stone corners with
+ * a quatrefoil at each, a faint arcade of pointed arches behind every panel heading, a row of lit lancet
+ * windows along the foot of the navbar, and a faint wall of masonry and tracery windows behind the page.
+ * Written by scripts/make-clock-tower.py (the texture too: it is computed from fixed numbers).
+ *
+ * Every token here is one an uploaded skin may set (the same file validates as an upload), plus the
+ * texture textures/tracery.png. The type is Cinzel (carved Roman capitals, the lettering of an inscription)
+ * for headings and Libre Baskerville for text, both SIL OFL, bundled in fonts/, and the system's serifs if
+ * they fail to load. Cinzel's figure 1 is a capital I (right for a Roman numeral, wrong for a hostname), so
+ * the display face is Cinzel for everything but the digits 0-9, which come from Libre Baskerville Bold
+ * (two @font-face blocks, split by unicode-range, as in the other Clock Tower skins).
+ */
+@font-face {
+  font-family: "Clock Tower Display";
+  src: url("fonts/Cinzel-SemiBold.woff2") format("woff2");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-002F, U+003A-10FFFF;
+}
+@font-face {
+  font-family: "Clock Tower Display";
+  src: url("fonts/LibreBaskerville-Bold.woff2") format("woff2");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Clock Tower Text";
+  src: url("fonts/LibreBaskerville-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clock Tower Text";
+  src: url("fonts/LibreBaskerville-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+html.dark {
+  /* Palette */
+  --p-bg: #050914;
+  --p-surface: #0b1426;
+  --p-raised: #122039;
+  --p-hover: #1b2f52;
+  --p-line: #2c4676;
+  --p-line-strong: #9c8326;
+  --p-text: #e8e4d2;
+  --p-dim: #aebbd8;
+  --p-mute: #8f9dbf;
+  --p-bright: #fff7d6;
+  --p-gilt: #e6b82e;
+  --p-gilt-hi: #ffdc5e;
+  --p-gilt-dim: #5f5020;
+  --p-lamp: #ffd44f;
+  --p-lamp-hi: #fff0b3;
+  --p-pier: #14244a;
+  --p-link: #ffd25e;
+  --p-link-hover: #ffe793;
+  --p-accent: #f0bd30;
+  --p-highlight: #ffcf4a;
+  --p-danger: #ff7d6e;
+  --p-glow: rgba(255, 214, 82, .55);
+  --p-shade: rgba(0, 0, 12, .45);
+  --p-shade-strong: rgba(0, 0, 12, .65);
+  --p-display: "Clock Tower Display", Cinzel, "Trajan Pro", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --p-serif: "Clock Tower Text", "Libre Baskerville", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --p-mono: "Courier Prime", "Courier New", Courier, ui-monospace, monospace;
+  --p-wash: linear-gradient(180deg, rgba(120, 160, 255, .08) 0, rgba(120, 160, 255, 0) 62%);
+  --p-page: radial-gradient(ellipse at 50% -10%, rgba(255, 205, 70, .25) 0, rgba(255, 205, 70, 0) 64%), linear-gradient(180deg, #091330 0, #050914 100%);
+  --p-lit: linear-gradient(180deg, rgba(255, 205, 70, .20) 0, rgba(255, 205, 70, .05) 100%);
+  --p-lamplight: linear-gradient(0deg, rgba(255, 205, 70, .26) 0, rgba(255, 205, 70, 0) 72%), linear-gradient(180deg, rgba(120, 160, 255, .08) 0, rgba(120, 160, 255, 0) 62%);
+  --tx-tracery: url("textures/tracery.png");
+
+  /* Core roles */
+  --ts-bg: var(--p-bg);
+  --ts-surface: var(--p-surface);
+  --ts-surface-raised: var(--p-raised);
+  --ts-surface-hover: var(--p-hover);
+  --ts-border: var(--p-line);
+  --ts-text: var(--p-text);
+  --ts-text-dim: var(--p-dim);
+  --ts-text-mute: var(--p-mute);
+  --ts-text-bright: var(--p-bright);
+  --ts-accent: var(--p-accent);
+  --ts-link: var(--p-link);
+  --ts-highlight: var(--p-highlight);
+  --ts-success: #74d49a;
+  --ts-warning: #ffb84a;
+  --ts-danger: #ff7d6e;
+  --ts-info: #78b4ff;
+  --ts-danger-text: #ff9e92;
+  --ts-font-display: var(--p-display);
+  --ts-font-mono: var(--p-mono);
+  --ts-font-code: var(--p-mono);
+  --ts-radius-sm: 0px;
+  --ts-radius-md: 2px;
+  --ts-radius-lg: 2px;
+
+  /* The page: a pool of lamplight from above and a wall of masonry with tracery windows in it. */
+  --ts-map-tile-filter: invert(1) hue-rotate(185deg) brightness(.72) contrast(1.05) saturate(.7);
+  --ts-body-bg-image: var(--tx-tracery), var(--p-page);
+  --ts-body-bg-size: 128px 256px, 100% 100%, 100% 100%;
+  --ts-body-bg-repeat: repeat, no-repeat, no-repeat;
+
+  /* Type: carved capitals for the chrome, a book serif for the data */
+  --ts-root-font-family: var(--p-serif);
+  --ts-body-font-family: var(--p-serif);
+  --ts-input-font-family: var(--p-serif);
+  --ts-tab-font-family: var(--p-display);
+  --ts-navbar-brand-font-weight: 700;
+  --ts-navbar-brand-letter-spacing: .08em;
+  --ts-navbar-link-font-size: 14px;
+  --ts-navbar-link-letter-spacing: .06em;
+  --ts-panel-heading-font-weight: 700;
+  --ts-panel-heading-letter-spacing: .1em;
+  --ts-widget-title-font-weight: 700;
+  --ts-widget-title-letter-spacing: .1em;
+  --ts-table-head-font-weight: 700;
+  --ts-table-head-letter-spacing: .1em;
+  --ts-table-cell-font-size: 14px;
+  --ts-tab-font-size: 14px;
+  --ts-tab-letter-spacing: .08em;
+  --ts-btn-letter-spacing: .06em;
+  --ts-btn-font-size: 13px;
+  --ts-dropdown-item-font-weight: 400;
+  --ts-navbar-brand-text-shadow: 0 0 10px rgba(255, 214, 82, .45);
+  --ts-panel-heading-text-shadow: 0 0 10px rgba(255, 214, 82, .45);
+
+  /* Surfaces: square stone with a double rule (a hairline of blue stone inside a gilt edge), a quiet
+     inner sheen, and a deep shadow. */
+  --ts-shadow: 0 1px 3px var(--p-shade);
+  --ts-recess: inset 0 1px 3px var(--p-shade-strong);
+  --ts-bevel: inset 0 1px 0 rgba(160, 190, 255, .12);
+  --ts-panel-bg-image: var(--p-wash);
+  --ts-widget-bg-image: var(--p-wash);
+  --ts-panel-heading-bg-image: var(--p-lit);
+  --ts-widget-title-bg-image: var(--p-lit);
+  --ts-panel-border: 1px solid var(--p-line-strong);
+  --ts-widget-border: 1px solid var(--p-line-strong);
+  --ts-panel-shadow: inset 0 0 0 3px var(--p-surface), inset 0 0 0 4px var(--p-line), 0 3px 12px var(--p-shade-strong);
+  --ts-widget-shadow: inset 0 0 0 3px var(--p-surface), inset 0 0 0 4px var(--p-line), 0 3px 12px var(--p-shade-strong);
+  --ts-panel-heading-border-bottom: 1px solid var(--p-line-strong);
+  --ts-widget-title-border-bottom: 1px solid var(--p-line-strong);
+  --ts-panel-radius-tl: 0px;
+  --ts-panel-radius-tr: 0px;
+  --ts-panel-radius-br: 0px;
+  --ts-panel-radius-bl: 0px;
+  --ts-widget-radius-tl: 0px;
+  --ts-widget-radius-tr: 0px;
+  --ts-widget-radius-br: 0px;
+  --ts-widget-radius-bl: 0px;
+  --ts-navbar-bg-image: var(--p-lamplight);
+  --ts-navbar-border-bottom: 1px solid var(--p-line-strong);
+  --ts-navbar-shadow: 0 3px 10px var(--p-shade-strong);
+  --ts-navbar-link-hover-shadow: inset 0 -2px 0 0 var(--p-gilt);
+  --ts-modal-border: 1px solid var(--p-line-strong);
+  --ts-modal-border-top: 3px double var(--p-gilt);
+  --ts-modal-shadow: 0 8px 28px var(--p-shade-strong);
+  --ts-navbar-dropdown-border: 1px solid var(--p-line-strong);
+  --ts-navbar-dropdown-border-top: 2px solid var(--p-gilt);
+  --ts-navbar-dropdown-shadow: 0 4px 16px var(--p-shade-strong);
+  --ts-alert-badge-border-radius: 2px;
+  --ts-well-border-radius: 0px;
+  --ts-well-border: 1px solid var(--p-line);
+  --ts-alert-border-width: 1px 1px 1px 5px;
+  --ts-label-success-bg: #2c7d52;
+  --ts-label-success-fg: #f6f8ff;
+  --ts-label-danger-bg: #b23a30;
+  --ts-label-danger-fg: #f6f8ff;
+  --ts-label-warning-bg: #c68a0d;
+  --ts-label-warning-fg: #150f02;
+  --ts-label-info-bg: #2e5fae;
+  --ts-label-info-fg: #f6f8ff;
+  --ts-label-default-fg: #f6f8ff;
+  --ts-badge-alert: #b23a30;
+  --ts-btn-success-bg: #2c7d52;
+  --ts-btn-success-fg: #f6f8ff;
+  --ts-btn-warning-bg: #c68a0d;
+  --ts-btn-warning-fg: #150f02;
+  --ts-btn-danger-bg: #b23a30;
+  --ts-pre-bg: var(--p-raised);
+  --ts-pre-border: 1px solid var(--p-line);
+  --ts-code-text: var(--p-text);
+  --ts-progress: var(--p-lamp);
+  --ts-progress-glow-shadow: 0 0 8px var(--p-glow);
+
+  /* Ornaments. A quatrefoil (four small lobes) at each corner of a panel; the arcade of a gothic
+     wall, faint, behind every panel heading, and a lit lancet window set between piers along the foot
+     of the navbar; a gilt line of light along its top. The glow and the slow fade are the lamp
+     settling; every period is over 2s and nothing flashes. */
+  --p-quatrefoil-tl: radial-gradient(circle at 3.8px 8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 12.2px 8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 3.8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 12.2px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 8px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px);
+  --p-quatrefoil-tr: radial-gradient(circle at 19.8px 8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 28.2px 8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 3.8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 12.2px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 8px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px);
+  --p-quatrefoil-bl: radial-gradient(circle at 3.8px 24px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 12.2px 24px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 19.8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 28.2px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 24px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px);
+  --p-quatrefoil-br: radial-gradient(circle at 19.8px 24px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 28.2px 24px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 19.8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 28.2px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 24px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px);
+  --ts-frame-tl: var(--p-quatrefoil-tl);
+  --ts-frame-tr: var(--p-quatrefoil-tr);
+  --ts-frame-bl: var(--p-quatrefoil-bl);
+  --ts-frame-br: var(--p-quatrefoil-br);
+  --ts-widget-frame-tl: var(--p-quatrefoil-tl);
+  --ts-widget-frame-tr: var(--p-quatrefoil-tr);
+  --ts-widget-frame-bl: var(--p-quatrefoil-bl);
+  --ts-widget-frame-br: var(--p-quatrefoil-br);
+  --ts-frame-glow: rgba(255, 214, 82, .55);
+  --ts-frame-breathe: 9s;
+  --ts-heading-marker: linear-gradient(180deg, var(--p-lamp-hi) 0, var(--p-lamp) 100%);
+  --ts-heading-marker-size: 4px 100%;
+  --ts-heading-marker-position: left top;
+  --ts-heading-marker-glow: rgba(255, 214, 82, .55);
+  --ts-heading-marker-breathe: 6s;
+  --ts-heading-strip: radial-gradient(circle at 0 100%, transparent 20.4px, var(--p-lamp) 20.5px, var(--p-lamp) 22px, transparent 22.2px), radial-gradient(circle at 22px 100%, transparent 20.4px, var(--p-lamp) 20.5px, var(--p-lamp) 22px, transparent 22.2px);
+  --ts-heading-strip-size: 22px 20px;
+  --ts-heading-strip-position: left bottom;
+  --ts-heading-strip-repeat: repeat-x;
+  --ts-heading-strip-opacity: .32;
+  --ts-navbar-strip-top: linear-gradient(90deg, transparent 0, var(--p-lamp) 18%, var(--p-lamp-hi) 50%, var(--p-lamp) 82%, transparent 100%);
+  --ts-navbar-strip-top-size: 100% 2px;
+  --ts-navbar-strip-bottom: radial-gradient(circle at 18px 100%, transparent 13.4px, var(--p-pier) 14.2px), radial-gradient(circle at -2px 100%, transparent 13.4px, var(--p-pier) 14.2px), linear-gradient(0deg, var(--p-lamp) 0, var(--p-lamp-hi) 100%);
+  --ts-navbar-strip-bottom-size: 16px 12px;
+  --ts-navbar-strip-bottom-repeat: repeat-x;
+  --ts-navbar-strip-bottom-opacity: .95;
+  --ts-breathe-low: .75;
+  --ts-breathe-high: 1;
+  --ts-alert-glow-period: 3s;
+  --ts-alert-glow-low: rgba(178, 58, 48, .35);
+  --ts-alert-glow-high: rgba(178, 58, 48, .8);
+
+  /* Tables and controls */
+  --ts-table-border: var(--p-line);
+  --ts-table-head-bg: var(--p-raised);
+  --ts-table-head-border-bottom: 2px solid var(--p-line-strong);
+  --ts-table-stripe-odd-bg: var(--p-surface);
+  --ts-table-stripe-even-bg: var(--p-raised);
+  --ts-table-row-hover-bg: var(--p-hover);
+  --ts-table-row-hover-shadow: inset 3px 0 0 0 var(--p-lamp);
+  --ts-table-bg: var(--p-surface);
+  --ts-input-bg: var(--p-surface);
+  --ts-input-border: 1px solid var(--p-line-strong);
+  --ts-input-border-top-color: var(--p-line-strong);
+  --ts-input-shadow: var(--ts-recess);
+  --ts-input-focus-shadow: 0 0 0 2px var(--p-lamp);
+  --ts-addon-border: var(--p-line-strong);
+  --ts-btn-default-border: var(--p-line-strong);
+  --ts-btn-default-hover-shadow: 0 0 8px var(--p-glow);
+  --ts-btn-primary-bg: #2a4a94;
+  --ts-btn-primary-border: var(--p-gilt);
+  --ts-btn-primary-shadow: var(--ts-bevel);
+  --ts-lnms-btn-primary-bg: #2a4a94;
+  --ts-lnms-btn-primary-border: var(--p-gilt);
+  --ts-btn-hover-filter: brightness(1.12);
+  --ts-pagemenu-active-shadow: inset 0 -2px 0 0 var(--p-lamp);
+  --ts-tab-active-border: var(--p-line-strong);
+  --ts-tab-active-border-top: 3px double var(--p-gilt);
+  --ts-tab-active-border-bottom-color: var(--p-surface);
+}

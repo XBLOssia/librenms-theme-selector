@@ -102,9 +102,9 @@
        ?skin=example    examples/minimal: the 20 core roles and nothing else
        ?skin=defaults   base.css alone, no token file -->
 <script>
-  var SKINS = ['terran', 'protoss', 'zerg', 'digital-rain', 'clock-tower-daylight', 'clock-tower-lantern'];
+  var SKINS = ['terran', 'protoss', 'zerg', 'digital-rain', 'clock-tower-daylight', 'clock-tower-lantern', 'clock-tower-gotham'];
   // Bundled skins whose features.json asks for the ornament layer: the plugin marks their link data-ts-orn.
-  var ORNAMENTS = ['digital-rain', 'clock-tower-daylight', 'clock-tower-lantern'];
+  var ORNAMENTS = ['digital-rain', 'clock-tower-daylight', 'clock-tower-lantern', 'clock-tower-gotham'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'terran').toLowerCase();
   var special = skin === 'example' || skin === 'example-light' || skin === 'defaults';
   if (!special && SKINS.indexOf(skin) === -1) skin = 'terran';

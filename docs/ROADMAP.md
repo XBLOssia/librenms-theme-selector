@@ -240,9 +240,10 @@ dark".
 
 **Open, in the order I would take them:**
 
-1. **Clock Tower** (built 2026-10-03: Daylight for light mode, Lantern for dark, one template). Still
-   to do: more palettes (Sepia?) are one more entry in the script. Its fonts (Playfair Display and
-   Libre Baskerville, OFL) are bundled with `FONTS.md` and the licence notices.
+1. **Clock Tower** (built 2026-10-03: Daylight for light mode, Lantern for dark, one template; Gotham
+   added 2026-10-07, a gothic night face with a template of its own). Still to do: more palettes
+   (Sepia?) are one more entry in the script. Fonts (Playfair Display, Cinzel and Libre Baskerville, OFL)
+   are bundled with `FONTS.md` and the licence notices.
 2. **Light variants of Terran, Protoss, Zerg and Digital Rain**, as sibling skins in a family each (the
    same shapes and ornaments, a light palette); until then they are dark skins you can also put in
    the light slot.

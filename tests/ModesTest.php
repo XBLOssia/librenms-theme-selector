@@ -323,10 +323,10 @@ function test_light_css(): void
  */
 function test_clock_tower(): void
 {
-    T::group('clock tower: two skins, one family, each valid as an upload');
+    T::group('clock tower: three skins, one family, each valid as an upload');
     $compiler = new SkinCompiler(catalog());
     $skins = [];
-    foreach (['daylight' => 'light', 'lantern' => 'dark'] as $name => $mode) {
+    foreach (['daylight' => 'light', 'lantern' => 'dark', 'gotham' => 'dark'] as $name => $mode) {
         $dir = __DIR__ . "/../skins/clock-tower-$name";
         $files = [];
         foreach (['skin.json', 'skin.css', 'graph.conf'] as $f) {
@@ -346,7 +346,7 @@ function test_clock_tower(): void
         }
         $skins[$name] = [$skin, $files];
         T::ok("clock-tower-$name is written for $mode mode and is in the Clock Tower family", $skin->manifest['mode'] === $mode && $skin->manifest['family'] === 'Clock Tower' && $skin->manifest['id'] === "clock-tower-$name");
-        T::ok("clock-tower-$name has a texture and a graph palette", count($skin->textures) === 1 && $skin->textures[0]['name'] === 'gears' && $skin->graph !== []);
+        T::ok("clock-tower-$name has a texture and a graph palette", count($skin->textures) === 1 && $skin->textures[0]['name'] === ($name === 'gotham' ? 'tracery' : 'gears') && $skin->graph !== []);
         T::ok("clock-tower-$name asks for the ornament layer (features.json)", Features::parse((string) file_get_contents("$dir/features.json")) === ['ornaments' => true, 'effects' => []]);
         $chrome = $mode === 'light' ? ['rrdgraph_def_text', 'rrdgraph_def_text_color'] : ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'];
         $other = $mode === 'light' ? ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'] : ['rrdgraph_def_text', 'rrdgraph_def_text_color'];
@@ -364,7 +364,7 @@ function test_clock_tower(): void
         })());
         T::ok("clock-tower-$name has a FONTS.md", is_file("$dir/FONTS.md"));
     }
-    if (count($skins) === 2) {
+    if (isset($skins['daylight'], $skins['lantern'])) {
         $names = fn (string $css): array => (function () use ($css) {
             preg_match_all('/^  (--ts-[a-z0-9-]+):/m', $css, $m);
             sort($m[1]);
@@ -386,6 +386,28 @@ function test_clock_tower(): void
 
             return $lum($skins['daylight'][1]['skin.css']) > 0.7 && $lum($skins['lantern'][1]['skin.css']) < 0.15;
         })());
+    }
+    if (isset($skins['gotham'])) {
+        $css = $skins['gotham'][1]['skin.css'];
+        T::ok('gotham is the dark, blue-grounded face: its ground is blue-black, not umber', (function () use ($css) {
+            preg_match('/--p-bg: #([0-9a-f]{6})/', $css, $m);
+            [$r, $g, $b] = array_map('hexdec', str_split($m[1], 2));
+
+            return $b > $r && $b > $g && max($r, $g, $b) < 40;
+        })());
+        T::ok('its display face is Cinzel for everything but the digits, which come from Libre Baskerville Bold (Cinzel 1 is a capital I)', substr_count($css, 'font-family: "Clock Tower Display"') === 2
+            && str_contains($css, "src: url(\"fonts/Cinzel-SemiBold.woff2\")") && (bool) preg_match('~LibreBaskerville-Bold\.woff2"\) format\("woff2"\);[^}]*unicode-range: U\+0030-0039;~', $css));
+        T::ok('all four corners of panels and widgets take a quatrefoil, and the navbar has lit windows between piers', (function () use ($css) {
+            foreach (['--ts-frame-tl', '--ts-frame-tr', '--ts-frame-bl', '--ts-frame-br', '--ts-widget-frame-tl', '--ts-widget-frame-tr', '--ts-widget-frame-bl', '--ts-widget-frame-br'] as $t) {
+                if (! str_contains($css, "  $t: var(--p-quatrefoil-")) {
+                    return false;
+                }
+            }
+
+            return str_contains($css, '--ts-navbar-strip-bottom: radial-gradient(') && str_contains($css, 'var(--p-pier)') && str_contains($css, '--ts-navbar-strip-bottom-repeat: repeat-x;');
+        })());
+        T::ok('its page is a wall: the tracery tile over a pool of lamplight', str_contains($css, '--ts-body-bg-image: var(--tx-tracery), var(--p-page);') && str_contains($css, '--tx-tracery: url("textures/tracery.png");'));
+        T::ok('every corner is square (it is stone)', (bool) preg_match('/--ts-panel-radius-tl: 0px;.*--ts-widget-radius-bl: 0px;/s', $css));
     }
 }
 

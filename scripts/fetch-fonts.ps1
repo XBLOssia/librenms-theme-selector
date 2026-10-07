@@ -12,7 +12,7 @@
 #
 #   powershell -ExecutionPolicy Bypass -File scripts/fetch-fonts.ps1
 
-param([string[]]$Skins)  # only these skins' fonts (default: all), e.g. -Skins clock-tower-daylight,clock-tower-lantern
+param([string[]]$Skins)  # only these skins' fonts (default: all), e.g. -Skins clock-tower-daylight,clock-tower-lantern,clock-tower-gotham
 
 $ErrorActionPreference = 'Stop'
 if ($Skins) { $Skins = @($Skins | ForEach-Object { $_ -split ',' }) }  # powershell -File passes a,b as one string
@@ -38,7 +38,10 @@ $faces = @(
   @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=700; skin='clock-tower-daylight'; file='LibreBaskerville-Bold.woff2' },
   @{ family='Playfair+Display';   name='Playfair Display';   weight=700; skin='clock-tower-lantern'; file='PlayfairDisplay-Bold.woff2' },
   @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=400; skin='clock-tower-lantern'; file='LibreBaskerville-Regular.woff2' },
-  @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=700; skin='clock-tower-lantern'; file='LibreBaskerville-Bold.woff2' }
+  @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=700; skin='clock-tower-lantern'; file='LibreBaskerville-Bold.woff2' },
+  @{ family='Cinzel';             name='Cinzel';             weight=600; skin='clock-tower-gotham'; file='Cinzel-SemiBold.woff2' },
+  @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=400; skin='clock-tower-gotham'; file='LibreBaskerville-Regular.woff2' },
+  @{ family='Libre+Baskerville';  name='Libre Baskerville';  weight=700; skin='clock-tower-gotham'; file='LibreBaskerville-Bold.woff2' }
 )
 
 foreach ($f in $faces) {
@@ -73,7 +76,9 @@ $licenses = @(
   @{ dir='playfairdisplay';  skin='clock-tower-daylight'; file='OFL-PlayfairDisplay.txt' },
   @{ dir='librebaskerville'; skin='clock-tower-daylight'; file='OFL-LibreBaskerville.txt' },
   @{ dir='playfairdisplay';  skin='clock-tower-lantern'; file='OFL-PlayfairDisplay.txt' },
-  @{ dir='librebaskerville'; skin='clock-tower-lantern'; file='OFL-LibreBaskerville.txt' }
+  @{ dir='librebaskerville'; skin='clock-tower-lantern'; file='OFL-LibreBaskerville.txt' },
+  @{ dir='cinzel';           skin='clock-tower-gotham'; file='OFL-Cinzel.txt' },
+  @{ dir='librebaskerville'; skin='clock-tower-gotham'; file='OFL-LibreBaskerville.txt' }
 )
 
 foreach ($l in $licenses) {

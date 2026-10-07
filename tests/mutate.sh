@@ -281,6 +281,8 @@ run_with src/Status.php "s#return \[self::WARN, \"repository: \$url is fetched#r
 run_with src/Status.php "s#(\$entry\['no-api'\] ?? false) === true#(\$entry['no-api'] ?? false) == true#" "status: any truthy no-api counts as git mode"
 run_with src/Status.php "s#return \[self::WARN, 'repository cache: Composer holds no copy#return [self::OK, 'repository cache: Composer holds no copy#" "status: a missing repository cache is reported fine"
 run_with src/Status.php "s#\$homes\[\] = rtrim(\$installDir, '/') . '/.composer';#;#" "status: LibreNMS's fallback Composer home is not looked in"
+run_with base/base.css "/^html.dark .rules-group-header .active {/,/^}/s# !important;#;#" "switch: the chosen AND/OR state loses to the generic primary button"
+run_with base/base.css "/^html.dark .rules-group-header .active {/,/^}/s#background-color: color-mix(in srgb, var(--ts-success) 42%, var(--ts-bg))#background-color: var(--ts-surface)#" "switch: the chosen AND/OR state has the same fill as the other"
 run_with src/PreviewGraph.php "s#\$suffix = \$mode === Modes::DARK ? '_dark' : '';#\$suffix = '_dark';#" "modes: a light graph is drawn from the dark chrome keys"
 run_with src/Skin/GraphConf.php "s#public const CHROME_KEYS = \['rrdgraph_def_text', 'rrdgraph_def_text_dark'\];#public const CHROME_KEYS = ['rrdgraph_def_text_dark'];#" "modes: graph.conf refuses the light chrome"
 

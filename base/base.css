@@ -1773,13 +1773,25 @@ html.dark .report-warning {
 html.dark .report-down {
   color: var(--ts-danger);
 }
+/* The AND / OR switch of the alert rule builder: two .btn-primary labels, the chosen one also .active.
+   html.dark .btn-primary above is !important, so these must be too, or every skin shows both alike.
+   The chosen one is filled with the skin's success colour, outlined in it, and bold; the other is flat,
+   dim and quiet, so the two differ in fill, edge, weight and colour, not in one of them. */
 html.dark .rules-group-header .btn-primary {
-  background-color: var(--ts-surface-raised);
-  border-color: var(--ts-border);
+  background-color: var(--ts-surface) !important;
+  background-image: none !important;
+  border-color: var(--ts-border) !important;
+  color: var(--ts-text-dim) !important;
+  box-shadow: none !important;
+  font-weight: 400;
 }
 html.dark .rules-group-header .active {
-  background-color: var(--ts-success-deep);
-  border-color: var(--ts-success);
+  background-color: color-mix(in srgb, var(--ts-success) 42%, var(--ts-bg)) !important;
+  background-image: none !important;
+  border-color: var(--ts-success) !important;
+  color: var(--ts-text-bright) !important;
+  box-shadow: inset 0 -3px 0 var(--ts-success) !important;
+  font-weight: 700;
 }
 html.dark .green, html.dark a.green {
   color: var(--ts-success) !important;

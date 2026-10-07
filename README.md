@@ -1,10 +1,11 @@
 # Theme Selector for LibreNMS
 
 Skins for [LibreNMS](https://github.com/librenms/librenms): three StarCraft-inspired ones, a green-phosphor "digital rain", and a
-two-faced clock tower (light and dark).
+clock tower in three moods (one light, two dark).
 
-Six skins in five designs: **Terran**, **Protoss**, **Zerg**, **Digital Rain**, and **Clock Tower** in two
-moods, **Daylight** (light mode) and **Lantern** (dark mode).
+Seven skins in six designs: **Terran**, **Protoss**, **Zerg**, **Digital Rain**, and **Clock Tower** in three
+moods: **Daylight** (light mode), **Lantern** (dark mode, lit from inside) and **Gotham** (dark mode, the
+great clock at night).
 
 Each user picks a skin for light mode and one for dark mode, from dropdowns that preview each on a
 sample page before anything is applied; admins set the instance defaults and can upload
@@ -35,6 +36,7 @@ asset ports.
 | **Digital Rain** | Square, torn corners, scanlined | Phosphor green on black, amber and red for alarms | System monospace (Share Tech Mono when installed) |
 | **Clock Tower Daylight** (light) | Double-ruled, leaf-cornered, gilt-bracketed | Parchment, walnut and brass | Playfair Display + Libre Baskerville |
 | **Clock Tower Lantern** (dark) | The same room at night | Umber, candle cream, amber glow | The same |
+| **Clock Tower Gotham** (dark) | Square stone, pointed arches, quatrefoils | Blue-black stone, lamp yellow | Cinzel (carved capitals) + Libre Baskerville |
 
 Terran, Protoss and Zerg were installed and verified on a production instance (2026-09-29); Digital Rain and the Clock Tower skins have since been installed there too, and had their light/dark and map fixes checked against it.
 They cover **92 of 92** components LibreNMS's dark theme styles, and **179 of 218** once
@@ -50,7 +52,7 @@ the remainder being dead Observium-era classes. A full survey of
 Coverage counts selectors answered, not whether it looks right — and it does
 not count the inline `tw:` utilities at all, which is where several real bugs
 lived. The real test is [the live audit](#auditing-a-live-instance), which Terran, Protoss, Zerg, Digital Rain and Clock
-Tower Lantern pass with zero findings on `/`, `/devices`, `/alert-rules`,
+Tower Lantern and Gotham pass with zero findings on `/`, `/devices`, `/alert-rules`,
 `/eventlog` and a device's graph page, and Clock Tower Daylight passes in light mode with one (the disabled
 pagination arrows on `/devices`, at 4.0:1). (Re-run on 2026-10-03 against a stock
 LibreNMS 26.9.1.1 dev instance, whose tables hold few rows, so row-level states
@@ -105,12 +107,24 @@ cogwheels behind the page. **Daylight** is natural light on parchment and walnut
 **Lantern** is the same room at night, lit from inside: umber surfaces, candle-cream text, an amber
 glow on the brass that settles slowly (a nine-second fade, never a flash), for dark mode. Outbound
 traffic on graphs is brass and inbound is olive green, which differ in lightness as well as hue.
-Type is Playfair Display for headings (with Libre Baskerville's digits, because Playfair's old-style figures turn a 0 into an o) and Libre Baskerville for text, both bundled. Both are generated from one template by [scripts/make-clock-tower.py](scripts/make-clock-tower.py), which also
+Type is Playfair Display for headings (with Libre Baskerville's digits, because Playfair's old-style figures turn a 0 into an o) and Libre Baskerville for text, both bundled. Daylight and Lantern are generated from one template by [scripts/make-clock-tower.py](scripts/make-clock-tower.py), which also
 checks that every text colour is at least 4.5:1 on its ground, and each is valid as an upload.
+
+**Gotham** is the same tower seen from the street at night, and has a design of its own: a bright yellow
+lamp behind the dial, blue stone in shadow, gothic architecture and carved Roman capitals. Panels are
+square stone with a double rule and a quatrefoil at each corner; behind every panel heading runs a
+faint arcade of pointed arches, lit from below; along the foot of the navbar stand narrow lancet windows,
+lit yellow, between piers; and the page is a masonry wall with a tracery window in it, a faint tile
+computed from fixed numbers. Headings are Cinzel, the lettering of a Roman inscription (its digits come
+from Libre Baskerville Bold, because Cinzel's 1 is a capital I), text is Libre Baskerville, both bundled.
+Inbound traffic on graphs is blue and outbound is lamp yellow. It comes from the same script, with a
+template of its own.
 
 ![The Clock Tower Daylight skin on a LibreNMS dashboard](docs/img/dashboard-clock-tower-daylight.png)
 
 ![The Clock Tower Lantern skin on a LibreNMS dashboard](docs/img/dashboard-clock-tower-lantern.png)
+
+![The Clock Tower Gotham skin on a LibreNMS dashboard](docs/img/dashboard-clock-tower-gotham.png)
 
 ### Choosing
 
@@ -222,7 +236,8 @@ The bundled skins set far more: [terran](skins/terran/skin.css) ·
 [protoss](skins/protoss/skin.css) · [zerg](skins/zerg/skin.css) ·
 [digital-rain](skins/digital-rain/skin.css) ·
 [clock-tower-daylight](skins/clock-tower-daylight/skin.css) ·
-[clock-tower-lantern](skins/clock-tower-lantern/skin.css). Each also
+[clock-tower-lantern](skins/clock-tower-lantern/skin.css) ·
+[clock-tower-gotham](skins/clock-tower-gotham/skin.css). Each also
 keeps a private `--p-*` palette its tokens refer to.
 
 ### Typography
@@ -238,7 +253,7 @@ frame against a clean futuristic sans for the data. Zerg puts a gnarled organic
 display face on the frame and keeps a readable angular sans on the data — the
 weirdness lives in the geometry instead, which is what keeps it usable.
 
-Terran, Protoss, Zerg and both Clock Tower skins bundle their faces, so this works with no setup and no external
+Terran, Protoss, Zerg and all three Clock Tower skins bundle their faces, so this works with no setup and no external
 requests — which matters on an air-gapped NOC box, where a Google Fonts
 `@import` would silently degrade exactly where it is least convenient to
 debug. Details, sizes, licensing and how to swap a face:
@@ -299,7 +314,7 @@ python -m http.server 8777
 ```
 
 Switch skins with `?skin=terran` / `?skin=protoss` / `?skin=zerg` / `?skin=digital-rain` /
-`?skin=clock-tower-daylight` / `?skin=clock-tower-lantern`, or the buttons at the top of the page;
+`?skin=clock-tower-daylight` / `?skin=clock-tower-lantern` / `?skin=clock-tower-gotham`, or the buttons at the top of the page;
 `&mode=light` or `&mode=dark` shows a skin in either mode (it opens in the mode it is written for). (A skin's texture renders only on `mockup.html`;
 the other pages load `skin.css` as it is.) `harness/colorway.html` renders a skin's full
 token set and graph ramps.
@@ -394,7 +409,7 @@ scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/make-textures.py    compute the plate, crystal and tile textures
 scripts/make-creep.py       compute the Zerg creep texture
 scripts/make-rain.py        compute the Digital Rain glyph tile
-scripts/make-clock-tower.py write both Clock Tower skins (and their cogwheel tile) from one template
+scripts/make-clock-tower.py write the three Clock Tower skins (and their cogwheel and tracery tiles)
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/dead-css.py         find styles.css rules nothing can match (docs/data/ holds the list)
 scripts/helper-audit.py     which graph helpers hard-code colours (FINDINGS section 5)

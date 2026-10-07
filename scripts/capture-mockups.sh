@@ -62,7 +62,7 @@ echo "Browser: $BROWSER"
 echo "Output:  $OUT"
 echo
 
-for skin in terran protoss zerg digital-rain clock-tower-daylight clock-tower-lantern; do
+for skin in terran protoss zerg digital-rain clock-tower-daylight clock-tower-lantern clock-tower-gotham; do
   dest="$OUT/dashboard-$skin.png"
   # Chrome on Windows needs a native path for --screenshot even under Git Bash.
   if command -v cygpath >/dev/null 2>&1; then

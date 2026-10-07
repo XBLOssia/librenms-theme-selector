@@ -1564,6 +1564,7 @@ html.dark .with-nav-tabs.panel-default .nav-tabs > li > a {
 }
 html.dark .with-nav-tabs.panel-default .nav-tabs > li.active > a {
   color: var(--ts-accent);
+  background-color: var(--ts-surface);
 }
 html.dark .grid-stack-item-content > header {
   background: var(--ts-widget-bar-bg) !important;

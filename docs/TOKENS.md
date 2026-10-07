@@ -60,7 +60,7 @@ Default to a mix of the core roles.
 | `--ts-radius-md` | `var(--ts-radius-sm)` | `.alert` border-radius; `.gs-w (+1)` border-radius; default of `widget-radius-tl`, `widget-radius-tr`, `widget-radius-br`, `widget-radius-bl` |
 | `--ts-bevel` | `inset 0 1px 0 rgba(255, 255, 255, .05), inset 0 -1px 0 rgba(0, 0, 0, .4)` | `.alert` box-shadow; `.graph-image (+1)` box-shadow; default of `btn-danger-shadow` |
 | `--ts-danger-deep` | `color-mix(in srgb, var(--ts-danger) 22%, var(--ts-bg))` | `.alert-danger` background-color; `.panel-danger > .panel-heading` background; `.bg-danger` background-color; +7 more; default of `btn-danger-bg` |
-| `--ts-success-deep` | `color-mix(in srgb, var(--ts-success) 22%, var(--ts-bg))` | `.alert-success` background-color; `.panel-success > .panel-heading` background; `.bg-success` background-color; +7 more; default of `btn-success-bg` |
+| `--ts-success-deep` | `color-mix(in srgb, var(--ts-success) 22%, var(--ts-bg))` | `.alert-success` background-color; `.panel-success > .panel-heading` background; `.bg-success` background-color; +6 more; default of `btn-success-bg` |
 | `--ts-warning-deep` | `color-mix(in srgb, var(--ts-warning) 22%, var(--ts-bg))` | `.alert-warning` background-color; `.panel-warning > .panel-heading` background; `.table > thead > tr.warning > td (+7)` background-color; +2 more |
 | `--ts-info-deep` | `color-mix(in srgb, var(--ts-info) 22%, var(--ts-bg))` | `.alert-info` background-color; `.panel-primary > .panel-heading` background; `.panel-info > .panel-heading` background; +6 more; default of `btn-primary-bg` |
 | `--ts-badge-alert` | `var(--ts-danger)` | `.badge-navbar-user.badge-danger` background-color |

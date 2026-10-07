@@ -402,5 +402,22 @@ function test_stock_greys(): void
         T::ok("$wrap: a sortable table header's text is the skin's dim text, not tw_dark.css's fixed grey", str_contains($css, "$wrap .bootgrid-table th > .column-header-anchor {\n  color: var(--ts-text-dim);\n}"));
         T::ok("$wrap: Tailwind's quiet greys (gray-400, gray-500) are the skin's muted text", str_contains($css, '--tw-color-gray-400: var(--ts-text-mute);') && str_contains($css, '--tw-color-gray-500: var(--ts-text-mute);'));
     }
+    // The alert rule builder's AND / OR switch: both labels are .btn-primary, and html.dark .btn-primary is
+    // !important, so the rules that tell the chosen one apart must be !important too and come after it.
+    foreach (['html.dark' => $base, 'html:not(.dark)' => $twin] as $wrap => $css) {
+        $decl = function (string $selector) use ($css): ?string {
+            return preg_match('/^' . preg_quote($selector, '/') . ' \{
+(.*?)
+\}/ms', $css, $m) === 1 ? $m[1] : null;
+        };
+        $generic = strpos($css, "$wrap .btn-primary {
+");
+        $inactive = $decl("$wrap .rules-group-header .btn-primary");
+        $active = $decl("$wrap .rules-group-header .active");
+        T::ok("$wrap: the AND/OR switch has a rule for each state, after the generic primary button", $generic !== false && $inactive !== null && $active !== null && strpos($css, "$wrap .rules-group-header .btn-primary {") > $generic && strpos($css, "$wrap .rules-group-header .active {") > strpos($css, "$wrap .rules-group-header .btn-primary {"));
+        T::ok("$wrap: both states set fill, edge and colour with !important, or the primary button's would win", $inactive !== null && $active !== null && preg_match('/background-color: [^;]+ !important;/', $inactive) === 1 && preg_match('/background-color: [^;]+ !important;/', $active) === 1 && preg_match('/border-color: [^;]+ !important;/', $inactive . $active) === 1 && preg_match('/\bcolor: [^;]+ !important;/', $inactive) === 1 && preg_match('/\bcolor: [^;]+ !important;/', $active) === 1);
+        T::ok("$wrap: the chosen state is filled with the skin's success colour and is bold; the other is plain", $active !== null && $inactive !== null && str_contains($active, 'var(--ts-success)') && str_contains($active, 'font-weight: 700') && ! str_contains($inactive, 'var(--ts-success)') && str_contains($inactive, 'font-weight: 400'));
+        T::ok("$wrap: the two states do not share a fill", $active !== null && $inactive !== null && preg_replace('/.*background-color: ([^;]+) !important;.*/s', '$1', $active) !== preg_replace('/.*background-color: ([^;]+) !important;.*/s', '$1', $inactive));
+    }
     T::ok('the tile filter is a token read by the map in both modes, and the twin defaults it to none', str_contains($twin, "html:not(.dark) .leaflet-tile {\n  filter: var(--ts-map-tile-filter);") && str_contains((string) file_get_contents(__DIR__ . '/../base/light.css'), '--ts-map-tile-filter: none;'));
 }

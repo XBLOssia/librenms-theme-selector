@@ -100,7 +100,7 @@ def chamfer_template(e):
             f'calc(100% - {c("br")}) 100%, {c("bl")} 100%, 0 calc(100% - {v("bl")}), 0 {v("tl")})')
 
 
-def widget_polygon(prefix='widget', m='10000px', e='2px'):
+def widget_polygon(prefix='widget', m='400px', e='2px'):
     def c(k):
         return f'var(--ts-{prefix}-chamfer-{k}, var(--ts-{prefix}-chamfer))'
 

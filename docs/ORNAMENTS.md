@@ -174,15 +174,19 @@ colour for the line along the cut:
 ```
 
 **It is a real clip**, through one polygon written in `base.css` (the same for panels and
-widgets): the element's box with a margin of 10000px, and a zero-width slit into each
+widgets): the element's box with a margin of 400px, and a zero-width slit into each
 corner that removes only its triangle. A cut of 0 leaves the whole box, so a skin that
 cuts one corner keeps the rest. Border, background and content are cut together, so
 nothing is painted over the page and the cut works on any page background, including a
 texture.
 
-* **Nothing that hangs out is cut off.** The margin is 10000px, so a dropdown that opens
-  past a panel's edge, or a fixed-position dialog inside one, is not clipped; only the
-  cut triangles are. (Checked in a browser: both still receive clicks on a clipped panel.)
+* **Nothing that hangs out is cut off, up to 400px.** The margin is 400px (it was 10000px until a page of
+  sixty-odd panels, Services with a panel for each device, came up blank in places in Chrome: a clip that is not
+  a rectangle is drawn through a mask the size of its bounds, and a mask that large for every panel is more than a
+  browser will draw), so a dropdown or a hover card that opens
+  past a panel's edge by less than that is not clipped; only the cut triangles are. A fixed-position dialog
+  inside a panel would be cut if it lay more than 400px from it; LibreNMS's dialogs sit at the top level of the
+  page, none inside a panel (checked on the alert rules page, which has eight).
 * **Cards that open inside a panel stay on top.** A panel is a stacking context (isolation and
   clip-path), and LibreNMS renders hover cards, menus and popups inside the element that owns
   them, so without more, every later panel would paint over a card opened in an earlier one

@@ -172,9 +172,10 @@ RG='/data-ts-orn\]) \.grid-stack \.grid-stack-item-content {/,/^}/'
 run_with $B "$RP s/pointer-events: none;/pointer-events: auto;/" "cuts: let the panel corner overlay take clicks"
 run_with $B "$RP s/inset: -1px;/inset: -40px;/" "cuts: let the panel corner overlay extend 40px out"
 run_with $B "$RP s/--ts-panel-chamfer, 0px))/--ts-panel, 0px))/" "cuts: drop the panel size fallback chain"
-run_with $B "$RG s/calc(100% + 10000px) -10000px/calc(100% + 10000px) -8px/" "cuts: a widget clip that cuts off what hangs out of it"
+run_with $B "$RG s/calc(100% + 400px) -400px/calc(100% + 400px) -8px/" "cuts: a widget clip that cuts off what hangs out of it"
 RC='/data-ts-orn\]) \.panel {/,/^}/'
-run_with $B "$RC s/calc(100% + 10000px) -10000px/calc(100% + 10px) -10px/" "cuts: a panel clip that cuts off a dropdown hanging out of it"
+run_with $B "$RC s/calc(100% + 400px) -400px/calc(100% + 10px) -10px/" "cuts: a panel clip that cuts off a dropdown hanging out of it"
+run_with $B "$RC s/400px/10000px/g" "cuts: a clip margin so large that a page of many panels is not drawn"
 RZ='/data-ts-orn\]) \.panel:is(:hover, :has(\.open)) {/,/^}/'
 run_with $B "$RZ s/z-index: 1035/z-index: 1/" "cards: a raised panel that still sits under the sticky navbar"
 run_with $B "$RZ s/z-index: 1035/z-index: 1045/" "cards: a raised panel that covers modals"

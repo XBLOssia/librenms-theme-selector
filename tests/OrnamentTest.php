@@ -35,7 +35,7 @@ function ornament_rules(): array
 
 /**
  * The clip-path polygon of a panel or widget, written out independently of base.css and of
- * scripts/gen-token-catalog.py: the box with a margin of 10000px and, into each corner, a notch that
+ * scripts/gen-token-catalog.py: the box with a margin of 400px and, into each corner, a notch that
  * removes the cut triangle grown by 2px on the two sides along the box edges (its hypotenuse stays on
  * the same line), joined to the outside by a zero-width slit. The growth is 2px at a corner that is
  * cut and none at one that is not (min(cut * 1000, 2px)), so an uncut corner removes nothing.
@@ -48,7 +48,7 @@ function ornament_polygon(string $e): string
     $g = fn (string $k) => "min(calc({$c($k)} * 1000), 2px)";
     $ng = fn (string $k) => "calc({$g($k)} * -1)";
     $pe = fn (string $k) => "calc(100% + {$g($k)})";
-    $m = '10000px';
+    $m = '400px';
     $pm = "calc(100% + $m)";
     $pts = [
         ["-$m", "-$m"], [$pm, "-$m"],
@@ -442,7 +442,7 @@ function test_ornaments(): void
 
     T::group('ornaments: cut corners on panels and widgets');
     // The clip-path for widgets and panels (ornament_polygon, above): the box with a margin of
-    // 10000px (so nothing that hangs out of it is clipped), and into each CUT corner a notch that
+    // 400px (so nothing that hangs out of it is clipped), and into each CUT corner a notch that
     // removes the cut triangle grown by 2px on the two sides along the box edges, joined to the outside
     // by a zero-width slit that runs 2px outside the box. The clip edge therefore never lies on the
     // border's outer edge, where a border snapped to a device pixel and an unsnapped clip disagree at
@@ -495,7 +495,14 @@ function test_ornaments(): void
     $panelDecls = $rules["$gate .panel"] ?? [];
     T::ok('the panel clip-path is the same fixed polygon, over the panel tokens', in_array('clip-path: ' . $polygonFor('panel'), $panelDecls, true));
     T::ok('a panel clip-path is only in that one declaration', count(array_filter($panelDecls, fn ($d) => str_starts_with($d, 'clip-path:'))) === 1);
-    T::ok('the clip margin is large enough that a dropdown or a fixed dialog inside a panel is not cut off', in_array('clip-path: ' . $polygonFor('panel'), $panelDecls, true) && str_starts_with($polygonFor('panel'), 'polygon(-10000px -10000px, calc(100% + 10000px) -10000px, ') && str_contains($polygonFor('panel'), 'calc(100% + 10000px) calc(100% + 10000px), -10000px calc(100% + 10000px)'));
+    T::ok('the clip margin is large enough that a dropdown or a hover card hanging out of a panel is not cut off, and small enough for a page of many panels to draw', in_array('clip-path: ' . $polygonFor('panel'), $panelDecls, true) && str_starts_with($polygonFor('panel'), 'polygon(-400px -400px, calc(100% + 400px) -400px, ') && str_contains($polygonFor('panel'), 'calc(100% + 400px) calc(100% + 400px), -400px calc(100% + 400px)'));
+
+    // Chrome draws a clip that is not a rectangle through a mask the size of the clip's bounds: at 10000px a page
+    // of sixty-odd panels (Services, a panel for each device) came up blank in places. Bounded, and still enough for a menu.
+    $base = (string) file_get_contents(__DIR__ . '/../base/base.css');
+    preg_match_all('/clip-path: polygon\(-(\d+)px -\d+px,/', $base, $margins);
+    T::ok('every cut-corner clip has a bounded margin: at most 1000px, at least 300px', count($margins[1]) === 2 && max($margins[1]) <= 1000 && min($margins[1]) >= 300, json_encode($margins[1]));
+    T::ok('and nothing in the base asks for a margin of thousands of pixels in any clip', preg_match('/clip-path:[^;]*\d{4,}px/', $base) !== 1);
 
     // A panel and a widget are stacking contexts, so a hover card or menu inside one is trapped
     // under every later panel unless the panel that holds it is raised while it is open.

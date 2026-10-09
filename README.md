@@ -165,12 +165,14 @@ user in `/opt/librenms`:
 
 ```bash
 php scripts/composer_wrapper.php config --global repositories.theme-selector '{"type":"vcs","url":"https://github.com/XBLOssia/librenms-theme-selector","no-api":true}'
-./lnms plugin:add xblossia/librenms-theme-selector dev-main
+./lnms plugin:add xblossia/librenms-theme-selector '^1.0'
 ./lnms migrate --force
 php artisan route:cache
 ./lnms theme-selector:publish
 ./lnms theme-selector:status
 ```
+
+`'^1.0'` takes releases only; `dev-main` takes every merge (see [docs/RELEASING.md](docs/RELEASING.md)).
 
 Then **Plugins → Theme Selector**: each user picks a skin for light mode and one for dark mode,
 and admins set the instance defaults (what the login page and users who haven't chosen get).
@@ -404,6 +406,7 @@ scripts/gen-token-docs.py   regenerate docs/TOKENS.md from base.css
 scripts/gen-token-catalog.py  derive the token catalog (settable vs structural) from base.css
 scripts/pack-skin.py        zip a skin folder for upload
 scripts/update.sh           update the plugin now and check it (what daily.sh does overnight)
+scripts/release.sh          cut a release: date the changelog, tag a commit that passed CI (docs/RELEASING.md)
 scripts/ensure-installed.sh optional cron safety net: put the plugin back if a nightly update removed it
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/make-textures.py    compute the plate, crystal and tile textures
@@ -426,6 +429,9 @@ docs/ORNAMENTS.md           frame ornaments, cut corners, motion: the rules and 
 docs/TEXTURES.md            repeating textures: format, limits, how the tiles are made
 docs/SECURITY.md            uploaded skins: threat model, controls, what isn't defended
 docs/DEPLOYMENT.md          install, updates, migration, uninstall, rollback
+docs/RELEASING.md           versions, CI, how a release is made, repository settings
+CHANGELOG.md                what changed in each release
+.github/workflows/          CI, integration, release and the nightly upstream check
 docs/FINDINGS.md            what building these surfaced about theming LibreNMS
 docs/PROPOSAL.md            upstream proposal, ready to post
 docs/ROADMAP.md             prioritised backlog and open decisions

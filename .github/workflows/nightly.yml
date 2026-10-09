@@ -1,0 +1,46 @@
+# Every night, the live suites and the install / update / uninstall rehearsal against the NEWEST LibreNMS
+# image and the real GitHub. LibreNMS updates itself nightly on every host, and this plugin updates with
+# it, so what breaks the plugin first is usually a LibreNMS change: this finds it before a host does.
+# A failure opens (or adds to) one issue labelled upstream-check; nothing else is touched.
+name: Nightly upstream check
+
+on:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: Integration against the newest LibreNMS
+    uses: ./.github/workflows/integration.yml
+    with:
+      librenms_version: latest
+      network: true
+
+  report:
+    name: report a failure
+    needs: integration
+    if: failure()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create upstream-check --repo "$GITHUB_REPOSITORY" --color B60205 --description "The nightly check against the newest LibreNMS failed" 2>/dev/null || true
+          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --label upstream-check --state open --json number --jq '.[0].number // empty')"
+          body="The nightly check against the newest LibreNMS image failed: $RUN_URL
+
+          Open the run for which suite failed. Either LibreNMS changed something this plugin relies on (a route, a stylesheet class, the RRD store, how daily.sh updates plugins), or GitHub or the image registry was unreachable; run it again from the Actions tab (Nightly upstream check, Run workflow) to tell the two apart."
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "Failed again: $RUN_URL"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --label upstream-check --title "Nightly check against the newest LibreNMS is failing" --body "$body"
+          fi

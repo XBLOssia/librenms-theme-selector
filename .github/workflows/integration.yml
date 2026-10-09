@@ -1,0 +1,84 @@
+# The tests that need a real LibreNMS: the live suites against the dev instance, and the install /
+# nightly-update / uninstall rehearsal on a clean one (dev/test-update.sh). Slower than CI (about ten
+# minutes, and it pulls LibreNMS's image), so it is not a required check on a pull request; it runs on every
+# push to main, before a release (release.yml calls it), and nightly against the newest LibreNMS
+# (nightly.yml calls it). Run it by hand from the Actions tab for any version of LibreNMS.
+name: Integration
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      librenms_version:
+        description: LibreNMS image tag to test against (a release such as 26.9.1.1, or latest)
+        default: '26.9.1.1'
+        type: string
+      network:
+        description: Also test against the real GitHub (outage with a warm and a cold Composer cache)
+        default: false
+        type: boolean
+  workflow_call:
+    inputs:
+      librenms_version:
+        type: string
+        default: '26.9.1.1'
+      network:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  LIBRENMS_VERSION: ${{ inputs.librenms_version || '26.9.1.1' }}
+
+jobs:
+  live:
+    name: live suites (LibreNMS ${{ inputs.librenms_version || '26.9.1.1' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Start the dev instance
+        run: |
+          docker compose -f dev/compose.yml up -d --build
+          for _ in $(seq 1 120); do
+            if docker compose -f dev/compose.yml logs librenms 2>&1 | grep -q '\[theme-selector\] users'; then exit 0; fi
+            sleep 5
+          done
+          echo "the dev instance did not finish starting" >&2
+          docker compose -f dev/compose.yml logs librenms | tail -60
+          exit 1
+
+      - name: Live suites
+        run: sh dev/test.sh live
+
+      - name: Instance log (on failure)
+        if: failure()
+        run: docker compose -f dev/compose.yml logs --no-color --tail=300 > live-instance.log 2>&1 || true
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: live-instance-log
+          path: live-instance.log
+          if-no-files-found: ignore
+
+  update:
+    name: install, update, uninstall (LibreNMS ${{ inputs.librenms_version || '26.9.1.1' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0          # the rehearsal starts from an old commit of this repository
+          persist-credentials: false
+
+      - name: Rehearsal
+        env:
+          TS_NETWORK: ${{ inputs.network && '1' || '' }}
+        run: sh dev/test-update.sh

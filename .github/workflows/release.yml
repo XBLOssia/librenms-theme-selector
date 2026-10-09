@@ -1,0 +1,75 @@
+# A tag like v1.2.3 is a release. This checks that the tag is what it should be, runs everything once more
+# on exactly that commit, and then (only then) publishes the GitHub Release, whose notes are the
+# changelog's section for that version. Hosts do not install from the Release: Composer reads the tag.
+# See docs/RELEASING.md.
+name: Release
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: the tag is a release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Version, branch and changelog
+        id: v
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          # An annotated tag, on a commit that is on main (a tag on an unmerged branch is not a release).
+          [ "$(git cat-file -t "refs/tags/$TAG")" = tag ] || { echo "::error::$TAG is not an annotated tag (git tag -a)"; exit 1; }
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$TAG is not on main"; exit 1; }
+          # Newer than every earlier release.
+          latest="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | grep -vx "$TAG" | head -n 1 || true)"
+          if [ -n "$latest" ] && [ "$(printf '%s\n%s\n' "${latest#v}" "$version" | sort -V | tail -n 1)" != "$version" ]; then
+            echo "::error::$TAG is not newer than $latest"; exit 1
+          fi
+          # The changelog says what is in it.
+          grep -q "^## \[$version\] - " CHANGELOG.md || { echo "::error::CHANGELOG.md has no section for $version"; exit 1; }
+          sh scripts/release.sh notes "$version" > /dev/null
+
+  ci:
+    name: CI
+    needs: verify
+    uses: ./.github/workflows/ci.yml
+
+  integration:
+    name: Integration
+    needs: verify
+    uses: ./.github/workflows/integration.yml
+
+  publish:
+    name: publish the release
+    needs: [verify, ci, integration]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          sh scripts/release.sh notes "$VERSION" > notes.md
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --notes-file notes.md

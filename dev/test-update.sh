@@ -154,6 +154,30 @@ check "run as librenms it succeeds" "$(yes_if "[ $rc = 0 ]")"
 check "it follows what the plugin follows, and moved it to the newest commit" "$(yes_if "[ \"\$(locked)\" = \"$NEXT3\" ] && grep -q 'plugin:add xblossia/librenms-theme-selector dev-main' $UPDATE_OUT")"
 check "it ends with the status checks, all passing" "$(yes_if "grep -q '^ok    installed: dev-main@$NEXT3' $UPDATE_OUT && ! grep -q '^FAIL\|^WARN' $UPDATE_OUT")"
 
+section "following releases: a host on ^1.0 takes tags, not commits on main"
+inr 'cd /data/work && echo three > UPDATE_TEST.txt && git add -A && git -c user.name=t -c user.email=t@example.test commit -q -m "a major change" && git push -q /data/ts.git HEAD:refs/heads/next4 && chown -R librenms:librenms /data/ts.git'
+NEXT4="$(inr 'git --git-dir=/data/ts.git rev-parse --short=7 next4')"
+tag() { inr "git --git-dir=/data/ts.git tag $1 $2 && chown -R librenms:librenms /data/ts.git"; }
+tag v1.0.0 "$NEXT"
+tag v1.0.1 "$NEXT2"
+# main is at NEXT3, ahead of the newest tag: a host on ^1.0 must not take it.
+inl "./lnms plugin:add xblossia/librenms-theme-selector '^1.0' >/dev/null 2>&1"; rc=$?
+check "plugin:add with ^1.0 succeeds" "$(yes_if "[ $rc = 0 ]")"
+check "it installed the newest tag (v1.0.1), not main, which is ahead of it" "$(yes_if '[ "$(locked)" = "$NEXT2" ]')"
+check "composer.plugins.json now records ^1.0, for daily.sh" "$(yes_if 'plugins_json | grep -q "librenms-theme-selector.*\^1.0"')"
+status; rc=$?
+check "status passes, says it follows releases matching ^1.0, and shows the version" "$(yes_if "[ $rc = 0 ] && grep -q 'releases matching \^1.0' $STATUS_OUT && grep -Eq 'installed: v?1\.0\.1 \($NEXT2\)' $STATUS_OUT")"
+OUT="$(nightly)"
+check "a nightly update leaves it on v1.0.1 while main is ahead" "$(yes_if '[ "$(locked)" = "$NEXT2" ]')"
+tag v1.1.0 "$NEXT3"
+OUT="$(nightly)"
+check "a new minor release (v1.1.0) is taken the next night" "$(yes_if '[ "$(locked)" = "$NEXT3" ]')"
+tag v2.0.0 "$NEXT4"
+OUT="$(nightly)"
+check "a new major release (v2.0.0) is not taken: ^1.0 stays on v1.1.0" "$(yes_if '[ "$(locked)" = "$NEXT3" ]')"
+docker exec -u librenms "$C" sh -c 'cd /opt/librenms && COMPOSER_HOME=/data/composer vendor/xblossia/librenms-theme-selector/scripts/update.sh' >"$UPDATE_OUT" 2>&1; rc=$?
+check "update.sh keeps following ^1.0 (it asked for ^1.0, and stayed on v1.1.0)" "$(yes_if "[ $rc = 0 ] && grep -q 'plugin:add xblossia/librenms-theme-selector ^1.0' $UPDATE_OUT && [ \"\$(locked)\" = \"$NEXT3\" ]")"
+
 section "what theme-selector:status catches"
 inr 'cp /opt/librenms/composer.plugins.json /data/plugins.json.keep && echo "{\"require\":{}}" > /opt/librenms/composer.plugins.json'
 status; rc=$?

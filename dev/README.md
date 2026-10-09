@@ -82,6 +82,11 @@ mutation run once followed a symlink to `/` in the old, writable setup and
 deleted a bind-mounted copy of this repository, so don't loosen this.) The live
 tests need this stack up; its container mounts the repository read-only as well.
 
+**On GitHub** the same suites run as workflows (`.github/workflows/`, see
+[docs/RELEASING.md](../docs/RELEASING.md)): unit and mutation on every pull request, the live suites and the
+rehearsal on every push to `main`, and a nightly run against the newest LibreNMS. `LIBRENMS_VERSION=latest`
+(or any LibreNMS release tag) builds either stack on that release instead of the pinned one.
+
 **The update rehearsal** (`sh dev/test.sh update`) is the one test that does not use this stack. It
 starts a clean LibreNMS of its own (`dev/compose-clean.yml`: no plugin, no bind mount, nothing like this
 instance's path repository) and installs the plugin from a local git repository the test builds from

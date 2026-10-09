@@ -216,12 +216,14 @@ if [ -n "${TS_NETWORK:-}" ]; then
   inl 'php scripts/composer_wrapper.php config --global repositories.theme-selector "{\"type\":\"vcs\",\"url\":\"https://github.com/XBLOssia/librenms-theme-selector\",\"no-api\":true}"'
   inl './lnms plugin:add xblossia/librenms-theme-selector dev-main >/dev/null 2>&1'
   inl './lnms migrate --force >/dev/null 2>&1'
+  inl './lnms theme-selector:publish >/dev/null 2>&1'
   nightly >/dev/null
   # GitHub's main only has the status command once this work is merged; until then those two checks are skipped.
   have_status="$(inl './lnms list 2>/dev/null | grep -c theme-selector:status')"
   if [ "$have_status" != 0 ]; then
     status; rc=$?
     check "installed from GitHub in git mode, status passes and sees the cache" "$(yes_if "[ $rc = 0 ] && ! grep -q '^FAIL\|^WARN' $STATUS_OUT && grep -q 'repository cache: present' $STATUS_OUT")"
+    [ "$rc" = 0 ] && ! grep -q '^FAIL\|^WARN' "$STATUS_OUT" || sed 's/^/        /' "$STATUS_OUT"
   else
     echo "  skip  status checks (GitHub's main has no status command yet)"
   fi

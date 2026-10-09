@@ -35,13 +35,15 @@ release before it: add columns, do not rename or drop them, so a host can step b
 | Workflow | When | Runs | Required to merge |
 |---|---|---|---|
 | `ci.yml` | every pull request and push to `main`; called by the release | PHP lint, shell lint, `composer validate`, the unit tests (PHP 8.2 and 8.4), the generated-file checks, the mutation check | **yes**: `unit (PHP 8.2)`, `unit (PHP 8.4)`, `mutation check` |
-| `integration.yml` | every push to `main`; by hand; called by the release and nightly | the five live suites against the dev instance, and `dev/test-update.sh` | no (about ten minutes), but a release needs it green |
+| `integration.yml` | every push to `main`; a pull request that touches the plugin (`src/`, `base/`, `skins/`, `dev/`, `scripts/` ...); by hand; called by the release and nightly | the five live suites against the dev instance, and `dev/test-update.sh` | no (about ten minutes), but a release needs it green on `main` |
 | `release.yml` | a `vX.Y.Z` tag is pushed | the tag is annotated, on `main`, newer than the last and in the changelog; then CI and Integration again on that commit; then the GitHub Release | (it is the release) |
 | `nightly.yml` | every night | Integration against the **newest** LibreNMS image and the real GitHub, `TS_NETWORK=1` | no: a failure opens one issue, `upstream-check` |
 
 Locally, `sh dev/test.sh` (unit), `sh dev/test.sh mutate`, `sh dev/test.sh live`, `sh dev/test.sh update`, or
 `sh dev/test.sh all` do the same; see [dev/README.md](../dev/README.md). `LIBRENMS_VERSION=latest` builds the dev stacks on another
 LibreNMS release.
+
+Runners are pinned (`ubuntu-24.04`) so a new default image does not change a result unannounced; move them on purpose.
 
 The workflows can only read the repository (`contents: read`). Two jobs may write, and nothing else:
 the release job (to create the Release) and the nightly report job (to open an issue). Every action is pinned

@@ -14,7 +14,7 @@ permissions:
 jobs:
   verify:
     name: the tag is a release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
       version: ${{ steps.v.outputs.version }}
@@ -56,7 +56,7 @@ jobs:
   publish:
     name: publish the release
     needs: [verify, ci, integration]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write

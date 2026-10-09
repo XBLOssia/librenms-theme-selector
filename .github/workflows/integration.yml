@@ -1,13 +1,16 @@
 # The tests that need a real LibreNMS: the live suites against the dev instance, and the install /
 # nightly-update / uninstall rehearsal on a clean one (dev/test-update.sh). Slower than CI (about ten
 # minutes, and it pulls LibreNMS's image), so it is not a required check on a pull request; it runs on every
-# push to main, before a release (release.yml calls it), and nightly against the newest LibreNMS
-# (nightly.yml calls it). Run it by hand from the Actions tab for any version of LibreNMS.
+# push to main, on a pull request that touches the plugin itself (shown, not required), before a release
+# (release.yml calls it), and nightly against the newest LibreNMS (nightly.yml calls it). Run it by hand
+# from the Actions tab for any version of LibreNMS.
 name: Integration
 
 on:
   push:
     branches: [main]
+  pull_request:
+    paths: ['src/**', 'resources/**', 'routes/**', 'database/**', 'base/**', 'skins/**', 'dev/**', 'scripts/**', 'composer.json', '.github/workflows/integration.yml']
   workflow_dispatch:
     inputs:
       librenms_version:
@@ -36,7 +39,7 @@ env:
 jobs:
   live:
     name: live suites (LibreNMS ${{ inputs.librenms_version || '26.9.1.1' }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -70,7 +73,7 @@ jobs:
 
   update:
     name: install, update, uninstall (LibreNMS ${{ inputs.librenms_version || '26.9.1.1' }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

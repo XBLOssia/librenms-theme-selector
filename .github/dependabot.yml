@@ -1,0 +1,10 @@
+# Keeps the pinned GitHub Actions current: a weekly pull request per action, which CI then runs.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+    labels: [dependencies]

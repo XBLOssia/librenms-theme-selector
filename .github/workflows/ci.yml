@@ -41,7 +41,10 @@ jobs:
 
       - name: Lint shell scripts
         run: |
-          for f in scripts/*.sh dev/*.sh tests/mutate.sh; do sh -n "$f" || exit 1; done
+          # Each script is checked by the shell its first line asks for (two are bash, the rest POSIX sh).
+          for f in scripts/*.sh dev/*.sh tests/mutate.sh; do
+            case "$(head -n 1 "$f")" in *bash*) bash -n "$f" || exit 1 ;; *) sh -n "$f" || exit 1 ;; esac
+          done
 
       - name: composer.json is valid
         run: composer validate --strict --no-check-lock

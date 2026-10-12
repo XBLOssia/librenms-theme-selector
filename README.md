@@ -431,6 +431,7 @@ skins/<name>/textures/      the skin's repeating PNG tile (generated; skins/zerg
 skins/<name>/FONTS.md       typography rationale and how to swap faces
 examples/minimal/           the smallest complete skin (sets only the 20 core roles)
 examples/minimal-light/     the same for light mode
+examples/corpo-blue/        a full uploadable skin (fonts, texture, ornaments, graph palette), and corpo-blue.zip, ready to upload
 harness/index.html          static preview, real LibreNMS CSS, real DOM
 harness/mockup.html         full dashboard mockup, invented data
 harness/leaks.html          stock backgrounds still showing through, and contrast

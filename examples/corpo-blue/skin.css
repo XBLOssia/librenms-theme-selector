@@ -1,0 +1,197 @@
+/*
+ * Corpo Blue: flat, square-cornered navy and white, set in Montserrat.
+ * Dark mode only. Montserrat is bundled (see LICENSE.txt).
+ */
+@font-face {
+  font-family: "Montserrat";
+  src: url("fonts/Montserrat-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("fonts/Montserrat-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("fonts/Montserrat-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+html.dark {
+  /* Palette */
+  --p-deep: #000f26;
+  --p-navy: #00193f;
+  --p-navy-raised: #002d72;
+  --p-tint: #1b3a73;
+  --p-fill: #3b6cc4;
+  --p-brand: #9db8e8;
+  --p-line: #34497a;
+  --p-line-strong: #8ea0c2;
+  --p-ink: #ffffff;
+  --p-body: #dfe3ea;
+  --p-muted: #c3c5cc;
+  --p-quiet: #a3aec6;
+  --p-red: #e50832;
+  --p-orange: #f37c2f;
+  /* The short red-over-orange tab at the top-left of a widget's title bar. A gradient can
+     only vary along one axis, so two layers make it: the bar runs the full
+     width, and a cover in the bar's own colour hides all but its first 32px. */
+  --p-tab: linear-gradient(180deg, var(--p-red) 0, var(--p-red) 3px, var(--p-orange) 3px, var(--p-orange) 6px, transparent 6px);
+  --p-tab-cover: linear-gradient(90deg, transparent 0, transparent 32px, var(--p-navy-raised) 32px, var(--p-navy-raised) 100%);
+  --p-font: "Montserrat", system-ui, "Segoe UI", sans-serif;
+  --p-font-code: Consolas, "SF Mono", Menlo, ui-monospace, monospace;
+
+  /* Core roles */
+  /* Waves on water: a faint 256 x 128 tile of ripples over the page colour. */
+  --tx-waves: url("textures/waves.png");
+  --ts-body-bg-image: var(--tx-waves);
+  --ts-bg: var(--p-deep);
+  --ts-surface: var(--p-navy);
+  --ts-surface-raised: var(--p-navy-raised);
+  --ts-surface-hover: var(--p-tint);
+  --ts-border: var(--p-line);
+  --ts-text: var(--p-body);
+  --ts-text-dim: var(--p-muted);
+  --ts-text-mute: var(--p-quiet);
+  --ts-text-bright: var(--p-ink);
+  --ts-accent: var(--p-brand);
+  --ts-link: var(--p-brand);
+  --ts-highlight: var(--p-ink);
+  --ts-success: #4cc38a;
+  --ts-warning: #f0b429;
+  --ts-danger: #e5484d;
+  --ts-info: #5aa9e6;
+  --ts-danger-text: #ff8f95;
+  /* The signature cut: the bottom-left corner lopped off at 60 degrees
+     (the cut rises 1.732 px for every px it runs in). */
+  --ts-btn-chamfer: 0px;
+  --ts-btn-chamfer-bl: 8px;
+  --ts-btn-chamfer-rise: 1.732;
+  --ts-label-chamfer: 0px;
+  --ts-label-chamfer-bl: 5px;
+  --ts-label-chamfer-rise: 1.732;
+  --ts-badge-chamfer: 0px;
+  --ts-badge-chamfer-bl: 5px;
+  --ts-badge-chamfer-rise: 1.732;
+  /* The same 60 degree cut on panels and dashboard widgets: both are clipped (so the cut
+     works over the waves), with a 2px edge line (#34497a) along it. The line takes a
+     literal colour, not var(--p-*). */
+  --ts-panel-chamfer: 0px;
+  --ts-panel-chamfer-bl: 12px;
+  --ts-panel-chamfer-rise: 1.732;
+  --ts-panel-cut-stroke: #34497a;
+  --ts-widget-chamfer: 0px;
+  --ts-widget-chamfer-bl: 12px;
+  --ts-widget-chamfer-rise: 1.732;
+  --ts-widget-cut-stroke: #34497a;
+  --ts-label-success-bg: #1f7a4d;   /* white text on these clears 4.5:1 */
+  --ts-label-danger-bg: #c62f3a;
+  --ts-badge-alert: #c62f3a;
+  --ts-font-display: var(--p-font);
+  --ts-font-mono: var(--p-font);
+  --ts-font-code: var(--p-font-code);
+  --ts-radius-sm: 0;
+
+  /* Type */
+  --ts-root-font-family: var(--p-font);
+  --ts-body-font-family: var(--p-font);
+  --ts-input-font-family: var(--p-font);
+  --ts-tab-font-family: var(--p-font);
+  --ts-navbar-brand-font-weight: 700;
+  --ts-navbar-link-font-size: 14px;
+  --ts-navbar-link-letter-spacing: .04em;
+  --ts-panel-heading-font-weight: 700;
+  --ts-panel-heading-letter-spacing: .06em;
+  --ts-widget-title-font-weight: 700;
+  --ts-widget-title-letter-spacing: .06em;
+  --ts-table-head-letter-spacing: .08em;
+  --ts-tab-font-size: 12px;
+  --ts-tab-letter-spacing: .1em;
+  --ts-tab-text-transform: uppercase;
+  --ts-btn-letter-spacing: .06em;
+  --ts-btn-font-size: 13px;
+  --ts-dropdown-item-font-weight: 600;
+
+  /* Flat: no shadows, no gradients, square corners */
+  --ts-shadow: none;
+  --ts-recess: none;
+  --ts-bevel: none;
+  --ts-navbar-bg-image: none;
+  --ts-navbar-border-bottom: 3px solid var(--p-red);
+  --ts-navbar-shadow: 0 3px 0 0 var(--p-orange);
+  --ts-navbar-link-hover-shadow: inset 0 -3px 0 0 var(--p-orange);
+  /* Panel ornament: a red-over-orange bar at the top-left corner of a panel, in front of
+     it. It is drawn in two pieces that meet at the panel's left edge: the frame layer (behind
+     the panel, so only the 8px that juts out past the left edge shows) and the heading strip
+     (in front of the heading's background), 24px wide, which carries it onto the panel.
+     Both start 1px below the panel's top (inside its border), so they line up. A slimmer bar
+     at the bottom-right sits wholly below the panel's edge, in the gap before the next panel
+     (Bootstrap packs a panel group 5px apart), where nothing covers it. No heading marker:
+     it made a T with the top-left bar. */
+  --ts-frame-tl: linear-gradient(180deg, transparent 0, transparent 8px, var(--p-red) 8px, var(--p-red) 11px, var(--p-orange) 11px, var(--p-orange) 14px, transparent 14px);
+  --ts-heading-strip: linear-gradient(180deg, var(--p-red) 0, var(--p-red) 3px, var(--p-orange) 3px, var(--p-orange) 6px, transparent 6px);
+  --ts-heading-strip-size: 24px 100%;
+  --ts-heading-strip-position: left top;
+  --ts-frame-br: linear-gradient(0deg, transparent 0, transparent 3px, var(--p-red) 3px, var(--p-red) 5px, var(--p-orange) 5px, var(--p-orange) 7px, transparent 7px);
+  --ts-widget-frame-bl: linear-gradient(0deg, transparent 0, var(--p-red) 0, var(--p-red) 3px, var(--p-orange) 3px, var(--p-orange) 6px, transparent 6px);
+  --ts-navbar-strip-top: linear-gradient(90deg, var(--p-orange) 0, var(--p-orange) 160px, transparent 160px);
+  --ts-navbar-strip-top-size: 100% 3px;
+  --ts-widget-frame-br: linear-gradient(0deg, var(--p-red) 0, var(--p-red) 3px, var(--p-orange) 3px, var(--p-orange) 6px, transparent 6px);
+  --ts-widget-bar-bg: var(--p-tab-cover), var(--p-tab), var(--p-navy-raised);
+  --ts-progress: var(--p-orange);
+  --ts-navbar-dropdown-border: 1px solid var(--p-line-strong);
+  --ts-navbar-dropdown-border-top: 1px solid var(--p-line-strong);
+  --ts-navbar-dropdown-border-radius: 0;
+  --ts-panel-border: 1px solid var(--p-line);
+  --ts-panel-heading-border-bottom: 1px solid var(--p-line);
+  --ts-widget-border: 1px solid var(--p-line);
+  --ts-modal-border: 1px solid var(--p-line-strong);
+  --ts-modal-border-top: 3px solid var(--p-red);
+  --ts-modal-shadow: none;
+  --ts-alert-badge-border-radius: 0;
+  --ts-well-border-radius: 0;
+  --ts-well-border: 1px solid var(--p-line);
+  --ts-progress-glow-shadow: none;
+  --ts-alert-danger-shadow: none;
+  --ts-alert-info-shadow: none;
+  --ts-alert-success-shadow: none;
+  --ts-alert-warning-shadow: none;
+  --ts-alert-border-width: 1px 1px 1px 4px;
+
+  /* Tables */
+  --ts-table-border: var(--p-line);
+  --ts-table-head-bg: var(--p-navy-raised);
+  --ts-table-head-border-bottom: 2px solid var(--p-line-strong);
+  --ts-table-stripe-odd-bg: var(--p-navy);
+  --ts-table-stripe-even-bg: var(--p-deep);
+  --ts-table-row-hover-bg: var(--p-tint);
+  --ts-table-row-hover-shadow: inset 3px 0 0 0 var(--p-orange);
+  --ts-table-bg: var(--p-navy);
+
+  /* Controls: edges that carry meaning are the strong line */
+  --ts-input-bg: var(--p-deep);
+  --ts-input-border: 1px solid var(--p-line-strong);
+  --ts-input-border-top-color: var(--p-line-strong);
+  --ts-input-shadow: none;
+  --ts-input-focus-shadow: 0 0 0 2px var(--p-ink);
+  --ts-addon-border: var(--p-line-strong);
+  --ts-btn-default-border: var(--p-line-strong);
+  --ts-btn-default-hover-shadow: none;
+  --ts-btn-primary-bg: var(--p-fill);
+  --ts-btn-primary-border: var(--p-brand);
+  --ts-btn-primary-shadow: none;
+  --ts-btn-warning-shadow: none;
+  --ts-btn-hover-filter: brightness(1.12);
+  --ts-lnms-btn-primary-bg: var(--p-fill);
+  --ts-lnms-btn-primary-border: var(--p-brand);
+  --ts-pagemenu-active-shadow: inset 0 -3px 0 0 var(--p-orange);
+  --ts-tab-active-border: var(--p-line-strong);
+  --ts-tab-active-border-top: 3px solid var(--p-red);
+  --ts-tab-active-border-bottom-color: var(--p-navy);
+}

@@ -24,6 +24,11 @@ lnms theme-selector:validate my-skin.zip     # the upload page's checks, without
 A working starting point is `examples/minimal/` (20 values, nothing else) for a dark skin, or
 `examples/minimal-light/` for a light one.
 
+For a finished one, `examples/corpo-blue/` is a complete installable skin: a bundled font, a texture,
+panel and widget ornaments and a graph palette. `examples/corpo-blue.zip` is that folder packed with
+`scripts/pack-skin.py` (`python scripts/pack-skin.py examples/corpo-blue -o examples/corpo-blue.zip`),
+so you can upload it as it is.
+
 ## skin.json
 
 ```json

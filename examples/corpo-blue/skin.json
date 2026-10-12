@@ -1,0 +1,9 @@
+{
+  "id": "corpo-blue",
+  "name": "Corpo Blue",
+  "description": "Flat, square-cornered navy and white, set in Montserrat.",
+  "author": "XBLOssia",
+  "version": "1.9.3",
+  "license": "SIL OFL 1.1 (Montserrat)",
+  "modes": ["dark"]
+}

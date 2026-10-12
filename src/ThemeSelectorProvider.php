@@ -22,6 +22,9 @@ class ThemeSelectorProvider extends ServiceProvider
 {
     public const PLUGIN_NAME = 'ThemeSelector';
 
+    /** Where the plugin comes from: linked from its page, so anyone who uses it can find the source. */
+    public const PROJECT_URL = 'https://github.com/XBLOssia/librenms-theme-selector';
+
     public function register(): void
     {
         $root = dirname(__DIR__);

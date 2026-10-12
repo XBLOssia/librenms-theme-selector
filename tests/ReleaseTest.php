@@ -76,6 +76,14 @@ function test_release(): void
     T::ok('it never deletes or moves a tag', ! preg_match('/(tag -d|--delete|push[^\n]*--force|push[^\n]*:refs)/', $rel));
     T::ok('dependabot keeps the pinned actions current', str_contains($read('.github/dependabot.yml'), 'package-ecosystem: github-actions'));
 
+    T::group('the plugin page says where the plugin comes from');
+    $url = 'https://github.com/XBLOssia/librenms-theme-selector';
+    $provider = $read('src/ThemeSelectorProvider.php');
+    $view = $read('resources/views/picker.blade.php');
+    T::ok('the project URL is one constant, the address of the repository', str_contains($provider, "public const PROJECT_URL = '$url';"));
+    T::ok('the page links to it, in a new tab without handing over window.opener or the referrer', str_contains($view, '<a href="{{ $projectUrl }}" target="_blank" rel="noopener noreferrer">Theme Selector plugin by XBLOssia and Claude</a>'));
+    T::ok('the controller hands the view that constant and the installed version, escaped in the view', str_contains($read('src/Http/Controllers/PickerController.php'), "'projectUrl' => ThemeSelectorProvider::PROJECT_URL,") && str_contains($view, '{{ $version }}') && ! str_contains($view, '{!! $version'));
+
     T::group('the changelog');
     $log = $read('CHANGELOG.md');
     T::ok('it has an Unreleased section, first', (bool) preg_match('/^## \[Unreleased\]\n/m', $log));

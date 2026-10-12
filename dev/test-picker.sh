@@ -84,6 +84,7 @@ check "has a light-mode and a dark-mode dropdown, each with its own field" "$(ye
 check "and two preview frames" "$(yes_if "[ \"\$(printf '%s' \"\$PAGE\" | grep -c 'class=\"ts-iframe\"')\" = 2 ]")"
 check "there is no Preview button any more" "$(yes_if "! printf '%s' \"\$PAGE\" | grep -q 'id=\"ts-show\"'")"
 check "each dropdown offers instance default, stock and every bundled skin" "$(yes_if "for f in skin_light skin; do for id in '' none $BUNDLED_LINE; do printf '%s' \"\$PAGE\" | tr -d '\n' | tr -s ' ' | sed 's/<select/\n<select/g' | grep \"name=\\\"\$f\\\"\" | grep -q \"<option value=\\\"\$id\\\"\" || exit 1; done; done")"
+check "the page says where the plugin comes from, with a link to the project" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'href=\"https://github.com/XBLOssia/librenms-theme-selector\" target=\"_blank\" rel=\"noopener noreferrer\">Theme Selector plugin by XBLOssia and Claude</a>'")"
 check "a skin written for the other mode is labelled as such" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q '(written for dark)'")"
 check "the frames start on the visitor's own choices (stock, with no default set)" "$(yes_if "[ \"\$(printf '%s' \"\$PAGE\" | grep -c 'preview/none?mode=')\" -ge 4 ]")"
 check "a non-admin does not get the installed-skins list or the defaults" "$(yes_if "! printf '%s' \"\$PAGE\" | grep -q 'id=\"ts-skins\"' && ! printf '%s' \"\$PAGE\" | grep -q 'name=\"default_light\"'")"

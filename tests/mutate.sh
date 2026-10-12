@@ -294,6 +294,7 @@ run_with .github/workflows/nightly.yml "s#issues: write#contents: write#" "relea
 run_with scripts/release.sh 's#"completed success") ;;#"completed "*) ;;#' "release: tag a commit whose checks failed"
 run_with scripts/release.sh "s#for workflow in CI Integration#for workflow in CI#" "release: tag without the integration suites having passed"
 run_with scripts/release.sh 's#"\] - ") == 1#"") == 1#' "release: notes of 1.0.1 include 1.0.10"
+run_with resources/views/picker.blade.php 's# rel="noopener noreferrer">Theme Selector plugin#>Theme Selector plugin#' "credit: the project link hands over window.opener and the referrer"
 run_with src/PreviewGraph.php "s#\$suffix = \$mode === Modes::DARK ? '_dark' : '';#\$suffix = '_dark';#" "modes: a light graph is drawn from the dark chrome keys"
 run_with src/Skin/GraphConf.php "s#public const CHROME_KEYS = \['rrdgraph_def_text', 'rrdgraph_def_text_dark'\];#public const CHROME_KEYS = ['rrdgraph_def_text_dark'];#" "modes: graph.conf refuses the light chrome"
 

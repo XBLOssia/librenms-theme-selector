@@ -23,6 +23,7 @@ use Xblossia\ThemeSelector\SkinInjector;
 use Xblossia\ThemeSelector\SkinInstaller;
 use Xblossia\ThemeSelector\SkinRepository;
 use Xblossia\ThemeSelector\SkinResolver;
+use Xblossia\ThemeSelector\Status;
 use Xblossia\ThemeSelector\ThemeSelectorProvider;
 
 class PickerController extends Controller
@@ -55,6 +56,8 @@ class PickerController extends Controller
             'uploadsAvailable' => function_exists('inflate_init'),
             'uploadLimit' => intdiv(Limits::ARCHIVE_BYTES, 1024 * 1024),
             'phpLimit' => ini_get('upload_max_filesize'),
+            'projectUrl' => ThemeSelectorProvider::PROJECT_URL,
+            'version' => Status::installedVersion(),
         ]);
     }
 

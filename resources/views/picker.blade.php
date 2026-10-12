@@ -407,5 +407,8 @@
         </div>
     </div>
     @endcan
+    <p class="text-muted text-center" style="margin: 14px 0 6px">
+        <a href="{{ $projectUrl }}" target="_blank" rel="noopener noreferrer">Theme Selector plugin by XBLOssia and Claude</a>@if($version !== null) <span title="The installed version">&middot; {{ $version }}</span>@endif
+    </p>
 </div>
 @endsection

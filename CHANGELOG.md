@@ -19,6 +19,7 @@ The first release: what has been running in production, as a version a host can 
 - Seven bundled skins: **Terran**, **Protoss**, **Zerg**, **Digital Rain**, and **Clock Tower** in three
   moods, **Daylight** (light), **Lantern** and **Gotham** (dark). Fonts and textures are bundled; nothing
   is fetched from elsewhere.
+- The plugin page says who made the plugin and links to the project, with the installed version.
 - Light and dark mode: every user picks a skin for each mode, with a live preview on a sample page
   before applying; any skin can go in either slot. Admins set an instance default for each mode.
 - Skins can be uploaded by an administrator as a validated `.zip`; what is served is regenerated from a

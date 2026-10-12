@@ -32,11 +32,11 @@
 </style>
 
 <!-- THE SKIN: base.css, then the skin's token file, exactly as the plugin loads
-     them. Pick with ?skin=terran|protoss|zerg, or use the switcher.
+     them. Pick with ?skin=terran|ascended|organic, or use the switcher.
        ?skin=example    examples/minimal: the 20 core roles and nothing else
        ?skin=defaults   base.css alone, no token file -->
 <script>
-  var SKINS = ['terran', 'protoss', 'zerg'];
+  var SKINS = ['terran', 'ascended', 'organic'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'terran').toLowerCase();
   var special = skin === 'example' || skin === 'defaults';
   if (!special && SKINS.indexOf(skin) === -1) skin = 'terran';

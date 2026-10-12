@@ -98,11 +98,11 @@
 </style>
 
 <!-- THE SKIN: base.css, then the skin's token file, exactly as the plugin loads
-     them. Pick with ?skin=terran|protoss|zerg|digital-rain, or use the switcher; add &mode=light to see it in light mode.
+     them. Pick with ?skin=terran|ascended|organic|digital-rain, or use the switcher; add &mode=light to see it in light mode.
        ?skin=example    examples/minimal: the 20 core roles and nothing else
        ?skin=defaults   base.css alone, no token file -->
 <script>
-  var SKINS = ['terran', 'protoss', 'zerg', 'digital-rain', 'clock-tower-daylight', 'clock-tower-lantern', 'clock-tower-gotham', 'paisley-dawn', 'paisley-velvet'];
+  var SKINS = ['terran', 'ascended', 'organic', 'digital-rain', 'clock-tower-daylight', 'clock-tower-lantern', 'clock-tower-gotham', 'paisley-dawn', 'paisley-velvet'];
   // Bundled skins whose features.json asks for the ornament layer: the plugin marks their link data-ts-orn.
   var ORNAMENTS = ['digital-rain', 'clock-tower-daylight', 'clock-tower-lantern', 'clock-tower-gotham', 'paisley-dawn', 'paisley-velvet'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'terran').toLowerCase();
@@ -371,6 +371,16 @@ rrdcached ok</pre>
                ' widget-availability label-font-border">' + t + '</span></a>');
   }
   document.getElementById('avail-boxes').innerHTML = boxes.join('');
+</script>
+<script>
+  // ?fx=white-rabbit or ?fx=eye-of-providence plays that page effect once, now. (The plugin rolls them in PHP, on
+  // device pages only: one load in ten and one in twelve. Here they are wrapped as it wraps them, so the skin's
+  // palette variables reach them.)
+  (function () {
+    var fx = new URLSearchParams(location.search).get('fx');
+    if (['white-rabbit', 'eye-of-providence'].indexOf(fx) === -1) return;
+    document.body.insertAdjacentHTML('beforeend', '<div class="ts-fx-' + mode + '">' + fetchText('../resources/effects/' + fx + '.html') + '</div>');
+  })();
 </script>
 
 </body>

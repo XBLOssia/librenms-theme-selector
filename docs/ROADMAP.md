@@ -13,7 +13,7 @@ were rehearsed on a clean 26.9.1.1 on 2026-10-05 (`sh dev/test-update.sh`).
 
 ## Honest status
 
-Six skins (Terran, Protoss, Zerg, Digital Rain, and Clock Tower in a light and a dark mood) are complete,
+Six skins (Terran, Ascended, Organic, Digital Rain, and Clock Tower in a light and a dark mood) are complete,
 verified and installable. But "complete" means the
 application frame — navbar, panels, tables, buttons, forms, alerts, labels,
 tabs, modals. It does not mean every component.
@@ -68,7 +68,7 @@ Treat coverage as a floor, and the live audit as the actual test.
 
 ## Done — deployed and walked
 
-Zerg, Protoss and Terran have all run on a live production instance (the
+Organic, Ascended and Terran have all run on a live production instance (the
 LibreNMS commit the skins were built against was `63e0394`). It now runs as the
 Theme Selector plugin; see
 [DEPLOYMENT.md](DEPLOYMENT.md).
@@ -175,7 +175,7 @@ sitting on a skin that isn't that colour. That is how every skin shipped
 with `#2e3338` behind its tables: LibreNMS's `.dark table` and
 `.dark .table-responsive > .table` (specificity 0,1,1 and 0,3,0) paint it, and
 our rules set borders and text on `.table` but never a background. Terran's
-gunmetal hid it; Protoss's navy and Zerg's plum made it obvious. It was
+gunmetal hid it; Ascended's navy and Organic's plum made it obvious. It was
 reported from a production screenshot, not caught here, on 2026-09-29.
 
 `leaks.html` finds every place a stock rule still decides a background: on the
@@ -248,7 +248,7 @@ dark".
    **Paisley** (built 2026-10-12: Dawn for light mode, Velvet for dark, one template) is a second
    light and dark pair: purple-led, with its print computed in `scripts/make-paisley.py`. It uses
    one gradient per frame slot; see the note in that script's `corner()`.
-2. **Light variants of Terran, Protoss, Zerg and Digital Rain**, as sibling skins in a family each (the
+2. **Light variants of Terran, Ascended, Organic and Digital Rain**, as sibling skins in a family each (the
    same shapes and ornaments, a light palette); until then they are dark skins you can also put in
    the light slot.
 3. **A single zip carrying several skins** (a family in one upload: shared fonts and textures, one
@@ -290,8 +290,8 @@ can't, the gap is written down here so it can be closed later.
 
 | Bundled skin uses | Why uploads can't | Closing the gap |
 |---|---|---|
-| `features.json` `ornaments` (opt in to the ornament layer) | Not a gap: an upload always gets the layer. Listed because Terran, Protoss and Zerg still use their own structural tokens | Port the three older skins to the upload tokens, then drop the flag. See ORNAMENTS.md, "Roadmap to parity" |
-| `features.json` `effects` (the white rabbit: server-rolled markup) | Markup and a random roll are code, not tokens | Not as markup. A parity version would be a token-driven effect with fixed mechanics (a corner sprite from a declared texture, a chance and a duration within caps, rolled in PHP); it needs a design and a security review first |
+| `features.json` `ornaments` (opt in to the ornament layer) | Not a gap: an upload always gets the layer. Listed because Terran, Ascended and Organic still use their own structural tokens | Port the three older skins to the upload tokens, then drop the flag. See ORNAMENTS.md, "Roadmap to parity" |
+| `features.json` `effects` (the white rabbit, the eye of providence: server-rolled markup) | Markup and a random roll are code, not tokens | Not as markup. A parity version would be a token-driven effect with fixed mechanics (a corner sprite from a declared texture, a chance and a duration within caps, rolled in PHP); it needs a design and a security review first |
 | Structural animation tokens (`--ts-navbar-after-animation`, `--ts-alert-badge-animation`, ...) | `animation` and `filter` are structural except in the fixed shapes | Mostly covered in spirit by breathe, glow and the alert pulse; fold the rest in as fixed shapes when a skin needs them |
 | Generated content (`content:`) on the older bundled skins | `content` is structural: it could show text | None planned; use the ornament layers |
 

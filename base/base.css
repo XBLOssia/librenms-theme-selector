@@ -1625,21 +1625,27 @@ html.dark .table > thead > tr.danger > td, html.dark .table > tbody > tr.danger 
   color: var(--ts-text-bright);
   box-shadow: var(--ts-table-row-danger-shadow);
 }
+/* A hovered contextual row (and its links, labels and icons, which are written for a deep row) is the status
+ * colour mixed into the skin's ground, and its text the skin's bright text. It used to fill the cell with the
+ * status colour itself and set a fixed text colour, which was chosen for the original mid-tone palettes: on a
+ * light status colour (Velvet's mint, any skin's yellow) the links inside, still bright, were 1.4:1 to 2.3:1,
+ * and white text on a light danger colour was under 3:1. A mix is dark in a dark skin and pale in a light one,
+ * so the bright text reads on every skin, and every status. */
 html.dark .table-hover > tbody > tr.success:hover > td, html.dark .table-hover > tbody > tr:hover > td.success {
-  background-color: var(--ts-success);
-  color: #0b1408;
+  background-color: color-mix(in srgb, var(--ts-success) 45%, var(--ts-bg));
+  color: var(--ts-text-bright);
 }
 html.dark .table-hover > tbody > tr.info:hover > td, html.dark .table-hover > tbody > tr:hover > td.info {
-  background-color: var(--ts-info);
-  color: #06111c;
+  background-color: color-mix(in srgb, var(--ts-info) 45%, var(--ts-bg));
+  color: var(--ts-text-bright);
 }
 html.dark .table-hover > tbody > tr.warning:hover > td, html.dark .table-hover > tbody > tr:hover > td.warning {
-  background-color: var(--ts-warning);
-  color: #17100a;
+  background-color: color-mix(in srgb, var(--ts-warning) 45%, var(--ts-bg));
+  color: var(--ts-text-bright);
 }
 html.dark .table-hover > tbody > tr.danger:hover > td, html.dark .table-hover > tbody > tr:hover > td.danger {
-  background-color: var(--ts-danger);
-  color: #fff;
+  background-color: color-mix(in srgb, var(--ts-danger) 45%, var(--ts-bg));
+  color: var(--ts-text-bright);
 }
 html.dark .table > tbody > tr.success > td a, html.dark .table > tbody > tr.info > td a, html.dark .table > tbody > tr.warning > td a, html.dark .table > tbody > tr.danger > td a {
   color: var(--ts-text-bright);

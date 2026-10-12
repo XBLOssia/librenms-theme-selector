@@ -5,7 +5,7 @@
  * applies a skin's graph palette as the instance default would, and reports which port
  * keys were written and what the config table holds for them.
  *
- *   SKIN=protoss   apply protoss's palette
+ *   SKIN=ascended   apply ascended's palette
  *   SKIN=null      clear it (restores everything, erasing keys that had no override)
  */
 

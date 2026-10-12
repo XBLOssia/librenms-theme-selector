@@ -113,4 +113,39 @@ function test_effects(): void
     T::ok('it stays in the corner and below modals', str_contains($text, 'position:fixed;right:20px;bottom:20px') && str_contains($text, 'z-index:1000'));
     T::ok('it is hidden under reduced motion', str_contains($text, '@media (prefers-reduced-motion:reduce){.ts-white-rabbit{display:none}}'));
     T::ok('it fades in and out and finishes at no opacity', (bool) preg_match('/@keyframes ts-white-rabbit\{0%\{opacity:0;[^}]*\}12%\{opacity:1;[^}]*\}62%\{opacity:1;[^}]*\}100%\{opacity:0;[^}]*\}\}/', $text));
+
+    T::group('effects: the eye of providence');
+    $asked = [];
+    $roll = function (int $n) use (&$asked): int {
+        $asked[] = $n;
+
+        return 1;
+    };
+    $html = $effects->html(['eye-of-providence'], true, $roll);
+    T::ok('on a device page, on a lucky roll, it is added', str_contains($html, 'class="ts-eye"'));
+    T::ok('the roll is one in twelve', $asked === [12] && Effects::EYE_ONE_IN === 12);
+    $shown = 0;
+    for ($n = 1; $n <= 12; $n++) {
+        $shown += $effects->html(['eye-of-providence'], true, fn (int $max): int => $n) !== '' ? 1 : 0;
+    }
+    T::ok('of the twelve possible rolls exactly one shows it', $shown === 1, (string) $shown);
+    T::ok('not on a page that is not a device page', $effects->html(['eye-of-providence'], false, fn (int $n): int => 1) === '');
+    T::ok('not for a skin that did not ask, and not for one that asked only for the rabbit', $effects->html([], true, fn (int $n): int => 1) === '' && ! str_contains($effects->html(['white-rabbit'], true, fn (int $n): int => 1), 'ts-eye'));
+    T::ok('a skin that asks for the rabbit does not get the eye', ! str_contains($effects->html(['white-rabbit'], true, fn (int $n): int => 1), 'class="ts-eye"'));
+    T::ok('a missing file adds nothing and does not fail', (new Effects($dir . '/missing'))->html(['eye-of-providence'], true, fn (int $n): int => 1) === '');
+
+    $text = (string) file_get_contents("$dir/eye-of-providence.html");
+    T::ok('the markup is small', strlen($text) > 500 && strlen($text) < 4096, (string) strlen($text));
+    foreach (['<script', 'javascript:', 'http:', 'https:', '@import', 'url(', 'onload', 'onerror', 'onclick', '<a ', '<img', '<iframe', '<link', 'href', 'xlink', 'data:'] as $needle) {
+        T::ok("the markup has no $needle", ! str_contains(strtolower($text), $needle));
+    }
+    T::ok('it cannot be clicked, focused or read out', str_contains($text, 'pointer-events:none') && str_contains($text, 'aria-hidden="true"') && ! str_contains($text, 'tabindex'));
+    T::ok('it plays once, for five seconds, and stays gone', str_contains($text, 'animation:ts-eye 5s ease-in-out 1 forwards') && ! str_contains($text, 'infinite'));
+    T::ok('every animation in it plays once', substr_count($text, 'animation:') === substr_count($text, ' 1 forwards'), (string) substr_count($text, 'animation:'));
+    T::ok('it stays in the corner and below modals', str_contains($text, 'position:fixed;left:20px;bottom:20px') && str_contains($text, 'z-index:1000'));
+    T::ok('it is hidden under reduced motion', str_contains($text, '@media (prefers-reduced-motion:reduce){.ts-eye{display:none}}'));
+    T::ok('it fades in and out and finishes at no opacity', (bool) preg_match('/@keyframes ts-eye\{0%\{opacity:0;[^}]*\}10%\{opacity:1;[^}]*\}78%\{opacity:1;[^}]*\}100%\{opacity:0;[^}]*\}\}/', $text));
+    T::ok('its colours are the skin\'s own palette variables, each with a fallback, and nothing it could not have', preg_match_all('/var\((--[\w-]+)(,[^)]*)?\)/', $text, $vars, PREG_SET_ORDER) > 0
+        && array_diff(array_unique(array_column($vars, 1)), ['--p-glow', '--p-gold-hi', '--p-violet', '--p-violet-hi']) === []
+        && ! array_filter($vars, fn ($v) => ! isset($v[2]) || $v[2] === ''));
 }

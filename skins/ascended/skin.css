@@ -1,26 +1,26 @@
 @font-face {
-  font-family: "Protoss Chrome";
+  font-family: "Ascended Chrome";
   src: url("fonts/Cinzel-SemiBold.woff2") format("woff2");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Protoss Data";
+  font-family: "Ascended Data";
   src: url("fonts/Rajdhani-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Protoss Data";
+  font-family: "Ascended Data";
   src: url("fonts/Rajdhani-Bold.woff2") format("woff2");
   font-weight: 600 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Protoss Code";
+  font-family: "Ascended Code";
   src: url("fonts/SpaceMono-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
@@ -61,9 +61,9 @@ html.dark {
   --p-inset: inset 0 1px 0 rgba(255, 255, 255, .05), inset 0 -1px 0 rgba(0, 0, 0, .45);
   --p-facets: repeating-linear-gradient( 115deg, transparent 0 34px, rgba(63, 184, 245, .035) 34px 35px);
   --p-gold-leaf: linear-gradient( 180deg, var(--p-gold-bright) 0%, var(--p-gold) 42%, var(--p-gold-deep) 100%);
-  --p-font-chrome: "Protoss Chrome", "Cinzel", "Trajan Pro", "Optima", "Palatino Linotype", "Georgia", serif;
-  --p-font-data: "Protoss Data", "Rajdhani", "Exo 2", "Titillium Web", "Segoe UI", system-ui, sans-serif;
-  --p-font-code: "Protoss Code", "Space Mono", "JetBrains Mono", "Consolas", ui-monospace, monospace;
+  --p-font-chrome: "Ascended Chrome", "Cinzel", "Trajan Pro", "Optima", "Palatino Linotype", "Georgia", serif;
+  --p-font-data: "Ascended Data", "Rajdhani", "Exo 2", "Titillium Web", "Segoe UI", system-ui, sans-serif;
+  --p-font-code: "Ascended Code", "Space Mono", "JetBrains Mono", "Consolas", ui-monospace, monospace;
 
   --ts-root-font-family: var(--p-font-data);
   --ts-body-font-family: var(--p-font-data);

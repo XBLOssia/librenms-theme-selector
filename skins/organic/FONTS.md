@@ -1,4 +1,4 @@
-# Fonts — Zerg
+# Fonts — Organic
 
 **The fonts ship with the skin. There is nothing to install.**
 
@@ -31,7 +31,7 @@ was chosen over something more overtly alien.
 ## What ships
 
 ```
-skins/zerg/fonts/
+skins/organic/fonts/
   Metamorphous-Regular.woff2   22.6 KB
   ChakraPetch-Medium.woff2      9.7 KB
   ChakraPetch-Bold.woff2        9.7 KB
@@ -52,8 +52,8 @@ Regenerate reproducibly with `scripts/fetch-fonts.ps1`.
 
 ## The one deliberate restraint
 
-Zerg is the skin most tempting to overdo, and the temptation is typographic.
-There are fonts that look far more Zerg than Metamorphous —
+Organic is the skin most tempting to overdo, and the temptation is typographic.
+There are fonts that look far more Organic than Metamorphous —
 [Nosifer](https://fonts.google.com/specimen/Nosifer) drips,
 [Eater](https://fonts.google.com/specimen/Eater) is visibly fungal,
 [Creepster](https://fonts.google.com/specimen/Creepster) is pure B-movie.

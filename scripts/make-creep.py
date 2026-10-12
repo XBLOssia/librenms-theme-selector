@@ -1,4 +1,4 @@
-"""Generate skins/zerg/textures/creep.png: a seamless, tileable "creep" texture.
+"""Generate skins/organic/textures/creep.png: a seamless, tileable "creep" texture.
 
     python scripts/make-creep.py [out.png] [--preview]
 
@@ -8,7 +8,7 @@ the result is the same every time. It is a 256x256 tile that repeats without a
 seam, because every layer is periodic by construction (noise filtered in the
 frequency domain, and distortions sampled modulo the tile size).
 
-What it draws, in the Zerg palette: a dark, organic membrane (soft blotches of
+What it draws, in the Organic palette: a dark, organic membrane (soft blotches of
 plum), a network of fine veins (the zero-contours of a warped noise field, which
 always close up into cells and branches), and scattered small luminous nodes.
 It is mostly transparent so it sits on top of the skin's background gradients.
@@ -140,7 +140,7 @@ def seam_error(img):
 
 
 def main(argv):
-    out = next((a for a in argv if not a.startswith('--')), 'skins/zerg/textures/creep.png')
+    out = next((a for a in argv if not a.startswith('--')), 'skins/organic/textures/creep.png')
     img = build()
     edge, inner = seam_error(img)
     print(f'seam: {edge:.2f} across the wrap-around vs {inner:.2f} across an interior line (similar = seamless)')

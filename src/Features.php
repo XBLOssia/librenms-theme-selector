@@ -18,7 +18,7 @@ namespace Xblossia\ThemeSelector;
  */
 final class Features
 {
-    public const EFFECTS = ['white-rabbit'];
+    public const EFFECTS = ['white-rabbit', 'eye-of-providence'];
 
     /** @return array{ornaments: bool, effects: string[]} */
     public static function parse(?string $json): array

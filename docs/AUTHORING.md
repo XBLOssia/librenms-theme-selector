@@ -24,6 +24,11 @@ lnms theme-selector:validate my-skin.zip     # the upload page's checks, without
 A working starting point is `examples/minimal/` (20 values, nothing else) for a dark skin, or
 `examples/minimal-light/` for a light one.
 
+For a finished one, `examples/corpo-blue/` is a complete installable skin: a bundled font, a texture,
+panel and widget ornaments and a graph palette. `examples/corpo-blue.zip` is that folder packed with
+`scripts/pack-skin.py` (`python scripts/pack-skin.py examples/corpo-blue -o examples/corpo-blue.zip`),
+so you can upload it as it is.
+
 ## skin.json
 
 ```json
@@ -41,7 +46,7 @@ A working starting point is `examples/minimal/` (20 values, nothing else) for a 
 
 - `id` and `name` are required; `version` (if given) is three numbers like `1.2.0`. `id` is 1-63 characters: lowercase letters,
   digits and hyphens, not starting with a hyphen. It can't be one of the
-  bundled skins' ids (`terran`, `protoss`, `zerg`) or `none`, `default`, `base`
+  bundled skins' ids (`terran`, `ascended`, `organic`) or `none`, `default`, `base`
   and a few other reserved words. Uploading the same id again replaces the skin.
 - Text fields are plain text (they start with a letter or digit, then letters, digits, spaces
   and `. , _ ( ) ' + : / & -`; a `description` may also use `! ? ;`), up to 60 characters
@@ -179,7 +184,7 @@ html.dark {
 What is served is not your file: the plugin reads the PNG itself (no image library),
 checks every chunk, checksum and row, and writes a clean copy, which it embeds in the
 generated stylesheet as a `data:` URL. Nothing you upload is ever a file on the
-server. `docs/ORNAMENTS.md` has more on what a skin can draw; the bundled Zerg skin's
+server. `docs/ORNAMENTS.md` has more on what a skin can draw; the bundled Organic skin's
 `textures/creep.png` is a worked example, and `docs/TEXTURES.md` shows how the
 bundled tiles (plate, crystal, creep) are generated so that they repeat.
 
@@ -357,7 +362,7 @@ recolour the in and out series of `port_bits` and 19 other graph types. LibreNMS
 colours, so the plugin rewrites them just before the graph is drawn (see `docs/PLUGIN.md`); a skin
 that sets neither draws them in LibreNMS's stock green and lavender.
 
-`skins/zerg/graph.conf` is a full example. Each user's own graphs use their skin's palette for the
+`skins/organic/graph.conf` is a full example. Each user's own graphs use their skin's palette for the
 mode the graph is drawn in. **A skin colours the graphs of whichever mode it is put in**: a light skin
 sets the light chrome (`rrdgraph_def_text`, `rrdgraph_def_text_color`) and ramps that read on a light
 ground, a dark skin the `_dark` pair. A skin that sets only its own mode's chrome lends it to the other

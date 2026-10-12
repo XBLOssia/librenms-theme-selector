@@ -31,7 +31,7 @@ function test_fuzz(): void
 
     T::group("fuzz: token files ($rounds mutations)");
 
-    $seeds = [good_css(), (string) file_get_contents(__DIR__ . '/../skins/zerg/skin.css'), (string) file_get_contents(__DIR__ . '/../skins/terran/skin.css')];
+    $seeds = [good_css(), (string) file_get_contents(__DIR__ . '/../skins/organic/skin.css'), (string) file_get_contents(__DIR__ . '/../skins/terran/skin.css')];
     $bad = [
         'url(http://evil.example/x)', "url('//evil/x')", '@import "x";', '} body { display: none } html.dark {', '{', '}', ';', '\\75rl(x)', '\\', '/*', '*/',
         '!important', '<script>alert(1)</script>', 'javascript:alert(1)', 'expression(alert(1))', 'image-set(x)', "\0", "\xff\xfe", 'behavior:url(x)',

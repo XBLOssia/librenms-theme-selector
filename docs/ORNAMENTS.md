@@ -271,15 +271,15 @@ asks for it in `features.json`.
 
 | Bundled skin does this | With | Status |
 |---|---|---|
-| Corner brackets on panels (Protoss) | frame corner slots | Phase A. Behind the content, so a bracket over the heading is hidden by it; brackets drawn outside the frame or on the border show |
+| Corner brackets on panels (Ascended) | frame corner slots | Phase A. Behind the content, so a bracket over the heading is hidden by it; brackets drawn outside the frame or on the border show |
 | Bars that jut past a frame | frame corner and edge slots | Phase A |
 | Different radius per corner | `--ts-panel-radius-*` | Phase A |
 | Accent bar on a panel heading (all three) | the heading marker | Phase B, built |
 | Rivet / sheen row in a heading (Terran) | the heading strip | Phase B, built |
 | Glow or rivet strips on the navbar's top and bottom edge (all three) | the navbar strips (a glow is Phase D) | Phase B, built |
 | Frames on dashboard widgets | widget frame slots inside the widget's own edge (no overhang: LibreNMS gives widgets uneven gutters and scrolls their contents) | Phase B, built |
-| Cut (chamfered) corners on buttons, labels, badges (Protoss) | `--ts-btn-chamfer` and so on: sizes in px, used in a fixed `clip-path` polygon that base.css writes | Phase C, built for buttons, labels and badges. Panels and widgets are cut too (Phase E, a real clip) |
-| Animation: a breathing strip (Zerg), the alert badge pulse (all three) | breathe and alert pulse | Phase D, built. Zerg's badge also scales up 9%; an upload's pulse changes only the glow |
+| Cut (chamfered) corners on buttons, labels, badges (Ascended) | `--ts-btn-chamfer` and so on: sizes in px, used in a fixed `clip-path` polygon that base.css writes | Phase C, built for buttons, labels and badges. Panels and widgets are cut too (Phase E, a real clip) |
+| Animation: a breathing strip (Organic), the alert badge pulse (all three) | breathe and alert pulse | Phase D, built. Organic's badge also scales up 9%; an upload's pulse changes only the glow |
 | Page background (facets, glow) | already possible: `--ts-body-bg-image` takes gradients | done |
 | `hr` height, dropdown submenu offset | not ornaments | stay bundled-only |
 

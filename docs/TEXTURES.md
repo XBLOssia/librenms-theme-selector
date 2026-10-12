@@ -11,15 +11,15 @@ texture, and what the plugin checks, is in [AUTHORING.md](AUTHORING.md) and
 | Skin | Tile | Size | What it is | Script |
 |---|---|---|---|---|
 | Terran | `skins/terran/textures/plate.png` | 64 x 64 | Tread ("diamond") plate: raised lozenges in a 2 x 2 pattern of alternating 45 degree angles, lit from the top left | `scripts/make-textures.py plate` |
-| Protoss | `skins/protoss/textures/crystal.png` | 256 x 256 | Angular crystal facets, each a slightly different shade, with pale edges and a few gold ones | `scripts/make-textures.py crystal` |
-| Zerg | `skins/zerg/textures/creep.png` | 256 x 256 | Cellular tissue in plum and magenta with a network of veins and bright nodes | `scripts/make-creep.py` |
+| Ascended | `skins/ascended/textures/crystal.png` | 256 x 256 | Angular crystal facets, each a slightly different shade, with pale edges and a few gold ones | `scripts/make-textures.py crystal` |
+| Organic | `skins/organic/textures/creep.png` | 256 x 256 | Cellular tissue in plum and magenta with a network of veins and bright nodes | `scripts/make-creep.py` |
 | (example, not bundled) | `waves` | 256 x 128 | Faint ripples on water, for an uploaded skin to use | `scripts/make-textures.py waves` |
 
 ```
 python scripts/make-textures.py plate   skins/terran/textures/plate.png   --preview
-python scripts/make-textures.py crystal skins/protoss/textures/crystal.png --preview
+python scripts/make-textures.py crystal skins/ascended/textures/crystal.png --preview
 python scripts/make-textures.py waves   path/to/waves.png                  --preview
-python scripts/make-creep.py            skins/zerg/textures/creep.png      --preview
+python scripts/make-creep.py            skins/organic/textures/creep.png      --preview
 ```
 
 `--preview` also writes a 3 x 3 repetition beside the file, which is the quickest way

@@ -222,7 +222,11 @@ function test_ornaments(): void
         "$gate .badge-navbar-user.badge-danger" => [
             'animation: ts-glow var(--ts-alert-glow-period) ease-in-out infinite',
         ],
-        "$gate .panel::before, html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before, html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after, html.dark:has(link[data-ts-orn]) .navbar-default::before, html.dark:has(link[data-ts-orn]) .navbar-default::after, html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger" => [
+        // The Alerts state is an icon in the navbar toggle on LibreNMS master (the count badge is gone): the same glow.
+        "$gate .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger" => [
+            'animation: ts-glow var(--ts-alert-glow-period) ease-in-out infinite',
+        ],
+        "$gate .panel::before, html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before, html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after, html.dark:has(link[data-ts-orn]) .navbar-default::before, html.dark:has(link[data-ts-orn]) .navbar-default::after, html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger, html.dark:has(link[data-ts-orn]) .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger" => [
             'animation: none',
         ],
         "$gate .panel::after" => [
@@ -402,7 +406,7 @@ function test_ornaments(): void
             }
         }
     }
-    T::ok('five layers breathe and the alert badge pulses', count($animated) === 6, json_encode($animated));
+    T::ok('five layers breathe, and the alert badge and the alert icon pulse', count($animated) === 7, json_encode($animated));
     $reduced = [];
     if (preg_match('/@media \(prefers-reduced-motion: reduce\) \{\s*(html\.dark:has\(link\[data-ts-orn\]\)[^{}]*)\{\s*animation: none;\s*\}\s*\}/', $css, $mm)) {
         foreach (explode(',', $mm[1]) as $one) {

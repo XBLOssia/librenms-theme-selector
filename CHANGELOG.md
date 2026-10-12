@@ -12,12 +12,23 @@ that section into the next version's.
 ## [Unreleased]
 
 ### Skins
+- Updated for how LibreNMS master now looks (it has moved on since 26.9.1): the Alerts menu state is an
+  icon, not a count, and the skins' glow, pulse and danger colour now sit on it (Terran's LED, Protoss's
+  pulse, Zerg's swell, the ornament skins' glow); the new device page, filters, date picker, hover cards and
+  settings pages, which paint themselves with Tailwind's own greys, blues, greens, reds and ambers, follow
+  the skin's roles in dark and light mode; `.lnms-input` fields follow the skin; the light palette gains the
+  shades the new markup uses. Skins written for earlier LibreNMS releases are unaffected.
 - **Paisley**, a purple-led pair in one family: **Dawn** (light mode: lilac and white, peach and gold)
   and **Velvet** (dark mode: deep aubergine, white type, peach and gold trim). Soft corners (two long,
   two short) with a gold flourish at each, a lace scallop and a ribbon on every panel heading, a string
   of pearls along the navbar, and a faint computed paisley print behind the page. Inbound traffic on
   graphs is violet and outbound is peach. Both come from `scripts/make-paisley.py`, use the Playfair
   Display and Libre Baskerville files already in the package, and are valid as uploads.
+
+### Tooling
+- A weekly check of LibreNMS master for design changes (`scripts/upstream-drift.py`, the Upstream design check
+  workflow): one issue when something new needs an answer, closed when the skins have caught up.
+  See docs/UPSTREAM-DRIFT.md. `docs/PREVIEWING.md` says how to look at a skin before a release.
 
 ## [1.0.0] - 2026-10-09
 

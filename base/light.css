@@ -95,16 +95,22 @@ html:not(.dark) {
   --tw-color-red-100: color-mix(in srgb, var(--ts-danger) 14%, var(--ts-surface));
   --tw-color-red-200: color-mix(in srgb, var(--ts-danger) 24%, var(--ts-surface));
   --tw-color-red-300: color-mix(in srgb, var(--ts-danger) 50%, var(--ts-surface));
+  --tw-color-red-400: var(--ts-danger-text);
+  --tw-color-red-500: var(--ts-danger-text);
   --tw-color-red-600: var(--ts-danger-text);
   --tw-color-red-700: var(--ts-danger-text);
   --tw-color-red-800: var(--ts-danger-text);
   --tw-color-red-900: var(--ts-danger-text);
 
+  --tw-color-amber-50: color-mix(in srgb, var(--ts-warning) 8%, var(--ts-surface));
+  --tw-color-amber-300: color-mix(in srgb, var(--ts-warning) 50%, var(--ts-surface));
   --tw-color-amber-500: var(--ts-warning);
   --tw-color-amber-600: var(--ts-warning);
   --tw-color-amber-700: var(--ts-warning);
+  --tw-color-amber-800: var(--ts-warning);
   --tw-color-orange-400: var(--ts-warning);
   --tw-color-orange-600: var(--ts-warning);
+  --tw-color-yellow-100: color-mix(in srgb, var(--ts-warning) 14%, var(--ts-surface));
   --tw-color-yellow-600: var(--ts-warning);
 
   /* The map: left as LibreNMS draws it. (The dark base inverts and dims the tiles by default; a dark skin

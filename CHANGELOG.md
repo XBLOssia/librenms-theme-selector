@@ -11,6 +11,8 @@ that section into the next version's.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-12
+
 ### Skins
 - **Renamed** (display names and ids): Protoss is now **Ascended** (`ascended`) and Zerg is now **Organic**
   (`organic`), in line with how the other designs inspired by something are named. A new migration carries

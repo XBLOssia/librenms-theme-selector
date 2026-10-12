@@ -72,8 +72,11 @@ inr 'sed -i "/^INSTALL=/d" /opt/librenms/.env; cd /opt/librenms && git config --
 inl './lnms user:add --no-interaction -r admin -p "pw-$(date +%s)-clean" tester >/dev/null 2>&1'
 check "no plugin is installed" "$(yes_if '[ "$(nvendor)" = 0 ]')"
 
+# The scratch source is a clone of the repository, so it has the repository's real release tags (v1.1.0 and later). This
+# rehearsal makes its own v1.0.1, v1.1.0 and v2.0.0 below to see what a ^1.0 host takes, and a real tag of the same
+# name, or a newer real one, would change the answer: so the clone starts with none.
 section "a git source: main at an old commit, and this working tree as three later commits"
-inr "rm -rf /data/ts.git /data/work; git clone -q --bare /plugin /data/ts.git; git --git-dir=/data/ts.git update-ref refs/heads/main $OLD; git --git-dir=/data/ts.git symbolic-ref HEAD refs/heads/main; git clone -q /data/ts.git /data/work"
+inr "rm -rf /data/ts.git /data/work; git clone -q --bare /plugin /data/ts.git; git --git-dir=/data/ts.git for-each-ref --format='%(refname)' refs/tags | xargs -r -n1 git --git-dir=/data/ts.git update-ref -d; git --git-dir=/data/ts.git update-ref refs/heads/main $OLD; git --git-dir=/data/ts.git symbolic-ref HEAD refs/heads/main; git clone -q /data/ts.git /data/work"
 inr 'cd /data/work && git rm -rq . && tar -C /plugin --exclude=.git --exclude=.claude --exclude=__pycache__ -cf - . | tar -C /data/work -xf - && git add -A && git -c user.name=t -c user.email=t@example.test commit -q -m "this working tree" && git push -q /data/ts.git HEAD:refs/heads/next'
 inr 'cd /data/work && echo one > UPDATE_TEST.txt && git add -A && git -c user.name=t -c user.email=t@example.test commit -q -m "a later commit" && git push -q /data/ts.git HEAD:refs/heads/next2'
 inr 'cd /data/work && echo two > UPDATE_TEST.txt && git add -A && git -c user.name=t -c user.email=t@example.test commit -q -m "and another" && git push -q /data/ts.git HEAD:refs/heads/next3 && chown -R librenms:librenms /data/ts.git'
@@ -108,6 +111,7 @@ EXPECT="$(inr 'ls /opt/librenms/vendor/xblossia/librenms-theme-selector/database
 check "its new migration ran ($EXPECT in all)" "$(yes_if '[ "$(migs)" = "$EXPECT" ]')"
 check "a user's old choices now name the renamed skins (zerg is organic, protoss is ascended), per mode" "$(yes_if '[ "$(sql "select group_concat(value order by pref) from users_prefs where user_id = 1 and pref like \"theme_selector.skin%\"")" = "organic,ascended" ]')"
 check "and the instance default followed (protoss is ascended), the other one untouched" "$(yes_if '[ "$(sql "select group_concat(value order by name) from theme_selector_settings where name like \"default_skin%\"")" = "\"ascended\",\"terran\"" ]')"
+sql "delete from users_prefs where user_id = 1 and pref like 'theme_selector.skin%'; delete from theme_selector_settings where name like 'default_skin%'" >/dev/null
 check "LibreNMS rebuilt its route cache with the plugin in it" "$(yes_if '[ "$(routes theme-selector.preview)" = 1 ]')"
 check "it is still enabled and a page renders" "$(yes_if '[ "$(web)" = 200 ]')"
 check "the first page load published the light base stylesheet" "$(yes_if 'inr "test -f /opt/librenms/html/css/custom/theme-selector/base-light.css"')"

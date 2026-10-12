@@ -955,7 +955,7 @@ def graph_conf(p):
     lines = [
         f"# RRDtool graph colours for the {p['name']} skin.",
         '#',
-        '# Graph interiors are drawn on the server, so CSS cannot reach them; see skins/zerg/graph.conf for the long',
+        '# Graph interiors are drawn on the server, so CSS cannot reach them; see skins/organic/graph.conf for the long',
         '# explanation of the two kinds of key. A skin\'s palette applies in the mode the skin is written for, so this',
         f"# one sets the {'light' if light else 'dark'} chrome. Inbound is green and outbound is brass, which differ in hue and in",
         '# lightness, so they stay apart for anyone who cannot tell colours apart.',

@@ -79,7 +79,7 @@ admin saving settings there could persist one user's skin as global.
 ### Per-user preference
 
 `App\Models\UserPref` (`users_prefs` table) stores arbitrary per-user keys with
-no schema change: `UserPref::setPref($user, 'theme_selector.skin', 'zerg')`.
+no schema change: `UserPref::setPref($user, 'theme_selector.skin', 'organic')`.
 Values are JSON-decoded on read.
 
 **There is no hook for the Preferences page**, and its store action whitelists
@@ -180,7 +180,7 @@ host's nginx config has not been checked.
   LICENSE.txt      optional licence notice (stored, shown to admins, never served)
   textures/        optional .png tiles (cleaned and embedded; never served as files)
   graph.conf       optional graph palette (the format is docs/AUTHORING.md, "graph.conf")
-  features.json    BUNDLED skins only: {"ornaments": true, "effects": ["white-rabbit"]}
+  features.json    BUNDLED skins only: {"ornaments": true, "effects": ["white-rabbit"]} (or "eye-of-providence")
 ```
 
 `features.json` is read from the package by `SkinRepository::features()` (never from the web
@@ -188,9 +188,11 @@ root or an upload) and only for a bundled skin; `Features::parse` honours two ke
 rest. `ornaments` gives a bundled skin the ornament layer an upload always gets (the
 `data-ts-orn` mark on its stylesheet links). `effects` names fixed pieces of page markup in
 `resources/effects/` that `SkinInjector` pushes into the layout's `scripts` stack (`Effects`): today
-only `white-rabbit`, which Digital Rain uses. On one device-page load in ten (rolled in PHP) a
-small rabbit shows in the bottom-right corner for about a second and fades, by CSS animation
-alone, with no script and no request. An uploaded skin can ask for neither: the manifest refuses
+`white-rabbit`, which Digital Rain uses, and `eye-of-providence`, which the Paisley skins use. On one
+device-page load in ten (rolled in PHP) a small rabbit shows in the bottom-right corner for about a second
+and fades; on one in twelve a small eye in a triangle opens in the bottom-left corner, glances either way
+and fades after five seconds, in the skin's own gold and violet (the page's palette variables, each with a
+fallback). Both are CSS animation alone, with no script and no request, hidden under reduced motion. An uploaded skin can ask for neither: the manifest refuses
 the keys and the zip allowlist refuses the file. That difference is tracked in
 [ROADMAP.md](ROADMAP.md), "Bundled-only features".
 
@@ -285,7 +287,7 @@ sends a skin for *each* mode and lets the browser pick:
   graphs and the light default's for light ones; the series ramps are one set of keys for both and
   graphs nobody asked for in a mode (alert emails, the API) are drawn light, so where both defaults
   set ramps the light default's win.
-- **Effects** (the white rabbit) are wrapped per slot and hidden when the page is in the other mode.
+- **Effects** (the white rabbit, the eye of providence) are wrapped per slot and hidden when the page is in the other mode.
 - **Migration.** A `mode` and a `family` column on `theme_selector_skins` (`lnms migrate`, or
   nightly via `daily.sh`). Until it has run every skin is dark, and uploading a light skin is refused
   rather than recorded as dark.
@@ -363,7 +365,7 @@ src/
 routes/web.php
 resources/views/             the picker and admin page, and the preview's sample page
 resources/token-catalog.json which tokens exist / which uploads may set (generated)
-resources/effects/           reviewed page-effect markup (white-rabbit.html)
+resources/effects/           reviewed page-effect markup (white-rabbit.html, eye-of-providence.html)
 database/migrations/         settings and uploaded-skin tables
 base/base.css                the interpretation layer's stylesheet
 skins/<id>/                  bundled skins: skin.css, skin.json, graph.conf, fonts/, textures/
@@ -430,7 +432,7 @@ skin sets only what it changes. Defaults, by source:
 Tokens were renamed from generated names to `component-part-property`
 (`--ts-navbar-default-navbar-nav-li-a-hover-bg` → `--ts-navbar-link-hover-bg`).
 Every bundled-skin token equal to its default was dropped: Terran 207 tokens
-(12KB), Protoss 246 (15KB), Zerg 239 (16KB); `base.css` was 60KB with the
+(12KB), Ascended 246 (15KB), Organic 239 (16KB); `base.css` was 60KB with the
 defaults (about 90KB now). Both equivalence checks still pass with 0 differences.
 
 `docs/TOKENS.md` is the token reference, generated from `base.css` by
@@ -481,7 +483,7 @@ which `daily.sh` reinstalls from; check after the first nightly run). The old
 `install.sh`/`uninstall.sh` are deleted.
 
 **Found on production, fixed 2026-09-29: stock table backgrounds showing through
-Protoss and Zerg.** A production screenshot showed gray tables inside navy and
+Ascended and Organic.** A production screenshot showed gray tables inside navy and
 plum widgets. The gray was exactly `#2e3338`, LibreNMS's own dark surface, which
 appears in no skin palette, so it was a gap and not a design choice: stock's
 `.dark table` (0,1,1) and `.dark .table-responsive > .table` (0,3,0) paint
@@ -497,7 +499,7 @@ point above the stock ones, behind five new tokens (`table-bg`,
 `table-nested-bg`, `input-disabled-bg`, `input-disabled-fg`, and the existing
 `table-stripe-odd-bg` for BGP rows). Read-only inputs are now 4.7-5.7:1 in
 every skin; contextual cells 10:1 or better. The checker was confirmed to fail
-on the pre-fix stylesheet (21 leaks, 7 contrast failures for Zerg).
+on the pre-fix stylesheet (21 leaks, 7 contrast failures for Organic).
 
 Stock backgrounds that are legible and left alone, with reasons, are listed on
 `leaks.html`: active menu and list items (10-14:1), badges inside buttons and

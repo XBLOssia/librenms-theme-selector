@@ -74,7 +74,7 @@ PHPEOF
 }
 
 STOCK="D7FFC7 90B040 608720 E0E0FF 8080C0 606090"
-PROTOSS="9CF7DC 3AD6A8 218C6E FFE7A8 E3B341 95741F"
+ASCENDED="9CF7DC 3AD6A8 218C6E FFE7A8 E3B341 95741F"
 TERRAN="9CF2B4 46C96B 26823E FFD978 E0AA1E 926C12"
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 
@@ -85,25 +85,25 @@ check "the store reports itself recolourable" "$($D sh -c "cd /opt/librenms && g
 set_default ""
 echo "== per-user skins"
 choose dev-admin none;    svg dev-admin > "$T/none.svg"
-choose dev-admin protoss; svg dev-admin > "$T/protoss.svg"
+choose dev-admin ascended; svg dev-admin > "$T/ascended.svg"
 choose dev-admin terran;  svg dev-admin > "$T/terran.svg"
 check "stock: all six stock colours drawn" "$([ "$(has "$T/none.svg" $STOCK)" = 6 ] && echo ok || echo no)"
-check "stock: none of protoss's port colours" "$([ "$(has "$T/none.svg" $PROTOSS)" = 0 ] && echo ok || echo no)"
-check "protoss: all six of its port colours drawn" "$([ "$(has "$T/protoss.svg" $PROTOSS)" = 6 ] && echo ok || echo no)"
-check "protoss: none of the stock series colours left" "$([ "$(has "$T/protoss.svg" $STOCK)" = 0 ] && echo ok || echo no)"
+check "stock: none of ascended's port colours" "$([ "$(has "$T/none.svg" $ASCENDED)" = 0 ] && echo ok || echo no)"
+check "ascended: all six of its port colours drawn" "$([ "$(has "$T/ascended.svg" $ASCENDED)" = 6 ] && echo ok || echo no)"
+check "ascended: none of the stock series colours left" "$([ "$(has "$T/ascended.svg" $STOCK)" = 0 ] && echo ok || echo no)"
 check "terran: all six of its port colours drawn" "$([ "$(has "$T/terran.svg" $TERRAN)" = 6 ] && echo ok || echo no)"
-check "terran: none of protoss's" "$([ "$(has "$T/terran.svg" $PROTOSS)" = 0 ] && echo ok || echo no)"
+check "terran: none of ascended's" "$([ "$(has "$T/terran.svg" $ASCENDED)" = 0 ] && echo ok || echo no)"
 
 echo "== instance default"
-set_default protoss
+set_default ascended
 choose dev-admin none;  svg dev-admin > "$T/a.svg"
 choose dev-user "";     svg dev-user  > "$T/u.svg"
-check "a user who chose stock still gets stock under a protoss default" "$([ "$(has "$T/a.svg" $STOCK)" = 6 ] && echo ok || echo no)"
-check "a user following the default gets protoss's colours" "$([ "$(has "$T/u.svg" $PROTOSS)" = 6 ] && echo ok || echo no)"
+check "a user who chose stock still gets stock under a ascended default" "$([ "$(has "$T/a.svg" $STOCK)" = 6 ] && echo ok || echo no)"
+check "a user following the default gets ascended's colours" "$([ "$(has "$T/u.svg" $ASCENDED)" = 6 ] && echo ok || echo no)"
 echo "== outside a web request (alert emails and chat messages are drawn by the alert process)"
-cli_svg > "$T/cli-protoss.svg"
-check "a CLI process under a protoss default draws protoss's six colours" "$([ "$(has "$T/cli-protoss.svg" $PROTOSS)" = 6 ] && echo ok || echo no)"
-check "and none of the stock series colours" "$([ "$(has "$T/cli-protoss.svg" $STOCK)" = 0 ] && echo ok || echo no)"
+cli_svg > "$T/cli-ascended.svg"
+check "a CLI process under a ascended default draws ascended's six colours" "$([ "$(has "$T/cli-ascended.svg" $ASCENDED)" = 6 ] && echo ok || echo no)"
+check "and none of the stock series colours" "$([ "$(has "$T/cli-ascended.svg" $STOCK)" = 0 ] && echo ok || echo no)"
 set_default ""
 choose dev-admin ""
 cli_svg > "$T/cli-stock.svg"

@@ -1,7 +1,7 @@
 """Generate the other seamless background tiles: diamond plate, crystal, and water.
 
     python scripts/make-textures.py plate   skins/terran/textures/plate.png
-    python scripts/make-textures.py crystal skins/protoss/textures/crystal.png
+    python scripts/make-textures.py crystal skins/ascended/textures/crystal.png
     python scripts/make-textures.py waves   path/to/waves.png
     add --preview for a 3 x 3 repetition next to the file (plate-preview.png...)
 

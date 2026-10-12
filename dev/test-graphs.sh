@@ -91,15 +91,15 @@ post dev-admin /plugin/theme-selector/default "default_light="   # both modes st
 echo "== default: none (config holds stock)"
 STOCK_GREENS=$(cfg graph_colours.greens)
 for T in port_bits port_errors; do
-  choose dev-admin zerg;   ZERG=$(graph dev-admin $T)
-  choose dev-admin protoss; PROT=$(graph dev-admin $T)
+  choose dev-admin organic;   ORGANIC=$(graph dev-admin $T)
+  choose dev-admin ascended; PROT=$(graph dev-admin $T)
   choose dev-admin none;   NONE=$(graph dev-admin $T)
   choose dev-user "";      FOLLOW=$(graph dev-user $T)
-  echo "  $T: zerg=$ZERG protoss=$PROT stock=$NONE follow-default=$FOLLOW"
-  check "$T: zerg and protoss graphs differ" "$(differ "$ZERG" "$PROT")"
-  check "$T: a skin differs from stock" "$(differ "$ZERG" "$NONE")"
+  echo "  $T: organic=$ORGANIC ascended=$PROT stock=$NONE follow-default=$FOLLOW"
+  check "$T: organic and ascended graphs differ" "$(differ "$ORGANIC" "$PROT")"
+  check "$T: a skin differs from stock" "$(differ "$ORGANIC" "$NONE")"
   check "$T: a user following an empty default gets stock" "$(same "$FOLLOW" "$NONE")"
-  eval "Z_$T=$ZERG; N_$T=$NONE; P_$T=$PROT"
+  eval "Z_$T=$ORGANIC; N_$T=$NONE; P_$T=$PROT"
 done
 check "no leak: persistent greens unchanged after skin graph requests" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
 
@@ -107,18 +107,18 @@ echo "== default: terran (config now holds terran's palette)"
 set_default terran
 check "persistent config holds terran's palette" "$(differ "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
 for T in port_bits port_errors; do
-  choose dev-admin zerg;    ZERG2=$(graph dev-admin $T)
+  choose dev-admin organic;    ORGANIC2=$(graph dev-admin $T)
   choose dev-admin none;    NONE2=$(graph dev-admin $T)
   choose dev-user "";       TERR=$(graph dev-user $T)
   choose dev-admin terran;  TERR2=$(graph dev-admin $T)
-  ZERG_BEFORE=$(eval echo \$Z_$T); NONE_BEFORE=$(eval echo \$N_$T)
-  echo "  $T: zerg=$ZERG2 stock=$NONE2 follow-default=$TERR terran-chosen=$TERR2"
-  check "$T: zerg looks the same whatever the default is" "$(same "$ZERG2" "$ZERG_BEFORE")"
+  ORGANIC_BEFORE=$(eval echo \$Z_$T); NONE_BEFORE=$(eval echo \$N_$T)
+  echo "  $T: organic=$ORGANIC2 stock=$NONE2 follow-default=$TERR terran-chosen=$TERR2"
+  check "$T: organic looks the same whatever the default is" "$(same "$ORGANIC2" "$ORGANIC_BEFORE")"
   check "$T: explicit stock still gets stock graphs" "$(same "$NONE2" "$NONE_BEFORE")"
   check "$T: following the default equals choosing it" "$(same "$TERR" "$TERR2")"
-  check "$T: terran differs from zerg" "$(differ "$TERR" "$ZERG2")"
-  # order independence: a zerg request must not leave anything behind
-  choose dev-admin zerg; graph dev-admin "$T" >/dev/null
+  check "$T: terran differs from organic" "$(differ "$TERR" "$ORGANIC2")"
+  # order independence: a organic request must not leave anything behind
+  choose dev-admin organic; graph dev-admin "$T" >/dev/null
   AGAIN=$(graph dev-user $T)
   check "$T: another user's request afterwards is unaffected" "$(same "$AGAIN" "$TERR")"
 done
@@ -146,15 +146,15 @@ for T in port_bits port_errors; do
   L_PAPER=$(gstyle dev-admin $T light); D_WITH_LIGHT=$(gstyle dev-admin $T dark)
   post dev-admin /plugin/theme-selector "skin=paper-teal&skin_light=none"
   L_PAPER_DARKSLOT=$(gstyle dev-admin $T light); D_PAPER_DARKSLOT=$(gstyle dev-admin $T dark)
-  post dev-admin /plugin/theme-selector "skin=zerg&skin_light=zerg"
-  L_ZERG_LIGHTSLOT=$(gstyle dev-admin $T light); D_ZERG=$(gstyle dev-admin $T dark)
-  echo "  $T: light stock=$L_STOCK paper=$L_PAPER | dark stock=$D_STOCK zerg=$D_ZERG"
+  post dev-admin /plugin/theme-selector "skin=organic&skin_light=organic"
+  L_ORGANIC_LIGHTSLOT=$(gstyle dev-admin $T light); D_ORGANIC=$(gstyle dev-admin $T dark)
+  echo "  $T: light stock=$L_STOCK paper=$L_PAPER | dark stock=$D_STOCK organic=$D_ORGANIC"
   check "$T: a light skin in the light slot changes light graphs" "$(differ "$L_PAPER" "$L_STOCK")"
   check "$T: and leaves dark graphs alone (stock)" "$(same "$D_WITH_LIGHT" "$D_STOCK")"
   check "$T: a light skin in the dark slot colours dark graphs (its light chrome carries over, so the graphs match the page)" "$(differ "$D_PAPER_DARKSLOT" "$D_STOCK")"
   check "$T: ... and light graphs follow the light slot (empty here), so stock" "$(same "$L_PAPER_DARKSLOT" "$L_STOCK")"
-  check "$T: a dark skin in the light slot colours light graphs (its dark chrome carries over)" "$(differ "$L_ZERG_LIGHTSLOT" "$L_STOCK")"
-  check "$T: and in the dark slot it still changes dark graphs" "$(differ "$D_ZERG" "$D_STOCK")"
+  check "$T: a dark skin in the light slot colours light graphs (its dark chrome carries over)" "$(differ "$L_ORGANIC_LIGHTSLOT" "$L_STOCK")"
+  check "$T: and in the dark slot it still changes dark graphs" "$(differ "$D_ORGANIC" "$D_STOCK")"
 done
 check "no leak: persistent greens unchanged by light-mode requests" "$(same "$(cfg graph_colours.greens)" "$STOCK_GREENS")"
 set_default_light() { post dev-admin /plugin/theme-selector/default "default_light=$1"; }

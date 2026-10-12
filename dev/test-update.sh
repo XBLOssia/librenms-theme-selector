@@ -95,6 +95,10 @@ check "its migrations ran (four, at the old commit)" "$(yes_if '[ "$(migs)" = 4 
 check "the picker page is routed" "$(yes_if '[ "$(routes theme-selector.index)" = 1 ]')"
 check "the base stylesheet is published" "$(yes_if 'inr "test -f /opt/librenms/html/css/custom/theme-selector/base.css"')"
 
+section "choices made before a bundled skin was renamed"
+sql "insert into users_prefs (user_id, pref, value) values (1, 'theme_selector.skin', 'zerg'), (1, 'theme_selector.skin_light', 'protoss')" >/dev/null
+sql "insert into theme_selector_settings (name, value, created_at, updated_at) values ('default_skin', '\"protoss\"', now(), now()), ('default_skin_light', '\"terran\"', now(), now()) on duplicate key update value = values(value)" >/dev/null
+
 section "the nightly update: LibreNMS's daily.sh post-pull, main having moved"
 move_main "$NEXT"
 OUT="$(nightly)"
@@ -102,6 +106,8 @@ check "daily.sh's composer steps report OK" "$(yes_if 'echo "$OUT" | grep -q "Up
 check "the lock moved to the new commit" "$(yes_if '[ "$(locked)" = "$NEXT" ]')"
 EXPECT="$(inr 'ls /opt/librenms/vendor/xblossia/librenms-theme-selector/database/migrations | wc -l')"
 check "its new migration ran ($EXPECT in all)" "$(yes_if '[ "$(migs)" = "$EXPECT" ]')"
+check "a user's old choices now name the renamed skins (zerg is organic, protoss is ascended), per mode" "$(yes_if '[ "$(sql "select group_concat(value order by pref) from users_prefs where user_id = 1 and pref like \"theme_selector.skin%\"")" = "organic,ascended" ]')"
+check "and the instance default followed (protoss is ascended), the other one untouched" "$(yes_if '[ "$(sql "select group_concat(value order by name) from theme_selector_settings where name like \"default_skin%\"")" = "\"ascended\",\"terran\"" ]')"
 check "LibreNMS rebuilt its route cache with the plugin in it" "$(yes_if '[ "$(routes theme-selector.preview)" = 1 ]')"
 check "it is still enabled and a page renders" "$(yes_if '[ "$(web)" = 200 ]')"
 check "the first page load published the light base stylesheet" "$(yes_if 'inr "test -f /opt/librenms/html/css/custom/theme-selector/base-light.css"')"
@@ -196,7 +202,7 @@ check "and passes again once they are put back" "$(yes_if "[ $rc = 0 ]")"
 
 section "uninstall (the steps in docs/DEPLOYMENT.md)"
 inl "php artisan tinker --execute='\$d = app(Xblossia\\ThemeSelector\\DefaultSkin::class); \$d->set(\"terran\", \"dark\"); \$d->set(\"clock-tower-daylight\", \"light\");' >/dev/null 2>&1"
-sql "insert into users_prefs (user_id, pref, value) values (1, 'theme_selector.skin', 'zerg'), (1, 'theme_selector.skin_light', 'clock-tower-daylight')" >/dev/null
+sql "insert into users_prefs (user_id, pref, value) values (1, 'theme_selector.skin', 'organic'), (1, 'theme_selector.skin_light', 'clock-tower-daylight')" >/dev/null
 check "defaults for both modes write graph colours" "$(yes_if '[ "$(cfgrows)" -gt 0 ]')"
 inl "php artisan tinker --execute='\$d = app(Xblossia\\ThemeSelector\\DefaultSkin::class); \$d->set(null, \"dark\"); \$d->set(null, \"light\");' >/dev/null 2>&1"
 check "clearing both restores them (none left)" "$(yes_if '[ "$(cfgrows)" = 0 ]')"

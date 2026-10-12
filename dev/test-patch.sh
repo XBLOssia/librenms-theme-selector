@@ -174,15 +174,15 @@ if docker exec "$APP" true >/dev/null 2>&1; then
     docker exec "$APP" sh -c "cd /opt/librenms && gosu librenms env SKIN='$1' php artisan tinker --execute=\"require '/tmp/probe-palette.php';\"" 2>&1 | grep '^PROBE '
   }
   probe null > /dev/null
-  out="$(probe protoss)"
+  out="$(probe ascended)"
   check "with a stock helper, both keys are written too: RecolouringRrd is what honours them" "$(yes_if "printf '%s' '$out' | grep -q '\"port_applied\":\[\"graph_colours.port_in\",\"graph_colours.port_out\"\]' && printf '%s' '$out' | grep -q '9CF7DC'")"
   probe null > /dev/null
 
   mkrepo; P apply --wrapped >/dev/null 2>&1
   docker cp "$C/$HELPER" "$APP:/opt/librenms/$HELPER" >/dev/null 2>&1
-  out="$(probe protoss)"
+  out="$(probe ascended)"
   check "with the patched helper, both keys are written, though LibreNMS does not declare them" "$(yes_if "printf '%s' '$out' | grep -q '\"port_applied\":\[\"graph_colours.port_in\",\"graph_colours.port_out\"\]'")"
-  check "and the config table holds protoss's ramps" "$(yes_if "printf '%s' '$out' | grep -q '9CF7DC' && printf '%s' '$out' | grep -q 'FFE7A8'")"
+  check "and the config table holds ascended's ramps" "$(yes_if "printf '%s' '$out' | grep -q '9CF7DC' && printf '%s' '$out' | grep -q 'FFE7A8'")"
   out="$(probe null)"
   check "clearing the default erases them again (they had no override before)" "$(yes_if "printf '%s' '$out' | grep -q '\"rows\":\[\]'")"
 

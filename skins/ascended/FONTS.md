@@ -1,4 +1,4 @@
-# Fonts — Protoss
+# Fonts — Ascended
 
 **The fonts ship with the skin. There is nothing to install.**
 
@@ -15,12 +15,12 @@ needed it](#why-this-one-needed-it).
 
 | Token | Face | Role | Applied to |
 |---|---|---|---|
-| `--p-font-chrome` | Cinzel 600 | Carved ceremonial capitals — the Khalai-inscription voice | Navbar, panel headers, table **headers**, buttons, tabs |
+| `--p-font-chrome` | Cinzel 600 | Carved ceremonial capitals — the voice of an inscription | Navbar, panel headers, table **headers**, buttons, tabs |
 | `--p-font-data` | Rajdhani 500/700 | Futuristic but readable | Device hostnames, table **body cells**, labels, badges, inputs |
 | `--p-font-code` | Space Mono 400 | Monospace | `pre` / `code` only |
 
-The design intent is a deliberate collision: Protoss are simultaneously ancient
-and hyper-advanced, so the frame is carved-stone Roman capitals and the data is
+The design intent is a deliberate collision: something at once ancient and
+hyper-advanced, so the frame is carved-stone Roman capitals and the data is
 clean technical sans. That contrast *is* the skin.
 
 ---
@@ -28,7 +28,7 @@ clean technical sans. That contrast *is* the skin.
 ## What ships
 
 ```
-skins/protoss/fonts/
+skins/ascended/fonts/
   Cinzel-SemiBold.woff2     14.8 KB
   Rajdhani-Medium.woff2     14.7 KB
   Rajdhani-Bold.woff2       15.3 KB
@@ -59,7 +59,7 @@ widths mean the font is absent — showed:
 | `Rajdhani` | `Segoe UI` | **Fatal.** An ordinary UI sans. All the futurism gone. |
 | `Space Mono` | generic mono | Fine. Small surface. |
 
-The frame survived; the data did not. On fallbacks alone Protoss was a blue and
+The frame survived; the data did not. On fallbacks alone Ascended was a blue and
 gold repaint of the default theme. Bundling is what makes it the skin.
 
 Early screenshots in this repo's history were captured before the fonts were

@@ -1,4 +1,4 @@
-# Textures — Zerg
+# Textures — Organic
 
 `textures/creep.png` is the creep: a seamless 256 x 256 tile of cellular tissue in
 plum and magenta, tiled across the page background behind the soft blotches that
@@ -12,8 +12,8 @@ the picture is the output of the script in this repository, and running the scri
 again gives the same file. Every layer is periodic, so the tile has no seam.
 
 ```
-python scripts/make-creep.py skins/zerg/textures/creep.png            # rewrite the tile
-python scripts/make-creep.py skins/zerg/textures/creep.png --preview  # and a 3 x 3 preview
+python scripts/make-creep.py skins/organic/textures/creep.png            # rewrite the tile
+python scripts/make-creep.py skins/organic/textures/creep.png --preview  # and a 3 x 3 preview
 ```
 
 (Needs numpy and Pillow; development only.) The tile is saved as an indexed PNG with

@@ -260,7 +260,7 @@ function test_bundled(): void
 {
     T::group('the bundled skins pass through the same pipeline');
     $compiler = new SkinCompiler(catalog());
-    foreach (['terran', 'protoss', 'zerg'] as $id) {
+    foreach (['terran', 'ascended', 'organic'] as $id) {
         $r = new Report();
         $c = $compiler->compileFiles(skin_files($id), $r, Mode::Bundled);
         T::ok("$id compiles in bundled mode", $c !== null, implode(' | ', array_slice($r->errors(), 0, 6)));
@@ -327,4 +327,25 @@ function test_bundled(): void
     $bad = ZipBuilder::write(ZipBuilder::build([['name' => '../skin.css', 'data' => good_css()], ['name' => 'skin.json', 'data' => good_manifest()]]));
     T::ok('a zip with a traversal name is refused before anything is compiled', $compiler->compileZip($bad, $r) === null && stripos(implode(' ', $r->errors()), 'not allowed') !== false);
     @unlink($bad);
+}
+
+/*
+ * A hovered contextual row (success, info, warning, danger). It used to fill the cell with the status colour itself and
+ * set a fixed text colour, while the links inside stayed the skin's bright text: on a light status colour (a mint, a
+ * yellow) that was 1.4:1 to 2.3:1 on every dark skin. Now the cell is the status colour mixed into the skin's ground and
+ * its text the skin's bright text, which is what the links, labels and icons inside a contextual row are written for.
+ */
+function test_contextual_rows(): void
+{
+    T::group('contextual rows: a hovered row keeps its contrast');
+    $css = (string) file_get_contents(__DIR__ . '/../base/base.css');
+    foreach (['success', 'info', 'warning', 'danger'] as $status) {
+        $found = preg_match('/html\.dark \.table-hover > tbody > tr\.' . $status . ':hover > td[^{]*\{([^}]*)\}/', $css, $m) === 1;
+        $body = $found ? preg_replace('/\s+/', ' ', $m[1]) : '';
+        T::ok("a hovered $status row is the status colour mixed into the ground, with the skin's bright text", $found
+            && str_contains($body, "background-color: color-mix(in srgb, var(--ts-$status) 45%, var(--ts-bg));")
+            && str_contains($body, 'color: var(--ts-text-bright);'), $body);
+    }
+    T::ok('no hovered contextual row sets a fixed text colour (a fixed one is right on one palette and wrong on the next)', ! preg_match('/tr\.(success|info|warning|danger):hover > td[^{]*\{[^}]*\bcolor: #/', $css));
+    T::ok('the links in a contextual row are the skin\'s bright text, the colour the hovered cell now keeps', (bool) preg_match('/tr\.success > td a[^{]*\{[^}]*color: var\(--ts-text-bright\);/', $css));
 }

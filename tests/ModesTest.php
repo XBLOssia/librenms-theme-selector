@@ -441,7 +441,7 @@ function test_paisley(): void
         $skins[$name] = [$skin, $files];
         T::ok("paisley-$name is written for $mode mode and is in the Paisley family", $skin->manifest['mode'] === $mode && $skin->manifest['family'] === 'Paisley' && $skin->manifest['id'] === "paisley-$name");
         T::ok("paisley-$name has the paisley texture and a graph palette", count($skin->textures) === 1 && $skin->textures[0]['name'] === 'paisley' && $skin->graph !== []);
-        T::ok("paisley-$name asks for the ornament layer (features.json)", Features::parse((string) file_get_contents("$dir/features.json")) === ['ornaments' => true, 'effects' => []]);
+        T::ok("paisley-$name asks for the ornament layer and the eye of providence (features.json)", Features::parse((string) file_get_contents("$dir/features.json")) === ['ornaments' => true, 'effects' => ['eye-of-providence']]);
         $chrome = $mode === 'light' ? ['rrdgraph_def_text', 'rrdgraph_def_text_color'] : ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'];
         $other = $mode === 'light' ? ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'] : ['rrdgraph_def_text', 'rrdgraph_def_text_color'];
         T::ok("paisley-$name's graph palette has its own mode's chrome, the ramps and the port series, and not the other mode's chrome",

@@ -367,7 +367,7 @@ function test_ornaments(): void
             T::ok("--ts-$e-chamfer$k defaults to initial, so an unchamfered control has no clip-path (and keeps its focus ring)", str_contains($base, "  --ts-$e-chamfer$k: initial;\n"));
         }
     }
-    css_good('Protoss-style cuts: top-left and bottom-right', dark('--ts-bg: #000;', '--ts-btn-chamfer: 0px;', '--ts-btn-chamfer-tl: 8px;', '--ts-btn-chamfer-br: 8px;', '--ts-label-chamfer: 5px;', '--ts-badge-chamfer: 5px;'));
+    css_good('Ascended-style cuts: top-left and bottom-right', dark('--ts-bg: #000;', '--ts-btn-chamfer: 0px;', '--ts-btn-chamfer-tl: 8px;', '--ts-btn-chamfer-br: 8px;', '--ts-label-chamfer: 5px;', '--ts-badge-chamfer: 5px;'));
     css_good('every corner of a button at the cap', dark('--ts-bg: #000;', '--ts-btn-chamfer-tl: 10px;', '--ts-btn-chamfer-tr: 10px;', '--ts-btn-chamfer-br: 10px;', '--ts-btn-chamfer-bl: 10px;'));
     css_good('a 60 degree cut on the bottom-left of buttons, labels and badges', dark('--ts-bg: #000;',
         '--ts-btn-chamfer: 0px;', '--ts-btn-chamfer-bl: 8px;', '--ts-btn-chamfer-rise: 1.732;',
@@ -563,7 +563,7 @@ function test_ornaments(): void
     }
 
     T::group('ornaments: the first three bundled skins are untouched');
-    foreach (['terran', 'protoss', 'zerg'] as $id) {
+    foreach (['terran', 'ascended', 'organic'] as $id) {
         $text = (string) file_get_contents(__DIR__ . "/../skins/$id/skin.css");
         T::ok("$id sets no frame token", ! str_contains($text, '--ts-frame-') && ! str_contains($text, '--ts-panel-radius-'));
     }

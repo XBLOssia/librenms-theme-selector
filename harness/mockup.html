@@ -98,11 +98,11 @@
 </style>
 
 <!-- THE SKIN: base.css, then the skin's token file, exactly as the plugin loads
-     them. Pick with ?skin=terran|protoss|zerg|digital-rain, or use the switcher; add &mode=light to see it in light mode.
+     them. Pick with ?skin=terran|ascended|organic|digital-rain, or use the switcher; add &mode=light to see it in light mode.
        ?skin=example    examples/minimal: the 20 core roles and nothing else
        ?skin=defaults   base.css alone, no token file -->
 <script>
-  var SKINS = ['terran', 'protoss', 'zerg', 'digital-rain', 'clock-tower-daylight', 'clock-tower-lantern', 'clock-tower-gotham', 'paisley-dawn', 'paisley-velvet'];
+  var SKINS = ['terran', 'ascended', 'organic', 'digital-rain', 'clock-tower-daylight', 'clock-tower-lantern', 'clock-tower-gotham', 'paisley-dawn', 'paisley-velvet'];
   // Bundled skins whose features.json asks for the ornament layer: the plugin marks their link data-ts-orn.
   var ORNAMENTS = ['digital-rain', 'clock-tower-daylight', 'clock-tower-lantern', 'clock-tower-gotham', 'paisley-dawn', 'paisley-velvet'];
   var skin = (new URLSearchParams(location.search).get('skin') || 'terran').toLowerCase();

@@ -3,7 +3,7 @@
 Skins for [LibreNMS](https://github.com/librenms/librenms): three StarCraft-inspired ones, a green-phosphor "digital rain", a
 clock tower in three moods (one light, two dark), and a purple paisley pair (one light, one dark).
 
-Nine skins in seven designs: **Terran**, **Protoss**, **Zerg**, **Digital Rain**, **Clock Tower** in three
+Nine skins in seven designs: **Terran**, **Ascended**, **Organic**, **Digital Rain**, **Clock Tower** in three
 moods: **Daylight** (light mode), **Lantern** (dark mode, lit from inside) and **Gotham** (dark mode, the
 great clock at night), and **Paisley** in two: **Dawn** (light mode) and **Velvet** (dark mode).
 
@@ -32,8 +32,8 @@ asset ports.
 | Skin | Geometry | Palette | Type |
 |---|---|---|---|
 | **Terran** | Square, riveted, symmetric | Gunmetal + hazard yellow, red LEDs, green phosphor | Saira Condensed + JetBrains Mono |
-| **Protoss** | Chamfered, gold-bracketed | Void blue + keratinous gold, psionic flame | Cinzel + Rajdhani |
-| **Zerg** | Asymmetric, grown, uneven | Creep purple + bone, ichor green, ember orange | Metamorphous + Chakra Petch |
+| **Ascended** | Chamfered, gold-bracketed | Void blue + keratinous gold, psionic flame | Cinzel + Rajdhani |
+| **Organic** | Asymmetric, grown, uneven | Plum purple + bone, ichor green, ember orange | Metamorphous + Chakra Petch |
 | **Digital Rain** | Square, torn corners, scanlined | Phosphor green on black, amber and red for alarms | System monospace (Share Tech Mono when installed) |
 | **Clock Tower Daylight** (light) | Double-ruled, leaf-cornered, gilt-bracketed | Parchment, walnut and brass | Playfair Display + Libre Baskerville |
 | **Clock Tower Lantern** (dark) | The same room at night | Umber, candle cream, amber glow | The same |
@@ -41,7 +41,7 @@ asset ports.
 | **Paisley Dawn** (light) | Two long corners, two short, gilt flourishes, lace headings | Lilac and white, peach and gold | Playfair Display + Libre Baskerville |
 | **Paisley Velvet** (dark) | The same, by night | Deep aubergine, white type, peach and gold trim | The same |
 
-Terran, Protoss and Zerg were installed and verified on a production instance (2026-09-29); Digital Rain and the Clock Tower skins have since been installed there too, and had their light/dark and map fixes checked against it.
+Terran, Ascended and Organic were installed and verified on a production instance (2026-09-29); Digital Rain and the Clock Tower skins have since been installed there too, and had their light/dark and map fixes checked against it.
 They cover **92 of 92** components LibreNMS's dark theme styles, and **179 of 218** once
 you also count the `styles.css` classes the dark theme never touches — most of
 the remainder being dead Observium-era classes. A full survey of
@@ -54,7 +54,7 @@ the remainder being dead Observium-era classes. A full survey of
 
 Coverage counts selectors answered, not whether it looks right — and it does
 not count the inline `tw:` utilities at all, which is where several real bugs
-lived. The real test is [the live audit](#auditing-a-live-instance), which Terran, Protoss, Zerg, Digital Rain and Clock
+lived. The real test is [the live audit](#auditing-a-live-instance), which Terran, Ascended, Organic, Digital Rain and Clock
 Tower Lantern and Gotham pass with zero findings on `/`, `/devices`, `/alert-rules`,
 `/eventlog` and a device's graph page, and Clock Tower Daylight passes in light mode with one (the disabled
 pagination arrows on `/devices`, at 4.0:1). (Re-run on 2026-10-03 against a stock
@@ -80,17 +80,17 @@ floor. Square and riveted.
 
 ![The Terran skin on a LibreNMS dashboard](docs/img/dashboard-terran.png)
 
-### Protoss
+### Ascended
 Void blue and keratinous gold, chamfered corners, psionic teal, over crystal
 facets.
 
-![The Protoss skin on a LibreNMS dashboard](docs/img/dashboard-protoss.png)
+![The Ascended skin on a LibreNMS dashboard](docs/img/dashboard-ascended.png)
 
-### Zerg
+### Organic
 Creep purple and bone, acid green against ember and magenta, on veined creep.
 Asymmetric, uneven, grown rather than built.
 
-![The Zerg skin on a LibreNMS dashboard](docs/img/dashboard-zerg.png)
+![The Organic skin on a LibreNMS dashboard](docs/img/dashboard-organic.png)
 
 ### Digital Rain
 Phosphor green on black, a faint scanline over everything, monospace type with a red and cyan
@@ -145,6 +145,7 @@ Clock Tower skins use. Both are generated from one template by
 [scripts/make-paisley.py](scripts/make-paisley.py), which also checks that every text colour is at least
 4.5:1 on its ground, and each is valid as an upload. They are an original design in the colours and mood of
 mid-1980s pop; nothing in them is copied from anyone's artwork, and none of the names refers to anyone.
+Now and then, on a device page, an eye in a triangle opens in the bottom-left corner, glances either way and is gone.
 
 ![The Paisley Dawn skin on a LibreNMS dashboard](docs/img/dashboard-paisley-dawn.png)
 
@@ -259,7 +260,7 @@ text, accent, status colours, fonts, radius) are enough for a complete skin;
 full list with defaults is [docs/TOKENS.md](docs/TOKENS.md).
 
 The bundled skins set far more: [terran](skins/terran/skin.css) ·
-[protoss](skins/protoss/skin.css) · [zerg](skins/zerg/skin.css) ·
+[ascended](skins/ascended/skin.css) · [organic](skins/organic/skin.css) ·
 [digital-rain](skins/digital-rain/skin.css) ·
 [clock-tower-daylight](skins/clock-tower-daylight/skin.css) ·
 [clock-tower-lantern](skins/clock-tower-lantern/skin.css) ·
@@ -276,17 +277,17 @@ navbar, panel headers, table headers, buttons — and `--p-font-data`
 labels and badges. Body cells also get tabular figures so uptimes and counters
 align down the column.
 
-Protoss uses the same split, but louder: carved ceremonial capitals for the
-frame against a clean futuristic sans for the data. Zerg puts a gnarled organic
+Ascended uses the same split, but louder: carved ceremonial capitals for the
+frame against a clean futuristic sans for the data. Organic puts a gnarled, grown
 display face on the frame and keeps a readable angular sans on the data — the
 weirdness lives in the geometry instead, which is what keeps it usable.
 
-Terran, Protoss, Zerg, all three Clock Tower skins and both Paisley skins bundle their faces, so this works with no setup and no external
+Terran, Ascended, Organic, all three Clock Tower skins and both Paisley skins bundle their faces, so this works with no setup and no external
 requests — which matters on an air-gapped NOC box, where a Google Fonts
 `@import` would silently degrade exactly where it is least convenient to
 debug. Details, sizes, licensing and how to swap a face:
-[terran](skins/terran/FONTS.md) · [protoss](skins/protoss/FONTS.md) ·
-[zerg](skins/zerg/FONTS.md) · [clock tower](skins/clock-tower-daylight/FONTS.md) · [paisley](skins/paisley-dawn/FONTS.md). Digital Rain asks for Share Tech Mono and falls back to the
+[terran](skins/terran/FONTS.md) · [ascended](skins/ascended/FONTS.md) ·
+[organic](skins/organic/FONTS.md) · [clock tower](skins/clock-tower-daylight/FONTS.md) · [paisley](skins/paisley-dawn/FONTS.md). Digital Rain asks for Share Tech Mono and falls back to the
 system monospace until that font is bundled.
 
 ---
@@ -341,7 +342,7 @@ python -m http.server 8777
 # then open http://localhost:8777/harness/
 ```
 
-Switch skins with `?skin=terran` / `?skin=protoss` / `?skin=zerg` / `?skin=digital-rain` /
+Switch skins with `?skin=terran` / `?skin=ascended` / `?skin=organic` / `?skin=digital-rain` /
 `?skin=clock-tower-daylight` / `?skin=clock-tower-lantern` / `?skin=clock-tower-gotham` /
 `?skin=paisley-dawn` / `?skin=paisley-velvet`, or the buttons at the top of the page;
 `&mode=light` or `&mode=dark` shows a skin in either mode (it opens in the mode it is written for). (A skin's texture renders only on `mockup.html`;
@@ -357,7 +358,7 @@ project can be shown without publishing anything from a production instance.
 ```bash
 ./scripts/make-demo-graphs.sh          # once; needs rrdtool
 python -m http.server 8777
-# http://localhost:8777/harness/mockup.html?skin=protoss
+# http://localhost:8777/harness/mockup.html?skin=ascended
 ```
 
 The markup is read off a running instance rather than guessed, which paid for
@@ -418,7 +419,7 @@ src/Graph/                  port traffic series recolouring: RecolouringRrd, Por
 src/Skin/                   the upload validator: zip reader, token-file parser, value grammar, PNG texture reader
 routes/, resources/views/   the Theme Selector page
 resources/token-catalog.json  which tokens exist, and which uploads may set (generated)
-database/migrations/        the plugin's two tables (settings, uploaded skins) and their later columns (five migrations)
+database/migrations/        the plugin's two tables (settings, uploaded skins) and their later columns, and one that carried two renamed skins' choices over (six migrations)
 tests/                      php tests/run.php: validator, installer, ornaments, port series, fuzzing; mutate.sh
 base/base.css               the base stylesheet: token defaults + every rule
 base/light.css              light mode only: LibreNMS's stock palette mapped onto a skin's roles (appended to base-light.css)
@@ -427,10 +428,11 @@ skins/<name>/skin.json      manifest: name, description, mode (light or dark), f
 skins/<name>/features.json  bundled skins only: opt in to ornaments and page effects (docs/PLUGIN.md)
 skins/<name>/graph.conf     graph palette, applied when it's the instance default
 skins/<name>/fonts/         bundled OFL webfonts + licence notices
-skins/<name>/textures/      the skin's repeating PNG tile (generated; skins/zerg/TEXTURES.md says how)
+skins/<name>/textures/      the skin's repeating PNG tile (generated; skins/organic/TEXTURES.md says how)
 skins/<name>/FONTS.md       typography rationale and how to swap faces
 examples/minimal/           the smallest complete skin (sets only the 20 core roles)
 examples/minimal-light/     the same for light mode
+examples/corpo-blue/        a full uploadable skin (fonts, texture, ornaments, graph palette), and corpo-blue.zip, ready to upload
 harness/index.html          static preview, real LibreNMS CSS, real DOM
 harness/mockup.html         full dashboard mockup, invented data
 harness/leaks.html          stock backgrounds still showing through, and contrast
@@ -447,7 +449,7 @@ scripts/release.sh          cut a release: date the changelog, tag a commit that
 scripts/ensure-installed.sh optional cron safety net: put the plugin back if a nightly update removed it
 scripts/fetch-fonts.ps1     regenerate the bundled fonts reproducibly
 scripts/make-textures.py    compute the plate, crystal and tile textures
-scripts/make-creep.py       compute the Zerg creep texture
+scripts/make-creep.py       compute the Organic creep texture
 scripts/make-rain.py        compute the Digital Rain glyph tile
 scripts/make-clock-tower.py write the three Clock Tower skins (and their cogwheel and tracery tiles)
 scripts/make-paisley.py     write the two Paisley skins (and their paisley print) from one template

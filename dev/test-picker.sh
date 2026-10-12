@@ -63,19 +63,19 @@ done
 PAGE="$(get dev-user '/plugin/theme-selector/preview/none?mode=light')"
 check "none: stock, no skin links, both meta tags say so" "$(yes_if "[ \"\$(printf '%s' \"\$PAGE\" | links)\" = 0 ] && [ \"\$(printf '%s' \"\$PAGE\" | grep -c 'content=\"none\"')\" = 2 ]")"
 check "digital-rain asks for the ornament layer in whichever slot it is shown (dark mark, light mark)" "$(yes_if "get dev-user '/plugin/theme-selector/preview/digital-rain?mode=dark' | grep -q 'data-ts-orn>' ; get dev-user '/plugin/theme-selector/preview/digital-rain?mode=light' | grep -q 'data-ts-orn-light'")"
-check "a mode that is not one shows dark" "$(yes_if "get dev-user '/plugin/theme-selector/preview/zerg?mode=sepia' | grep -q 'theme-selector/base.css'")"
-for bad in nope BAD 'a%2Fb' '..%2F..%2Fetc' 'zerg%0A' '.hidden' ''; do
+check "a mode that is not one shows dark" "$(yes_if "get dev-user '/plugin/theme-selector/preview/organic?mode=sepia' | grep -q 'theme-selector/base.css'")"
+for bad in nope BAD 'a%2Fb' '..%2F..%2Fetc' 'organic%0A' '.hidden' ''; do
   check "an id that is not an installed skin is refused: '$bad'" "$(yes_if "[ \"\$(code dev-user '/plugin/theme-selector/preview/$bad')\" != 200 ]")"
 done
-check "a query string cannot change the skin shown ('?skin=terran' on the zerg preview)" "$(yes_if "get dev-user '/plugin/theme-selector/preview/zerg?skin=terran&dark=terran&preview=terran' | grep -q 'skins/zerg/skin.css' && ! get dev-user '/plugin/theme-selector/preview/zerg?skin=terran' | grep -q 'skins/terran/skin.css'")"
+check "a query string cannot change the skin shown ('?skin=terran' on the organic preview)" "$(yes_if "get dev-user '/plugin/theme-selector/preview/organic?skin=terran&dark=terran&preview=terran' | grep -q 'skins/organic/skin.css' && ! get dev-user '/plugin/theme-selector/preview/organic?skin=terran' | grep -q 'skins/terran/skin.css'")"
 
 echo "== looking does not change anything"
 check "the visitor's own skins are unchanged after previews" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = none ] && [ \"\$(meta dev-user theme-selector-light)\" = none ]")"
 check "no preference was saved" "$(yes_if "[ \"\$(q \"select count(*) from users_prefs where pref like 'theme_selector.%'\")\" = 0 ]")"
 check "an ordinary page afterwards has no preview skin" "$(yes_if "[ \"\$(get dev-user /devices | links)\" = 0 ]")"
-choose dev-user skin=zerg
-check "with a skin chosen, a preview of another still shows that other one" "$(yes_if "get dev-user /plugin/theme-selector/preview/terran | grep -q 'skins/terran/skin.css' && ! get dev-user /plugin/theme-selector/preview/terran | grep -q 'skins/zerg/skin.css'")"
-check "and the visitor's own pages still follow their choice" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = zerg ]")"
+choose dev-user skin=organic
+check "with a skin chosen, a preview of another still shows that other one" "$(yes_if "get dev-user /plugin/theme-selector/preview/terran | grep -q 'skins/terran/skin.css' && ! get dev-user /plugin/theme-selector/preview/terran | grep -q 'skins/organic/skin.css'")"
+check "and the visitor's own pages still follow their choice" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = organic ]")"
 choose dev-user skin=
 
 echo "== the picker page: one dropdown and one preview for each mode"
@@ -88,45 +88,45 @@ check "the page says where the plugin comes from, with a link to the project" "$
 check "a skin written for the other mode is labelled as such" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q '(written for dark)'")"
 check "the frames start on the visitor's own choices (stock, with no default set)" "$(yes_if "[ \"\$(printf '%s' \"\$PAGE\" | grep -c 'preview/none?mode=')\" -ge 4 ]")"
 check "a non-admin does not get the installed-skins list or the defaults" "$(yes_if "! printf '%s' \"\$PAGE\" | grep -q 'id=\"ts-skins\"' && ! printf '%s' \"\$PAGE\" | grep -q 'name=\"default_light\"'")"
-PAGE="$(get dev-user '/plugin/theme-selector?dark=zerg&light=terran')"
-check "?dark=zerg&light=terran selects them and points the frames at them" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q '<option value=\"zerg\" selected' && printf '%s' \"\$PAGE\" | grep -q '<option value=\"terran\" selected' && printf '%s' \"\$PAGE\" | grep -q 'preview/zerg?mode=dark' && printf '%s' \"\$PAGE\" | grep -q 'preview/terran?mode=light'")"
+PAGE="$(get dev-user '/plugin/theme-selector?dark=organic&light=terran')"
+check "?dark=organic&light=terran selects them and points the frames at them" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q '<option value=\"organic\" selected' && printf '%s' \"\$PAGE\" | grep -q '<option value=\"terran\" selected' && printf '%s' \"\$PAGE\" | grep -q 'preview/organic?mode=dark' && printf '%s' \"\$PAGE\" | grep -q 'preview/terran?mode=light'")"
 PAGE="$(get dev-user '/plugin/theme-selector?dark=nope&light=%3Cscript%3Ealert(1)%3C/script%3E')"
 check "an unknown or hostile choice is ignored and not echoed" "$(yes_if "! printf '%s' \"\$PAGE\" | grep -q '<script>alert(1)' && ! printf '%s' \"\$PAGE\" | grep -q 'nope'")"
-PAGE="$(get dev-user '/plugin/theme-selector?dark[]=zerg')"
+PAGE="$(get dev-user '/plugin/theme-selector?dark[]=organic')"
 check "an array is ignored, not an error" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'class=\"ts-iframe\"'")"
-q "insert into theme_selector_settings (name, value, created_at, updated_at) values ('default_skin', '\"terran\"', now(), now()), ('default_skin_light', '\"zerg\"', now(), now()) on duplicate key update value=values(value)" >/dev/null
+q "insert into theme_selector_settings (name, value, created_at, updated_at) values ('default_skin', '\"terran\"', now(), now()), ('default_skin_light', '\"organic\"', now(), now()) on duplicate key update value=values(value)" >/dev/null
 PAGE="$(get dev-user /plugin/theme-selector)"
-check "with defaults set, the instance-default entries name them and the frames show them" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Instance default (Terran)' && printf '%s' \"\$PAGE\" | grep -q 'Instance default (Zerg)' && printf '%s' \"\$PAGE\" | grep -q 'preview/terran?mode=dark' && printf '%s' \"\$PAGE\" | grep -q 'preview/zerg?mode=light'")"
+check "with defaults set, the instance-default entries name them and the frames show them" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'Instance default (Terran)' && printf '%s' \"\$PAGE\" | grep -q 'Instance default (Organic)' && printf '%s' \"\$PAGE\" | grep -q 'preview/terran?mode=dark' && printf '%s' \"\$PAGE\" | grep -q 'preview/organic?mode=light'")"
 q "delete from theme_selector_settings where name like 'default_skin%'" >/dev/null
 
 echo "== applying: each mode on its own"
 check "previewing does not apply" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = none ]")"
-choose dev-user skin=protoss
-check "posting the dark choice saves the dark skin only" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = protoss ] && [ \"\$(meta dev-user theme-selector-light)\" = none ]")"
+choose dev-user skin=ascended
+check "posting the dark choice saves the dark skin only" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = ascended ] && [ \"\$(meta dev-user theme-selector-light)\" = none ]")"
 choose dev-user skin_light=terran
-check "posting the light choice saves the light skin only, and leaves the dark one" "$(yes_if "[ \"\$(meta dev-user theme-selector-light)\" = terran ] && [ \"\$(meta dev-user theme-selector)\" = protoss ]")"
-check "the preferences are stored under their own names (the dark one keeps its original)" "$(yes_if "[ \"\$(q \"select value from users_prefs where pref='theme_selector.skin' and user_id=(select user_id from users where username='dev-user')\")\" = protoss ] && [ \"\$(q \"select value from users_prefs where pref='theme_selector.skin_light' and user_id=(select user_id from users where username='dev-user')\")\" = terran ]")"
-choose dev-user "skin=zerg&skin_light=nonsense"
-check "one bad choice changes nothing, not even the good one" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = protoss ] && [ \"\$(meta dev-user theme-selector-light)\" = terran ]")"
-choose dev-user "skin=zerg&skin_light=none"
-check "both together, with stock for light" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = zerg ] && [ \"\$(meta dev-user theme-selector-light)\" = none ]")"
-choose dev-user "skin[]=zerg"
-check "an array is refused and changes nothing" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = zerg ]")"
+check "posting the light choice saves the light skin only, and leaves the dark one" "$(yes_if "[ \"\$(meta dev-user theme-selector-light)\" = terran ] && [ \"\$(meta dev-user theme-selector)\" = ascended ]")"
+check "the preferences are stored under their own names (the dark one keeps its original)" "$(yes_if "[ \"\$(q \"select value from users_prefs where pref='theme_selector.skin' and user_id=(select user_id from users where username='dev-user')\")\" = ascended ] && [ \"\$(q \"select value from users_prefs where pref='theme_selector.skin_light' and user_id=(select user_id from users where username='dev-user')\")\" = terran ]")"
+choose dev-user "skin=organic&skin_light=nonsense"
+check "one bad choice changes nothing, not even the good one" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = ascended ] && [ \"\$(meta dev-user theme-selector-light)\" = terran ]")"
+choose dev-user "skin=organic&skin_light=none"
+check "both together, with stock for light" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = organic ] && [ \"\$(meta dev-user theme-selector-light)\" = none ]")"
+choose dev-user "skin[]=organic"
+check "an array is refused and changes nothing" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = organic ]")"
 choose dev-user "skin=&skin_light="
 
 echo "== a page carries one skin for each mode"
-choose dev-user "skin=zerg&skin_light=terran"
+choose dev-user "skin=organic&skin_light=terran"
 PAGE="$(get dev-user /devices)"
 check "four stylesheets: both bases, and each slot's skin" "$(yes_if "[ \"\$(printf '%s' \"\$PAGE\" | links)\" = 4 ]")"
-check "the dark slot loads the dark base and zerg's own stylesheet" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'theme-selector/base.css' && printf '%s' \"\$PAGE\" | grep -q 'skins/zerg/skin.css'")"
+check "the dark slot loads the dark base and organic's own stylesheet" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'theme-selector/base.css' && printf '%s' \"\$PAGE\" | grep -q 'skins/organic/skin.css'")"
 check "the light slot loads the light base and terran's mirror (terran is written for dark)" "$(yes_if "printf '%s' \"\$PAGE\" | grep -q 'theme-selector/base-light.css' && printf '%s' \"\$PAGE\" | grep -q 'skins/terran/skin.mirror.css'")"
-check "the files they name are real stylesheets with the right selector" "$(yes_if "curl -s $B/css/custom/theme-selector/skins/zerg/skin.css | grep -q '^html.dark {' && curl -s $B/css/custom/theme-selector/skins/terran/skin.mirror.css | grep -q '^html:not(.dark) {' && ! curl -s $B/css/custom/theme-selector/skins/terran/skin.mirror.css | grep -q 'html.dark'")"
+check "the files they name are real stylesheets with the right selector" "$(yes_if "curl -s $B/css/custom/theme-selector/skins/organic/skin.css | grep -q '^html.dark {' && curl -s $B/css/custom/theme-selector/skins/terran/skin.mirror.css | grep -q '^html:not(.dark) {' && ! curl -s $B/css/custom/theme-selector/skins/terran/skin.mirror.css | grep -q 'html.dark'")"
 STRIP="awk '/ts:dark-only:/{f=1} !f{print} /ts:end-dark-only/{f=0}'"
 check "the light base is the dark base with the selector swapped (minus the dark attribution bar), and the light-only mapping on the end" "$(yes_if "BASE=\$(curl -s $B/css/custom/theme-selector/base.css | $STRIP); N=\$(printf '%s\n' \"\$BASE\" | wc -l); LIGHT=\$(curl -s $B/css/custom/theme-selector/base-light.css); [ \"\$(printf '%s\n' \"\$BASE\" | sed 's/html\.dark:has(link\[data-ts-orn\])/X/g; s/html\.dark/X/g' | md5sum)\" = \"\$(printf '%s\n' \"\$LIGHT\" | head -n \$N | sed 's/html:not(\.dark):has(link\[data-ts-orn-light\])/X/g; s/html:not(\.dark)/X/g' | md5sum)\" ] && printf '%s\n' \"\$LIGHT\" | tail -n +\$((N+1)) | grep -q 'tw-color-gray-100' && ! printf '%s\n' \"\$LIGHT\" | grep -q 'leaflet-control-attribution'")"
 choose dev-user "skin=terran&skin_light=none"
 PAGE="$(get dev-user /devices)"
 check "only the dark slot set: the dark base and terran, and nothing for light" "$(yes_if "[ \"\$(printf '%s' \"\$PAGE\" | links)\" = 2 ] && printf '%s' \"\$PAGE\" | grep -q 'theme-selector/base.css' && ! printf '%s' \"\$PAGE\" | grep -q 'base-light'")"
-choose dev-user "skin=none&skin_light=zerg"
+choose dev-user "skin=none&skin_light=organic"
 PAGE="$(get dev-user /devices)"
 check "only the light slot set: the light base and the skin's mirror" "$(yes_if "[ \"\$(printf '%s' \"\$PAGE\" | links)\" = 2 ] && printf '%s' \"\$PAGE\" | grep -q 'base-light.css' && ! printf '%s' \"\$PAGE\" | grep -q 'theme-selector/base.css'")"
 check "?theme-selector=off shows neither" "$(yes_if "[ \"\$(get dev-user '/devices?theme-selector=off' | links)\" = 0 ]")"
@@ -134,14 +134,14 @@ choose dev-user "skin=&skin_light="
 
 echo "== the instance defaults, one for each mode"
 tok="$(token dev-admin)"
-curl -s -o /dev/null -b "$(jar dev-admin)" -c "$(jar dev-admin)" -H "X-Dev-User: dev-admin" --data "_token=$tok&default=terran&default_light=zerg" $B/plugin/theme-selector/default
-check "both are saved" "$(yes_if "[ \"\$(q \"select value from theme_selector_settings where name='default_skin'\")\" = '\"terran\"' ] && [ \"\$(q \"select value from theme_selector_settings where name='default_skin_light'\")\" = '\"zerg\"' ]")"
-check "a user with no choice follows them, one for each mode" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = terran ] && [ \"\$(meta dev-user theme-selector-light)\" = zerg ]")"
+curl -s -o /dev/null -b "$(jar dev-admin)" -c "$(jar dev-admin)" -H "X-Dev-User: dev-admin" --data "_token=$tok&default=terran&default_light=organic" $B/plugin/theme-selector/default
+check "both are saved" "$(yes_if "[ \"\$(q \"select value from theme_selector_settings where name='default_skin'\")\" = '\"terran\"' ] && [ \"\$(q \"select value from theme_selector_settings where name='default_skin_light'\")\" = '\"organic\"' ]")"
+check "a user with no choice follows them, one for each mode" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = terran ] && [ \"\$(meta dev-user theme-selector-light)\" = organic ]")"
 curl -s -o /dev/null -b "$(jar dev-admin)" -c "$(jar dev-admin)" -H "X-Dev-User: dev-admin" --data "_token=$tok&default_light=" $B/plugin/theme-selector/default
 check "clearing one leaves the other" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = terran ] && [ \"\$(meta dev-user theme-selector-light)\" = none ]")"
 curl -s -o /dev/null -b "$(jar dev-admin)" -c "$(jar dev-admin)" -H "X-Dev-User: dev-admin" --data "_token=$tok&default=terran&default_light=nope" $B/plugin/theme-selector/default
 check "an unknown default is refused and changes nothing" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = terran ] && [ \"\$(meta dev-user theme-selector-light)\" = none ]")"
-CODE="$(curl -s -o /dev/null -w '%{http_code}' -b "$(jar dev-user)" -H 'X-Dev-User: dev-user' --data "_token=$(token dev-user)&default=zerg" $B/plugin/theme-selector/default)"
+CODE="$(curl -s -o /dev/null -w '%{http_code}' -b "$(jar dev-user)" -H 'X-Dev-User: dev-user' --data "_token=$(token dev-user)&default=organic" $B/plugin/theme-selector/default)"
 check "a non-admin cannot set a default (403)" "$(yes_if "[ '$CODE' = 403 ]")"
 curl -s -o /dev/null -b "$(jar dev-admin)" -c "$(jar dev-admin)" -H "X-Dev-User: dev-admin" --data "_token=$tok&default=&default_light=" $B/plugin/theme-selector/default
 check "both cleared" "$(yes_if "[ \"\$(meta dev-user theme-selector)\" = none ] && [ \"\$(meta dev-user theme-selector-light)\" = none ]")"

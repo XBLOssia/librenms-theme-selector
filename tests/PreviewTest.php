@@ -13,17 +13,17 @@ use Xblossia\ThemeSelector\SkinRepository;
 function test_preview(): void
 {
     T::group('preview: which skin a choice shows');
-    $installed = fn (string $id): bool => in_array($id, ['zerg', 'terran', 'mine'], true);
-    T::ok('a skin id previews as itself', PreviewChoice::target('zerg', null, $installed) === 'zerg');
-    T::ok('stock previews as stock', PreviewChoice::target('none', 'zerg', $installed) === 'none');
+    $installed = fn (string $id): bool => in_array($id, ['organic', 'terran', 'mine'], true);
+    T::ok('a skin id previews as itself', PreviewChoice::target('organic', null, $installed) === 'organic');
+    T::ok('stock previews as stock', PreviewChoice::target('none', 'organic', $installed) === 'none');
     T::ok('"follow the default" previews the default skin', PreviewChoice::target('', 'terran', $installed) === 'terran');
     T::ok('"follow the default" with none set previews stock', PreviewChoice::target('', null, $installed) === 'none');
     T::ok('"follow the default" with a default that is gone previews stock', PreviewChoice::target('', 'removed', $installed) === 'none');
-    foreach (['removed', 'ZERG', 'zerg ', "zerg\n", '../zerg', 'a/b', '<script>', 'default', 'null'] as $bad) {
-        T::ok('an id that is not installed previews nothing: ' . json_encode($bad), PreviewChoice::target($bad, 'zerg', $installed) === null);
+    foreach (['removed', 'ORGANIC', 'organic ', "organic\n", '../organic', 'a/b', '<script>', 'default', 'null'] as $bad) {
+        T::ok('an id that is not installed previews nothing: ' . json_encode($bad), PreviewChoice::target($bad, 'organic', $installed) === null);
     }
     $asked = [];
-    PreviewChoice::target('none', 'zerg', function (string $id) use (&$asked): bool {
+    PreviewChoice::target('none', 'organic', function (string $id) use (&$asked): bool {
         $asked[] = $id;
 
         return true;

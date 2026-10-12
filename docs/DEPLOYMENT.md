@@ -53,7 +53,7 @@ php artisan route:cache
    each update. The plugin is enabled by default.
 3. **`migrate`** creates the plugin's two tables, `theme_selector_settings` (the
    instance defaults and the recorded original graph colours) and
-   `theme_selector_skins` (uploaded skins), in five migrations.
+   `theme_selector_skins` (uploaded skins), in six migrations.
    `plugin:add` doesn't run migrations; `daily.sh` does, so this step only
    saves waiting for the next nightly run.
 4. **`route:cache`** rebuilds LibreNMS's route cache. Production installs
@@ -344,14 +344,14 @@ them. Where reality differed from the plan:
    host's copy was also uploaded over SFTP without execute bits, so it had to
    be run with `bash`.
 4. **Its saved "original" graph colours were wrong.** For `graph_colours.default`
-   and `graph_colours.pinks` the recorded originals were Protoss's own colours:
+   and `graph_colours.pinks` the recorded originals were Ascended's own colours:
    an earlier install had already changed them before the installer began
-   recording per key. Restoring them would have pinned Protoss colours as
+   recording per key. Restoring them would have pinned Ascended colours as
    "stock", so the overrides were erased instead
    (`lnms config:set <key>`, answering the reset prompt), which returns
    LibreNMS's real defaults, and `webui.custom_css` was reset the same way.
-5. **The instance default was set afterwards** in the picker (Protoss, the
-   skin the host had actually been running, not the Zerg the plan assumed). The
+5. **The instance default was set afterwards** in the picker (Ascended, the
+   skin the host had actually been running, not the Organic the plan assumed). The
    plugin recorded the then-clean originals.
 
 Checked on the host: the skin loads after any `custom_css`, a second account
@@ -436,7 +436,7 @@ default level; `LOG_LEVEL=info` in `.env` shows it).
 
 **A skin with no port colours of its own shows another skin's.** A skin without
 `graph_colours.port_in` / `port_out` should draw stock green and lavender. If it shows another
-skin's colours (seen once on a host that had run the old core patch under a Protoss default),
+skin's colours (seen once on a host that had run the old core patch under a Ascended default),
 the config table holds `port_in` / `port_out` rows the plugin isn't tracking, which LibreNMS
 treats as the instance's own setting. Check, then erase them (the plugin's own cleanup does
 the same):
@@ -618,7 +618,7 @@ php scripts/composer_wrapper.php config --global --unset repositories.theme-sele
    it in that state), so `route:cache` goes right after. The last line removes the Composer
    repository entry that the install added.
 3. **Optional: remove the data.** The tables, the `theme_selector.skin` and `theme_selector.skin_light`
-   rows in `users_prefs`, the plugin's five rows in `migrations`, and its row in `plugins` stay
+   rows in `users_prefs`, the plugin's six rows in `migrations`, and its row in `plugins` stay
    behind, harmlessly:
 
 ```sql
@@ -656,7 +656,7 @@ is cleared, which needs the plugin enabled. `./lnms plugin:enable ThemeSelector`
 | Question | Answer |
 |---|---|
 | Core files modified? | None |
-| Database schema changed? | Two tables of its own, `theme_selector_settings` and `theme_selector_skins` (five migrations) |
+| Database schema changed? | Two tables of its own, `theme_selector_settings` and `theme_selector_skins` (six migrations) |
 | Files outside `html/css/custom/`? | The Composer package under `vendor/`, `composer.json`/`composer.lock`/`composer.plugins.json`, and the route cache |
 | Services restarted or installed? | None |
 | Affects polling, discovery, alerting? | Not their behaviour: the plugin's store subclass overrides only `graph()`. Alert emails and chat messages that embed a graph use the instance default's colours, port series included |

@@ -31,9 +31,9 @@
   .cw-note { font-size: 12px; opacity: .7; max-width: 62ch; margin: 14px 0 0; }
 </style>
 <script>
-  var SKINS = ['terran', 'protoss', 'zerg'];
-  var skin = (new URLSearchParams(location.search).get('skin') || 'zerg').toLowerCase();
-  if (SKINS.indexOf(skin) === -1) skin = 'zerg';
+  var SKINS = ['terran', 'ascended', 'organic'];
+  var skin = (new URLSearchParams(location.search).get('skin') || 'organic').toLowerCase();
+  if (SKINS.indexOf(skin) === -1) skin = 'organic';
   var bust = '?t=' + Date.now();
   document.write('<link rel="stylesheet" href="../base/base.css' + bust + '">' +
                  '<link rel="stylesheet" href="../skins/' + skin + '/skin.css' + bust + '">');

@@ -41,6 +41,7 @@ unit() {
     python3 /plugin/scripts/gen-token-catalog.py --check
     python3 /plugin/scripts/gen-token-docs.py --check
     python3 /plugin/scripts/make-clock-tower.py --check && echo "Clock Tower skins are current (and every text colour is 4.5:1 or better)"
+    python3 /plugin/scripts/make-paisley.py --check && echo "Paisley skins are current (and every text colour is 4.5:1 or better)"
   '
 }
 

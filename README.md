@@ -1,11 +1,11 @@
 # Theme Selector for LibreNMS
 
-Skins for [LibreNMS](https://github.com/librenms/librenms): three StarCraft-inspired ones, a green-phosphor "digital rain", and a
-clock tower in three moods (one light, two dark).
+Skins for [LibreNMS](https://github.com/librenms/librenms): three StarCraft-inspired ones, a green-phosphor "digital rain", a
+clock tower in three moods (one light, two dark), and a purple paisley pair (one light, one dark).
 
-Seven skins in six designs: **Terran**, **Protoss**, **Zerg**, **Digital Rain**, and **Clock Tower** in three
+Nine skins in seven designs: **Terran**, **Protoss**, **Zerg**, **Digital Rain**, **Clock Tower** in three
 moods: **Daylight** (light mode), **Lantern** (dark mode, lit from inside) and **Gotham** (dark mode, the
-great clock at night).
+great clock at night), and **Paisley** in two: **Dawn** (light mode) and **Velvet** (dark mode).
 
 Each user picks a skin for light mode and one for dark mode, from dropdowns that preview each on a
 sample page before anything is applied; admins set the instance defaults and can upload
@@ -16,11 +16,12 @@ Skins can carry a repeating texture, cut corners and frame ornaments
 It needs PHP 8.2 or newer and a LibreNMS with the package plugin system.
 
 All artwork is original: CSS (gradients, shadows, generated geometry) and one
-small PNG texture per skin (diamond plate, crystal, creep, falling glyphs, cogwheels) that
+small PNG texture per skin (diamond plate, crystal, creep, falling glyphs, cogwheels, paisley) that
 [scripts/make-textures.py](scripts/make-textures.py),
 [scripts/make-creep.py](scripts/make-creep.py),
 [scripts/make-rain.py](scripts/make-rain.py) and
-[scripts/make-clock-tower.py](scripts/make-clock-tower.py) compute from fixed numbers. No
+[scripts/make-clock-tower.py](scripts/make-clock-tower.py) and
+[scripts/make-paisley.py](scripts/make-paisley.py) compute from fixed numbers. No
 Blizzard assets are used or redistributed. These are "inspired by" skins, not
 asset ports.
 
@@ -37,6 +38,8 @@ asset ports.
 | **Clock Tower Daylight** (light) | Double-ruled, leaf-cornered, gilt-bracketed | Parchment, walnut and brass | Playfair Display + Libre Baskerville |
 | **Clock Tower Lantern** (dark) | The same room at night | Umber, candle cream, amber glow | The same |
 | **Clock Tower Gotham** (dark) | Square stone, pointed arches, quatrefoils | Blue-black stone, lamp yellow | Cinzel (carved capitals) + Libre Baskerville |
+| **Paisley Dawn** (light) | Two long corners, two short, gilt flourishes, lace headings | Lilac and white, peach and gold | Playfair Display + Libre Baskerville |
+| **Paisley Velvet** (dark) | The same, by night | Deep aubergine, white type, peach and gold trim | The same |
 
 Terran, Protoss and Zerg were installed and verified on a production instance (2026-09-29); Digital Rain and the Clock Tower skins have since been installed there too, and had their light/dark and map fixes checked against it.
 They cover **92 of 92** components LibreNMS's dark theme styles, and **179 of 218** once
@@ -125,6 +128,27 @@ template of its own.
 ![The Clock Tower Lantern skin on a LibreNMS dashboard](docs/img/dashboard-clock-tower-lantern.png)
 
 ![The Clock Tower Gotham skin on a LibreNMS dashboard](docs/img/dashboard-clock-tower-gotham.png)
+
+### Paisley
+Purple-led, with white, peach and gold as the small accents, in two moods that share one design (a family:
+pick either for either mode, or both together). Every panel has a double rule of violet and corners with
+two long curves and two short, like the tail of a paisley; each corner carries a gold flourish (a gold arc
+and a peach one outside each long curve, a gold bead in a peach ring at each short one); each panel heading
+has a ribbon of gold, peach and violet beside it and a lace scallop under it; the navbar has a ribbon along
+its top and a string of pearls along its foot; and behind the page is a faint print of paisley motifs,
+computed from fixed numbers like the other tiles. **Dawn** is lilac and white with peach and gold, ink-purple
+type, for light mode. **Velvet** is deep aubergine with white type, peach links and gold trim, and a violet
+glow that settles slowly (a nine-second fade, never a flash), for dark mode. Inbound traffic on graphs is
+violet and outbound is peach, which differ in lightness as well as hue. Type is Playfair Display for
+headings (with Libre Baskerville's digits) and Libre Baskerville for text, both bundled, the same files the
+Clock Tower skins use. Both are generated from one template by
+[scripts/make-paisley.py](scripts/make-paisley.py), which also checks that every text colour is at least
+4.5:1 on its ground, and each is valid as an upload. They are an original design in the colours and mood of
+mid-1980s pop; nothing in them is copied from anyone's artwork, and none of the names refers to anyone.
+
+![The Paisley Dawn skin on a LibreNMS dashboard](docs/img/dashboard-paisley-dawn.png)
+
+![The Paisley Velvet skin on a LibreNMS dashboard](docs/img/dashboard-paisley-velvet.png)
 
 ### Choosing
 
@@ -239,7 +263,9 @@ The bundled skins set far more: [terran](skins/terran/skin.css) ·
 [digital-rain](skins/digital-rain/skin.css) ·
 [clock-tower-daylight](skins/clock-tower-daylight/skin.css) ·
 [clock-tower-lantern](skins/clock-tower-lantern/skin.css) ·
-[clock-tower-gotham](skins/clock-tower-gotham/skin.css). Each also
+[clock-tower-gotham](skins/clock-tower-gotham/skin.css) ·
+[paisley-dawn](skins/paisley-dawn/skin.css) ·
+[paisley-velvet](skins/paisley-velvet/skin.css). Each also
 keeps a private `--p-*` palette its tokens refer to.
 
 ### Typography
@@ -255,12 +281,12 @@ frame against a clean futuristic sans for the data. Zerg puts a gnarled organic
 display face on the frame and keeps a readable angular sans on the data — the
 weirdness lives in the geometry instead, which is what keeps it usable.
 
-Terran, Protoss, Zerg and all three Clock Tower skins bundle their faces, so this works with no setup and no external
+Terran, Protoss, Zerg, all three Clock Tower skins and both Paisley skins bundle their faces, so this works with no setup and no external
 requests — which matters on an air-gapped NOC box, where a Google Fonts
 `@import` would silently degrade exactly where it is least convenient to
 debug. Details, sizes, licensing and how to swap a face:
 [terran](skins/terran/FONTS.md) · [protoss](skins/protoss/FONTS.md) ·
-[zerg](skins/zerg/FONTS.md) · [clock tower](skins/clock-tower-daylight/FONTS.md). Digital Rain asks for Share Tech Mono and falls back to the
+[zerg](skins/zerg/FONTS.md) · [clock tower](skins/clock-tower-daylight/FONTS.md) · [paisley](skins/paisley-dawn/FONTS.md). Digital Rain asks for Share Tech Mono and falls back to the
 system monospace until that font is bundled.
 
 ---
@@ -316,7 +342,8 @@ python -m http.server 8777
 ```
 
 Switch skins with `?skin=terran` / `?skin=protoss` / `?skin=zerg` / `?skin=digital-rain` /
-`?skin=clock-tower-daylight` / `?skin=clock-tower-lantern` / `?skin=clock-tower-gotham`, or the buttons at the top of the page;
+`?skin=clock-tower-daylight` / `?skin=clock-tower-lantern` / `?skin=clock-tower-gotham` /
+`?skin=paisley-dawn` / `?skin=paisley-velvet`, or the buttons at the top of the page;
 `&mode=light` or `&mode=dark` shows a skin in either mode (it opens in the mode it is written for). (A skin's texture renders only on `mockup.html`;
 the other pages load `skin.css` as it is.) `harness/colorway.html` renders a skin's full
 token set and graph ramps.
@@ -413,6 +440,7 @@ scripts/make-textures.py    compute the plate, crystal and tile textures
 scripts/make-creep.py       compute the Zerg creep texture
 scripts/make-rain.py        compute the Digital Rain glyph tile
 scripts/make-clock-tower.py write the three Clock Tower skins (and their cogwheel and tracery tiles)
+scripts/make-paisley.py     write the two Paisley skins (and their paisley print) from one template
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/dead-css.py         find styles.css rules nothing can match (docs/data/ holds the list)
 scripts/helper-audit.py     which graph helpers hard-code colours (FINDINGS section 5)

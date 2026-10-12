@@ -11,6 +11,14 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Skins
+- **Paisley**, a purple-led pair in one family: **Dawn** (light mode: lilac and white, peach and gold)
+  and **Velvet** (dark mode: deep aubergine, white type, peach and gold trim). Soft corners (two long,
+  two short) with a gold flourish at each, a lace scallop and a ribbon on every panel heading, a string
+  of pearls along the navbar, and a faint computed paisley print behind the page. Inbound traffic on
+  graphs is violet and outbound is peach. Both come from `scripts/make-paisley.py`, use the Playfair
+  Display and Libre Baskerville files already in the package, and are valid as uploads.
+
 ## [1.0.0] - 2026-10-09
 
 The first release: what has been running in production, as a version a host can follow.

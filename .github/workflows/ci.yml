@@ -63,6 +63,7 @@ jobs:
           python scripts/gen-token-catalog.py --check
           python scripts/gen-token-docs.py --check
           python scripts/make-clock-tower.py --check
+          python scripts/make-paisley.py --check
 
   mutate:
     name: mutation check

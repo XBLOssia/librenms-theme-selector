@@ -91,7 +91,6 @@ class SkinInjector
                     }
                     $fx = $this->effects->html(
                         $this->skins->features($skin)['effects'],
-                        request()->is('device/*'),
                         fn (int $n): int => random_int(1, $n),
                     );
                     if ($fx !== '') {

@@ -137,8 +137,8 @@ the migration, the route cache, the publish and the log line.
 What this means in practice:
 
 - **A merge to `main` reaches the host the next night**, not instantly. For the same reason, a
-  broken commit on `main` reaches it too. If you would rather update on purpose, follow release
-  tags instead of the branch (see "Following releases" below).
+  broken commit on `main` reaches it too. If you would rather update on purpose (production should),
+  follow release tags instead of the branch (see "Following releases" below).
 - **A night the source can't be reached does not remove the plugin, if Composer has a cached copy.**
   With the `"no-api": true` repository entry from [Install](#install), Composer fetches with `git`
   and keeps a mirror of the repository in its cache (`~librenms/.composer/cache/vcs/`). When GitHub
@@ -249,17 +249,21 @@ run `./lnms plugin:add xblossia/librenms-theme-selector dev-main`.
 
 ### Following releases instead of the branch
 
-`dev-main` takes every merge. To take only tagged releases, install with a version range, which
-`daily.sh` then keeps following:
+`dev-main` takes every merge to `main`. **Production should take only releases**: a release is a tag
+(`v1.2.3`) made from a commit that CI and the integration suites have passed, so a bad commit on `main`
+reaches no host. Switch with a version range, which `daily.sh` then keeps following:
 
 ```bash
-./lnms plugin:add xblossia/librenms-theme-selector '^1.0'
+./lnms plugin:add xblossia/librenms-theme-selector '^1.0'     # releases 1.x: the next minor or patch, never 2.0
+./lnms plugin:add xblossia/librenms-theme-selector 1.2.0      # exactly this one, until you say otherwise
+./lnms plugin:add xblossia/librenms-theme-selector dev-main   # every merge (a staging box)
 ```
 
-(Composer discovers tags from the repository itself; this needs the repository to have release
-tags, which it does not have yet. A pin such as `1.2.0` stays put until you change it.)
-`theme-selector:status` reports which of the three you are on.
-
+Composer reads the repository's tags itself; nothing is uploaded for a release. `theme-selector:status`
+reports which of the three a host is on, and `scripts/update.sh` keeps following whichever it is. How a
+release is made, what the version numbers mean and what to do about a bad one are in
+[RELEASING.md](RELEASING.md). This is rehearsed on a clean LibreNMS by `dev/test-update.sh`: a host on
+`^1.0` takes a new minor release, ignores a new major one, and ignores commits on `main` that are not tagged.
 ### A LibreNMS update on its own
 
 `daily.sh` resets `composer.json`, pulls, then re-requires every package in

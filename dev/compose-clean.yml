@@ -26,7 +26,7 @@ services:
     image: redis:7.2-alpine
 
   librenms:
-    image: librenms/librenms:26.9.1.1
+    image: librenms/librenms:${LIBRENMS_VERSION:-26.9.1.1}
     hostname: librenms
     depends_on:
       - db

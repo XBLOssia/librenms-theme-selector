@@ -27,12 +27,12 @@ set_error_handler(function (int $no, string $str, string $file, int $line): bool
 });
 
 require __DIR__ . '/bootstrap.php';
-foreach (['ZipTest', 'CssTest', 'MiscTest', 'LicenseTest', 'OrnamentTest', 'PortSeriesTest', 'EffectsTest', 'StatusTest', 'ModesTest', 'PreviewTest', 'TextureTest', 'InstallerTest', 'FuzzTest'] as $f) {
+foreach (['ZipTest', 'CssTest', 'MiscTest', 'LicenseTest', 'OrnamentTest', 'PortSeriesTest', 'EffectsTest', 'StatusTest', 'ReleaseTest', 'ModesTest', 'PreviewTest', 'TextureTest', 'InstallerTest', 'FuzzTest'] as $f) {
     require __DIR__ . "/$f.php";
 }
 
 $started = microtime(true);
-foreach (['test_zip', 'test_css', 'test_values', 'test_fonts_in_css', 'test_fonts', 'test_graph', 'test_manifest', 'test_catalog', 'test_bundled', 'test_license', 'test_ornaments', 'test_port_series', 'test_effects', 'test_status', 'test_modes', 'test_light_css', 'test_stock_greys', 'test_clock_tower', 'test_preview', 'test_textures', 'test_installer', 'test_fuzz'] as $fn) {
+foreach (['test_zip', 'test_css', 'test_values', 'test_fonts_in_css', 'test_fonts', 'test_graph', 'test_manifest', 'test_catalog', 'test_bundled', 'test_license', 'test_ornaments', 'test_port_series', 'test_effects', 'test_status', 'test_release', 'test_modes', 'test_light_css', 'test_stock_greys', 'test_clock_tower', 'test_preview', 'test_textures', 'test_installer', 'test_fuzz'] as $fn) {
     try {
         $fn();
     } catch (Throwable $e) {

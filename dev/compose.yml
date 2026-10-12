@@ -33,7 +33,10 @@ services:
     restart: unless-stopped
 
   librenms:
-    build: .
+    build:
+      context: .
+      args:
+        LIBRENMS_VERSION: ${LIBRENMS_VERSION:-26.9.1.1}
     image: theme-selector-dev-librenms
     hostname: librenms
     depends_on:

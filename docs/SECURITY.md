@@ -51,8 +51,8 @@ again by a second, independent guard before it is written.
 
 ## Controls, and the test that would notice each one breaking
 
-`php tests/run.php` runs 2,446 checks; `sh tests/mutate.sh` breaks each defence
-on a scratch copy and requires a failing test (176 flaws caught, 9 documented as
+`php tests/run.php` runs 2,522 checks; `sh tests/mutate.sh` breaks each defence
+on a scratch copy and requires a failing test (185 flaws caught, 9 documented as
 redundant layers, 0 missed); `dev/test-upload.sh` drives the real endpoints.
 (Counts as of 2026-10-05; `sh dev/test.sh all` prints the current ones.)
 Run all of it with `sh dev/test.sh all`.
@@ -249,11 +249,18 @@ Say these plainly rather than imply they are handled.
    host that follows it runs, after the next nightly `daily.sh`, whatever is on
    `main` of the GitHub repository: PHP executed by the web server and the
    console, with no review on the host. Whoever can push to that branch, or
-   takes over the account, controls every such host. What limits it: protect the
-   account (two-factor authentication) and the branch (require a pull request,
-   no force pushes); follow release tags (`plugin:add ... '^1.0'`) or pin a
-   version (`plugin:add ... 1.2.0`) on hosts that should only take what someone
-   there has chosen; read `ThemeSelector: updated from ... to ...` in the log.
+   takes over the account, controls every such host. What limits it: hosts that
+   matter follow release tags (`plugin:add ... '^1.0'`) or a pin (`... 1.2.0`),
+   not `dev-main`; a tag is made only by `scripts/release.sh`, which refuses
+   unless CI and the integration suites passed on that commit, and the release
+   workflow repeats them; the repository's rulesets (docs/RELEASING.md, "One-time
+   repository setup") require a pull request with passing checks for `main`, let
+   only an administrator create a `v*` tag and let nobody move or delete one;
+   every CI action is pinned to a commit, the workflows can only read the
+   repository (two jobs write: the release and an issue report) and have no
+   secrets. Still open: the account itself (two-factor authentication is yours
+   to turn on), and a malicious tag by someone who has it. Read
+   `ThemeSelector: updated from ... to ...` in the log.
    The plugin itself never runs Composer, `git` or any network request: updating
    is LibreNMS's `daily.sh` and `lnms plugin:add`, both started by an
    administrator or the scheduler.

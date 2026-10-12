@@ -269,13 +269,14 @@ demand ([DEPLOYMENT.md](DEPLOYMENT.md#updates)). Open, in the order they would m
    removed only with a cold cache, the API-mode entry, or a commit on `main` that makes `composer require`
    fail. `theme-selector:status` warns about the first two, and the optional `scripts/ensure-installed.sh`
    (cron) restores the plugin whatever the cause. What is left is the bad commit, below.
-2. **Release tags.** `dev-main` ships every merge the next night. Tagging releases would let a host follow
-   `^1.0` and take only what has been cut; `status` already understands pins and ranges. Needs a version
-   scheme and a habit of tagging. This is what stops one bad commit on `main` from removing the plugin on
-   every host the same night.
-3. **CI on pull requests** (unit and mutation checks run locally today, sealed, by hand) and a protected
-   `main`, which matters more now that merging to it reaches hosts overnight (SECURITY.md, item 9).
-
+2. ~~**Release tags.**~~ Built (2026-10-09, v1.0.0): hosts follow `^1.0`; `scripts/release.sh` tags only a
+   commit that CI and the integration suites passed; the release workflow publishes the notes. See
+   [RELEASING.md](RELEASING.md). Production still has to switch from `dev-main` to `'^1.0'` once v1.0.0 exists.
+3. ~~**CI on pull requests.**~~ Built: unit (PHP 8.2 and 8.4) and the mutation check on every pull request,
+   the live suites and the update rehearsal on every push to `main`, and a nightly run against the newest
+   LibreNMS. **Still to do, by the repository's owner** (GitHub settings no file can make; the commands
+   are in RELEASING.md): email privacy, two-factor authentication, the rulesets that make the checks required
+   and the tags immutable, and the Actions defaults.
 ---
 
 ## Bundled-only features (parity backlog)

@@ -10,7 +10,8 @@
 # Run from WSL or Linux with Docker. The unit and mutation runs execute in a
 # throwaway container that is SEALED: the repository is mounted read-only, the
 # root filesystem is read-only, and the only writable place is a RAM-backed
-# /tmp. Those suites include deliberately hostile inputs, and the mutation run
+# /tmp (executable, because the release tests run a fake `gh` from it). Those
+# suites include deliberately hostile inputs, and the mutation run
 # executes deliberately broken code, so they must never be able to reach the
 # repository or anything else. (One once did, through a symlink to "/", and
 # deleted a bind-mounted copy of this repository. Hence the seal.)
@@ -24,7 +25,7 @@ IMAGE="${TS_IMAGE:-theme-selector-dev-librenms}"
 APP="${TS_CONTAINER:-theme-selector-dev-librenms-1}"
 
 sealed() {
-  docker run --rm --read-only --tmpfs /tmp:rw,size=1g --entrypoint sh \
+  docker run --rm --read-only --tmpfs /tmp:rw,exec,size=1g --entrypoint sh \
     -v "$ROOT:/plugin:ro" "$IMAGE" -c "$1"
 }
 

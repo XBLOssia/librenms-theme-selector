@@ -74,7 +74,9 @@ function test_release(): void
     T::ok('it checks the checker first, then compares', strpos($design, 'upstream-drift.py --selftest') < strpos($design, 'upstream-drift.py librenms'));
     T::ok('drift is one issue, kept up to date, and closed when the skins have caught up', str_contains($design, 'upstream-design') && str_contains($design, 'gh issue edit') && str_contains($design, 'gh issue close') && substr_count($design, 'gh issue create') === 1);
     T::ok('a failure of the check itself fails the run (only exit 1 is drift)', str_contains($design, '[ "$status" -le 1 ] || exit "$status"'));
-    T::ok('the baseline it compares with is committed, and CI runs the checker itself under test', is_file("$root/docs/data/upstream-baseline.json") && str_contains($read('.github/workflows/ci.yml'), 'upstream-drift.py --selftest'));
+    // (Not the baseline file itself: the mutation check runs on a copy without docs/, and a check that needs it would
+    // fail every mutation, including the ones that are meant to go unnoticed. A missing baseline fails the run: exit 2.)
+    T::ok('CI runs the checker itself under test', str_contains($read('.github/workflows/ci.yml'), 'upstream-drift.py --selftest'));
 
     T::group('workflows: release');
     $rel = $yaml['release'];

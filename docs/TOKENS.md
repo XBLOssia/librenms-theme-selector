@@ -59,10 +59,10 @@ Default to a mix of the core roles.
 | `--ts-addon-text` | `var(--ts-text-dim)` | `.input-group-addon` color |
 | `--ts-radius-md` | `var(--ts-radius-sm)` | `.alert` border-radius; `.gs-w (+1)` border-radius; default of `widget-radius-tl`, `widget-radius-tr`, `widget-radius-br`, `widget-radius-bl` |
 | `--ts-bevel` | `inset 0 1px 0 rgba(255, 255, 255, .05), inset 0 -1px 0 rgba(0, 0, 0, .4)` | `.alert` box-shadow; `.graph-image (+1)` box-shadow; default of `btn-danger-shadow` |
-| `--ts-danger-deep` | `color-mix(in srgb, var(--ts-danger) 22%, var(--ts-bg))` | `.alert-danger` background-color; `.panel-danger > .panel-heading` background; `.bg-danger` background-color; +7 more; default of `btn-danger-bg` |
-| `--ts-success-deep` | `color-mix(in srgb, var(--ts-success) 22%, var(--ts-bg))` | `.alert-success` background-color; `.panel-success > .panel-heading` background; `.bg-success` background-color; +6 more; default of `btn-success-bg` |
-| `--ts-warning-deep` | `color-mix(in srgb, var(--ts-warning) 22%, var(--ts-bg))` | `.alert-warning` background-color; `.panel-warning > .panel-heading` background; `.table > thead > tr.warning > td (+7)` background-color; +2 more |
-| `--ts-info-deep` | `color-mix(in srgb, var(--ts-info) 22%, var(--ts-bg))` | `.alert-info` background-color; `.panel-primary > .panel-heading` background; `.panel-info > .panel-heading` background; +6 more; default of `btn-primary-bg` |
+| `--ts-danger-deep` | `color-mix(in srgb, var(--ts-danger) 22%, var(--ts-bg))` | `.alert-danger` background-color; `.panel-danger > .panel-heading` background; `.bg-danger` background-color; +9 more; default of `btn-danger-bg` |
+| `--ts-success-deep` | `color-mix(in srgb, var(--ts-success) 22%, var(--ts-bg))` | `.alert-success` background-color; `.panel-success > .panel-heading` background; `.bg-success` background-color; +8 more; default of `btn-success-bg` |
+| `--ts-warning-deep` | `color-mix(in srgb, var(--ts-warning) 22%, var(--ts-bg))` | `.alert-warning` background-color; `.panel-warning > .panel-heading` background; `.table > thead > tr.warning > td (+7)` background-color; +4 more |
+| `--ts-info-deep` | `color-mix(in srgb, var(--ts-info) 22%, var(--ts-bg))` | `.alert-info` background-color; `.panel-primary > .panel-heading` background; `.panel-info > .panel-heading` background; +8 more; default of `btn-primary-bg` |
 | `--ts-badge-alert` | `var(--ts-danger)` | `.badge-navbar-user.badge-danger` background-color |
 | `--ts-progress` | `var(--ts-accent)` | `.pace .pace-activity` border-left-color; default of `progress-bar-bg`, `progress-glow-shadow`, `progress-glow-shadow` |
 | `--ts-code-text` | `var(--ts-highlight)` | `pre (+1)` color |
@@ -321,7 +321,7 @@ Used by the defaults below.
 | `--ts-btn-font-size` | `14px` | `.btn` font-size |
 | `--ts-btn-hover-filter` | `brightness(1.15)` | `.btn:hover` filter |
 | `--ts-btn-letter-spacing` | `normal` | `.btn` letter-spacing |
-| `--ts-btn-primary-bg` | `var(--ts-info-deep)` | `.btn-primary` background-color; default of `lnms-btn-primary-bg` |
+| `--ts-btn-primary-bg` | `var(--ts-info-deep)` | `.btn-primary` background-color; `html.dark` --tw-color-blue-600; `html.dark` --tw-color-blue-700; +1 more; default of `lnms-btn-primary-bg` |
 | `--ts-btn-primary-bg-image` | `none` | `.btn-primary` background-image; default of `lnms-btn-primary-bg-image` |
 | `--ts-btn-primary-border` | `var(--ts-info)` | `.btn-primary` border-color; default of `lnms-btn-primary-border` |
 | `--ts-btn-primary-shadow` | `rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset` | `.btn-primary` box-shadow |
@@ -351,16 +351,16 @@ Used by the defaults below.
 | Token | Default | Used by |
 |---|---|---|
 | `--ts-addon-border` | `var(--ts-border)` | `.input-group-addon` border-color |
-| `--ts-input-bg` | `var(--ts-sunken)` | `.form-control (+6)` background-color |
-| `--ts-input-border` | `1px solid var(--ts-border)` | `.form-control (+6)` border |
+| `--ts-input-bg` | `var(--ts-sunken)` | `.form-control (+6)` background-color; `.lnms-input` background-color |
+| `--ts-input-border` | `1px solid var(--ts-border)` | `.form-control (+6)` border; `.lnms-input` border |
 | `--ts-input-border-top-color` | `rgb(42, 69, 112)` | `.form-control (+6)` border-top-color |
 | `--ts-input-border-top-width` | `1px` | `.form-control (+6)` border-top-width |
 | `--ts-input-disabled-bg` | `var(--ts-surface-raised)` | `.form-control[disabled] (+2)` background-color |
 | `--ts-input-disabled-fg` | `var(--ts-text-dim)` | `.form-control[disabled] (+2)` color |
-| `--ts-input-focus-shadow` | `var(--ts-recess), 0 0 0 1px var(--ts-highlight)` | `.form-control:focus` box-shadow |
-| `--ts-input-font-family` | `Verdana, Arial, Helvetica, sans-serif` | `.form-control (+6)` font-family |
+| `--ts-input-focus-shadow` | `var(--ts-recess), 0 0 0 1px var(--ts-highlight)` | `.form-control:focus` box-shadow; `.lnms-input:focus` box-shadow |
+| `--ts-input-font-family` | `Verdana, Arial, Helvetica, sans-serif` | `.form-control (+6)` font-family; `.lnms-input` font-family |
 | `--ts-input-font-weight` | `400` | `.form-control (+6)` font-weight |
-| `--ts-input-shadow` | `var(--ts-recess)` | `.form-control (+6)` box-shadow |
+| `--ts-input-shadow` | `var(--ts-recess)` | `.form-control (+6)` box-shadow; `.lnms-input` box-shadow |
 | `--ts-input-transition` | `border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out` | `.form-control (+6)` transition |
 | `--ts-switch-focus-shadow` | `0 0 0 1px var(--ts-highlight)` | `.bootstrap-switch.bootstrap-switch-focused` box-shadow |
 | `--ts-typeahead-border` | `1px solid var(--ts-border)` | `.tt-menu (+1)` border |
@@ -369,10 +369,10 @@ Used by the defaults below.
 
 | Token | Default | Used by |
 |---|---|---|
-| `--ts-alert-badge-animation` | `none` | `.badge-navbar-user.badge-danger` animation |
+| `--ts-alert-badge-animation` | `none` | `.badge-navbar-user.badge-danger` animation; `.navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger` animation |
 | `--ts-alert-badge-border-radius` | `2px` | `.badge-navbar-user.badge-danger` border-radius |
 | `--ts-alert-badge-fg` | `rgb(255, 255, 255)` | `.badge-navbar-user.badge-danger` color |
-| `--ts-alert-badge-shadow` | `none` | `.badge-navbar-user.badge-danger` box-shadow |
+| `--ts-alert-badge-shadow` | `none` | `.badge-navbar-user.badge-danger` box-shadow; `.navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger` box-shadow |
 | `--ts-alert-border-width` | `1px 1px 1px 4px` | `.alert` border-width |
 | `--ts-alert-danger-border` | `var(--ts-border) var(--ts-border) var(--ts-border) var(--ts-danger)` | `.alert-danger` border-color |
 | `--ts-alert-danger-fg` | `var(--ts-danger-text)` | `.alert-danger` color |
@@ -380,7 +380,7 @@ Used by the defaults below.
 | `--ts-alert-font-weight` | `400` | `.alert` font-weight |
 | `--ts-alert-glow-high` | `initial` | `50%` box-shadow |
 | `--ts-alert-glow-low` | `initial` | `0% (+1)` box-shadow |
-| `--ts-alert-glow-period` | `initial` | `html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger` animation |
+| `--ts-alert-glow-period` | `initial` | `html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger` animation; `html.dark:has(link[data-ts-orn]) .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger` animation |
 | `--ts-alert-info-border` | `var(--ts-border) var(--ts-border) var(--ts-border) var(--ts-info)` | `.alert-info` border-color |
 | `--ts-alert-info-fg` | `color-mix(in srgb, var(--ts-info) 60%, #fff)` | `.alert-info` color |
 | `--ts-alert-info-shadow` | `rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px 0px inset` | `.alert-info` box-shadow |

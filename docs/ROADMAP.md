@@ -2,7 +2,8 @@
 
 Where the project actually stands, and what to pick up next.
 
-Last updated 2026-10-05. Surveyed against LibreNMS master @ `63e0394` (2026-09-17); coverage, the
+Last updated 2026-10-12. Surveyed against LibreNMS master @ `cdc6df4` (2026-10-12; it was `63e0394`, 2026-09-17,
+until the first pass of docs/UPSTREAM-DRIFT.md, which a weekly workflow now repeats); coverage, the
 live audit and the install were re-run on release 26.9.1 (the `26.9.1.1` dev image) on 2026-10-02
 (coverage again on 2026-10-05: unchanged, 92/92 and 179/218), the numbers in FINDINGS.md were
 re-measured (see "Re-measured on 2026-10-02" there), and install, the nightly update and uninstall

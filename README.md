@@ -397,6 +397,16 @@ the real order from `resources/views/layouts/librenmsv1.blade.php`. Vendored
 CSS and webfonts are gitignored — LibreNMS is GPLv3 and its assets are not
 redistributed here.
 
+### Keeping up with LibreNMS's design
+
+Nothing fails when upstream moves a badge, adds a component with colours of its own or deletes a class a
+skin styles; the skins just look a little wrong. A weekly workflow
+([upstream-design.yml](.github/workflows/upstream-design.yml)) reads LibreNMS's master with
+[scripts/upstream-drift.py](scripts/upstream-drift.py), compares it with what we last looked at
+([docs/data/upstream-baseline.json](docs/data/upstream-baseline.json)), and opens one issue when something
+new needs an answer. What it compares, and how to answer it: [docs/UPSTREAM-DRIFT.md](docs/UPSTREAM-DRIFT.md).
+To look at a skin without a release: [docs/PREVIEWING.md](docs/PREVIEWING.md).
+
 ---
 
 ## Repository layout
@@ -441,6 +451,7 @@ scripts/make-creep.py       compute the Zerg creep texture
 scripts/make-rain.py        compute the Digital Rain glyph tile
 scripts/make-clock-tower.py write the three Clock Tower skins (and their cogwheel and tracery tiles)
 scripts/make-paisley.py     write the two Paisley skins (and their paisley print) from one template
+scripts/upstream-drift.py   tell us when LibreNMS master changes how it looks (the weekly design check)
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/dead-css.py         find styles.css rules nothing can match (docs/data/ holds the list)
 scripts/helper-audit.py     which graph helpers hard-code colours (FINDINGS section 5)

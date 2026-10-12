@@ -1,0 +1,81 @@
+# Every week, has LibreNMS's master changed how it looks? A skin is colours laid over LibreNMS's own markup and
+# stylesheets, so nothing fails when upstream moves a badge, adds a component with colours of its own or deletes a
+# class we style. The nightly check (nightly.yml) runs the live suites against the newest *release* and finds
+# what breaks; this one reads LibreNMS's master, which is what a host that updates itself nightly is on, and
+# finds what merely looks wrong (scripts/upstream-drift.py says what it compares).
+# Drift opens (or updates) one issue labelled upstream-design; when the skins have caught up and the baseline is
+# re-recorded, the next run closes it. Nothing else is touched; it reads LibreNMS and runs none of it.
+name: Upstream design check
+
+on:
+  schedule:
+    - cron: '43 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    name: Compare LibreNMS master with what the skins were checked against
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: librenms/librenms
+          ref: master
+          path: librenms
+          sparse-checkout: |
+            resources
+            html/css
+            html/js
+            includes/html
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: The checker checks itself
+        run: python scripts/upstream-drift.py --selftest
+
+      - name: Compare with the baseline
+        id: compare
+        run: |
+          # Exit 0: nothing new. 1: drift (the report is the issue). Anything else is a failure of the check itself.
+          status=0
+          python scripts/upstream-drift.py librenms --report "$RUNNER_TEMP/drift.md" || status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          [ "$status" -le 1 ] || exit "$status"
+
+      - name: Open, update or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS: ${{ steps.compare.outputs.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create upstream-design --repo "$GITHUB_REPOSITORY" --color 5319E7 --description "LibreNMS master has changed how it looks" 2>/dev/null || true
+          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --label upstream-design --state open --json number --jq '.[0].number // empty')"
+          if [ "$STATUS" = 0 ]; then
+            if [ -n "$existing" ]; then
+              gh issue close "$existing" --repo "$GITHUB_REPOSITORY" --comment "The skins have caught up with LibreNMS master as of $RUN_URL."
+            fi
+            exit 0
+          fi
+          {
+            cat "$RUNNER_TEMP/drift.md"
+            printf '\n---\nFound by %s. What to do about each list is in docs/UPSTREAM-DRIFT.md.\n' "$RUN_URL"
+          } > "$RUNNER_TEMP/issue.md"
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/issue.md"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --label upstream-design --title "LibreNMS has changed how it looks: the skins need a look" --body-file "$RUNNER_TEMP/issue.md"
+          fi

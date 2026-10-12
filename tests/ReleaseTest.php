@@ -15,7 +15,7 @@ function test_release(): void
     $read = fn (string $path): string => (string) @file_get_contents("$root/$path");
 
     T::group('workflows: pinned, read-only, and the right triggers');
-    $files = ['ci', 'integration', 'release', 'nightly'];
+    $files = ['ci', 'integration', 'release', 'nightly', 'upstream-design'];
     $yaml = [];
     foreach ($files as $name) {
         $yaml[$name] = $read(".github/workflows/$name.yml");
@@ -42,7 +42,7 @@ function test_release(): void
             $writers[$name] = $m[1];
         }
     }
-    T::ok('only the release job (contents) and the nightly report (issues) may write', $writers === ['release' => ['contents'], 'nightly' => ['issues']], json_encode($writers));
+    T::ok('only the release job (contents) and the two reports to issues (nightly, upstream design) may write', $writers === ['release' => ['contents'], 'nightly' => ['issues'], 'upstream-design' => ['issues']], json_encode($writers));
 
     T::group('workflows: CI');
     $ci = $yaml['ci'];
@@ -66,6 +66,17 @@ function test_release(): void
     $night = $yaml['nightly'];
     T::ok('the nightly check runs on a schedule, against the newest LibreNMS, with the network section', str_contains($night, 'schedule:') && (bool) preg_match('/- cron: \'\d+ \d+ \* \* \*\'/', $night) && str_contains($night, 'librenms_version: latest') && str_contains($night, 'network: true'));
     T::ok('it reports a failure as one issue and touches nothing else', str_contains($night, 'if: failure()') && str_contains($night, 'upstream-check') && ! str_contains($night, 'contents: write'));
+
+    T::group('workflows: upstream design check');
+    $design = $yaml['upstream-design'];
+    T::ok('it runs weekly and on demand, and nothing else triggers it', (bool) preg_match('/- cron: \'\d+ \d+ \* \* \d\'/', $design) && str_contains($design, '  workflow_dispatch:') && ! str_contains($design, 'pull_request') && ! str_contains($design, '  push:'));
+    T::ok('it reads LibreNMS master as files and runs none of it', str_contains($design, 'repository: librenms/librenms') && str_contains($design, 'ref: master') && str_contains($design, 'sparse-checkout:') && ! preg_match('/(composer|npm|docker|php|artisan)/i', $design));
+    T::ok('it checks the checker first, then compares', strpos($design, 'upstream-drift.py --selftest') < strpos($design, 'upstream-drift.py librenms'));
+    T::ok('drift is one issue, kept up to date, and closed when the skins have caught up', str_contains($design, 'upstream-design') && str_contains($design, 'gh issue edit') && str_contains($design, 'gh issue close') && substr_count($design, 'gh issue create') === 1);
+    T::ok('a failure of the check itself fails the run (only exit 1 is drift)', str_contains($design, '[ "$status" -le 1 ] || exit "$status"'));
+    // (Not the baseline file itself: the mutation check runs on a copy without docs/, and a check that needs it would
+    // fail every mutation, including the ones that are meant to go unnoticed. A missing baseline fails the run: exit 2.)
+    T::ok('CI runs the checker itself under test', str_contains($read('.github/workflows/ci.yml'), 'upstream-drift.py --selftest'));
 
     T::group('workflows: release');
     $rel = $yaml['release'];

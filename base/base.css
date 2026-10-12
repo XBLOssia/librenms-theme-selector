@@ -829,13 +829,17 @@ html.dark:has(link[data-ts-orn]) .badge {
 html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger {
   animation: ts-glow var(--ts-alert-glow-period) ease-in-out infinite;
 }
+html.dark:has(link[data-ts-orn]) .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger {
+  animation: ts-glow var(--ts-alert-glow-period) ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
   html.dark:has(link[data-ts-orn]) .panel::before,
   html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before,
   html.dark:has(link[data-ts-orn]) .panel > .panel-heading::after,
   html.dark:has(link[data-ts-orn]) .navbar-default::before,
   html.dark:has(link[data-ts-orn]) .navbar-default::after,
-  html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger {
+  html.dark:has(link[data-ts-orn]) .badge-navbar-user.badge-danger,
+  html.dark:has(link[data-ts-orn]) .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger {
     animation: none;
   }
 }
@@ -1145,6 +1149,22 @@ html.dark .badge-navbar-user.badge-danger {
   color: var(--ts-alert-badge-fg);
   border-radius: var(--ts-alert-badge-border-radius);
 }
+/* LibreNMS master (from 2026-10-06) shows the Alerts menu's state as an icon in the navbar toggle,
+   `<i class="fa fa-exclamation-circle text-danger">`, where the count badge was. `.text-danger` colours it
+   from the skin already; the shadow and animation the badge carried go on the icon, as a round halo (a
+   square box with a 50% radius, so the halo is a circle round the glyph). Hosts on a release still have the
+   badge, so both are styled. The dropdown's own entries are not touched: the selector is the toggle's child. */
+html.dark .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  border-radius: 50%;
+}
+html.dark .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger {
+  box-shadow: var(--ts-alert-badge-shadow);
+  animation: var(--ts-alert-badge-animation);
+}
 @keyframes zg-swell {
   0%, 100% {
     box-shadow: 0 0 7px rgba(216, 69, 63, .5);
@@ -1156,7 +1176,7 @@ html.dark .badge-navbar-user.badge-danger {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  html.dark .badge-navbar-user.badge-danger, html.dark .navbar-default::after {
+  html.dark .badge-navbar-user.badge-danger, html.dark .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger, html.dark .navbar-default::after {
     animation: none;
   }
 }
@@ -1177,7 +1197,7 @@ html.dark .badge-navbar-user.badge-danger {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  html.dark .badge-navbar-user.badge-danger {
+  html.dark .badge-navbar-user.badge-danger, html.dark .navbar-nav > li > a.dropdown-toggle > .fa-exclamation-circle.text-danger {
     animation: none;
   }
 }
@@ -1989,6 +2009,69 @@ html.dark {
      grey on any ground: the skin's own muted text instead. */
   --tw-color-gray-400: var(--ts-text-mute);
   --tw-color-gray-500: var(--ts-text-mute);
+  /* LibreNMS's newer components (the device page, filters, date picker, hover cards, settings) reach for
+     Tailwind's own greys, blues, greens, reds and ambers under `dark:` instead of its private dark palette,
+     which would paint them in stock colours on any skin. Each shade is pointed at the role it plays there:
+     greys by their use (light text at the low numbers, borders and surfaces at the high ones), blue as the
+     skin's accent and primary button, and the status colours as the skin's own. The list of shades that
+     are still not pointed anywhere is `dark_unmapped` in docs/data/upstream-baseline.json
+     (scripts/upstream-drift.py keeps it). */
+  --tw-color-gray-50: var(--ts-text-bright);
+  --tw-color-gray-100: var(--ts-text-bright);
+  --tw-color-gray-200: var(--ts-text);
+  --tw-color-gray-300: var(--ts-text-dim);
+  --tw-color-gray-600: var(--ts-border);
+  --tw-color-gray-700: var(--ts-surface-hover);
+  --tw-color-gray-800: var(--ts-surface-raised);
+  --tw-color-gray-900: var(--ts-bg);
+  --tw-color-zinc-800: var(--ts-border);
+  --tw-color-zinc-900: var(--ts-surface-raised);
+  --tw-color-blue-500: var(--ts-accent);
+  --tw-color-blue-600: var(--ts-btn-primary-bg);
+  --tw-color-blue-700: color-mix(in srgb, var(--ts-btn-primary-bg) 80%, var(--ts-bg));
+  --tw-color-blue-800: color-mix(in srgb, var(--ts-info) 40%, var(--ts-bg));
+  --tw-color-blue-900: var(--ts-info-deep);
+  --tw-color-blue-950: var(--ts-info-deep);
+  --tw-color-green-300: var(--ts-success);
+  --tw-color-green-400: var(--ts-success);
+  --tw-color-green-600: var(--ts-success);
+  --tw-color-green-700: var(--ts-success);
+  --tw-color-green-900: var(--ts-success-deep);
+  --tw-color-emerald-900: var(--ts-success-deep);
+  --tw-color-red-300: var(--ts-danger-text);
+  --tw-color-red-600: var(--ts-danger);
+  --tw-color-red-700: var(--ts-danger);
+  --tw-color-red-800: var(--ts-danger-text);
+  --tw-color-red-900: var(--ts-danger-deep);
+  --tw-color-red-950: var(--ts-danger-deep);
+  --tw-color-amber-200: var(--ts-warning);
+  --tw-color-amber-400: var(--ts-warning);
+  --tw-color-amber-700: var(--ts-warning);
+  --tw-color-amber-950: var(--ts-warning-deep);
+  --tw-color-yellow-900: var(--ts-warning-deep);
+}
+/* A primary button's hover under `dark:hover:bg-blue-500` is a lighter tone of the skin's primary button; the
+   skin's accent (what blue-500 is above) is meant for text and rules, and white text on it can be under 2:1.
+   (Written `:root.dark`, not `html.dark`, so the light twin does not copy it: the class does nothing in light mode.) */
+:root.dark [class*="dark:hover:bg-blue-500"]:hover {
+  background-color: color-mix(in srgb, var(--ts-btn-primary-bg) 78%, #fff);
+}
+/* `.lnms-input` (a field LibreNMS styles itself) sets its text colour from the palette with !important, in a
+   cascade layer, which an unlayered rule cannot beat: so the palette entry it reads is set on the field. */
+html.dark .lnms-input {
+  --tw-color-gray-700: var(--ts-text);
+  background-color: var(--ts-input-bg);
+  border: var(--ts-input-border);
+  box-shadow: var(--ts-input-shadow);
+  font-family: var(--ts-input-font-family);
+}
+html.dark .lnms-input:focus {
+  border-color: var(--ts-highlight);
+  box-shadow: var(--ts-input-focus-shadow);
+  outline: 0;
+}
+html.dark .lnms-input::placeholder {
+  color: var(--ts-text-mute);
 }
 @layer utilities {
   html.dark .panel[class*="tw:rounded"] {

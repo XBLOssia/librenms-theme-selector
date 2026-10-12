@@ -412,6 +412,107 @@ function test_clock_tower(): void
 }
 
 /*
+ * The Paisley family: a light skin and a dark skin from one template (scripts/make-paisley.py). Each must be
+ * something an upload could be, and the two must be one design in two moods.
+ */
+function test_paisley(): void
+{
+    T::group('paisley: two skins, one family, each valid as an upload');
+    $compiler = new SkinCompiler(catalog());
+    $skins = [];
+    foreach (['dawn' => 'light', 'velvet' => 'dark'] as $name => $mode) {
+        $dir = __DIR__ . "/../skins/paisley-$name";
+        $files = [];
+        foreach (['skin.json', 'skin.css', 'graph.conf'] as $f) {
+            $files[$f] = (string) file_get_contents("$dir/$f");
+        }
+        foreach (glob("$dir/textures/*.png") ?: [] as $png) {
+            $files['textures/' . basename($png)] = (string) file_get_contents($png);
+        }
+        foreach (glob("$dir/fonts/*.woff2") ?: [] as $font) {
+            $files['fonts/' . basename($font)] = (string) file_get_contents($font); // the OFL notices stay bundled-only
+        }
+        $rep = new Report();
+        $skin = $compiler->compileFiles($files, $rep); // as an upload: features.json is the one thing it can't carry
+        T::ok("paisley-$name compiles as an upload", $skin !== null, implode(' | ', $rep->errors()));
+        if ($skin === null) {
+            continue;
+        }
+        $skins[$name] = [$skin, $files];
+        T::ok("paisley-$name is written for $mode mode and is in the Paisley family", $skin->manifest['mode'] === $mode && $skin->manifest['family'] === 'Paisley' && $skin->manifest['id'] === "paisley-$name");
+        T::ok("paisley-$name has the paisley texture and a graph palette", count($skin->textures) === 1 && $skin->textures[0]['name'] === 'paisley' && $skin->graph !== []);
+        T::ok("paisley-$name asks for the ornament layer (features.json)", Features::parse((string) file_get_contents("$dir/features.json")) === ['ornaments' => true, 'effects' => []]);
+        $chrome = $mode === 'light' ? ['rrdgraph_def_text', 'rrdgraph_def_text_color'] : ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'];
+        $other = $mode === 'light' ? ['rrdgraph_def_text_dark', 'rrdgraph_def_text_color_dark'] : ['rrdgraph_def_text', 'rrdgraph_def_text_color'];
+        T::ok("paisley-$name's graph palette has its own mode's chrome, the ramps and the port series, and not the other mode's chrome",
+            count(array_diff($chrome, array_keys($skin->graph))) === 0 && isset($skin->graph['graph_colours.port_in'], $skin->graph['graph_colours.port_out'], $skin->graph['graph_colours.greens']) && count(array_intersect($other, array_keys($skin->graph))) === 0);
+        T::ok("paisley-$name ships its three font files, each with an OFL notice beside them", $skin->fontCount === 3 && count(glob("$dir/fonts/*.woff2") ?: []) === 3 && count(glob("$dir/fonts/OFL-*.txt") ?: []) === 2);
+        T::ok("paisley-$name's stylesheet names the fonts it ships and no others", (function () use ($files, $dir) {
+            preg_match_all('#url\("fonts/([^"]+)"\)#', $files['skin.css'], $m);
+            $m[1] = array_values(array_unique($m[1])); // one file may serve two faces (the display face is split by unicode-range)
+            sort($m[1]);
+            $have = array_map('basename', glob("$dir/fonts/*.woff2") ?: []);
+            sort($have);
+
+            return $m[1] === $have;
+        })());
+        T::ok("paisley-$name has a FONTS.md and a TEXTURES.md", is_file("$dir/FONTS.md") && is_file("$dir/TEXTURES.md"));
+        $css = $files['skin.css'];
+        T::ok("paisley-$name gives each corner slot exactly one gradient (base.css gives the eight slots one size and position each, so a slot holding several would push the rest into other corners)", (function () use ($css) {
+            foreach (['tl', 'tr', 'bl', 'br'] as $c) {
+                foreach (["--ts-frame-$c", "--ts-widget-frame-$c"] as $t) {
+                    if (! str_contains($css, "  $t: var(--p-corner-$c);")) {
+                        return false;
+                    }
+                }
+                if (! preg_match("/^  --p-corner-$c: ([^;]+);/m", $css, $m) || substr_count($m[1], 'gradient(') !== 1) {
+                    return false;
+                }
+            }
+
+            return true;
+        })());
+        T::ok("paisley-$name is purple-led: its surfaces and rules have more blue and red than green", (function () use ($css) {
+            foreach (['surface', 'raised', 'line', 'line-strong'] as $role) {
+                preg_match("/--p-$role: #([0-9a-f]{6})/", $css, $m);
+                [$r, $g, $b] = array_map('hexdec', str_split($m[1], 2));
+                if (! ($b > $g && $r > $g)) {
+                    return false;
+                }
+            }
+
+            return true;
+        })());
+        T::ok("paisley-$name's corners are two long curves and two short ones, like a paisley's tail", (bool) preg_match('/--ts-panel-radius-tl: 4px;\s+--ts-panel-radius-tr: 18px;\s+--ts-panel-radius-br: 4px;\s+--ts-panel-radius-bl: 18px;/', $css));
+        T::ok("paisley-$name's page is a paisley print over a pool of light", str_contains($css, '--ts-body-bg-image: var(--tx-paisley), var(--p-page);') && str_contains($css, '--tx-paisley: url("textures/paisley.png");'));
+        T::ok("paisley-$name's display face is Playfair for everything but the digits, which come from Libre Baskerville Bold", substr_count($css, 'font-family: "Paisley Display"') === 2
+            && (bool) preg_match('~LibreBaskerville-Bold\.woff2"\) format\("woff2"\);[^}]*unicode-range: U\+0030-0039;~', $css));
+    }
+    if (isset($skins['dawn'], $skins['velvet'])) {
+        $names = fn (string $css): array => (function () use ($css) {
+            preg_match_all('/^  (--ts-[a-z0-9-]+):/m', $css, $m);
+            sort($m[1]);
+
+            return $m[1];
+        })();
+        $a = $names($skins['dawn'][1]['skin.css']);
+        $b = $names($skins['velvet'][1]['skin.css']);
+        // One design in two moods: the same tokens, except that only the velvet breathes (dawn is still).
+        T::ok('the two skins set the same tokens, and only the velvet breathes', array_diff($a, $b) === [] && array_values(array_diff($b, $a)) === ['--ts-frame-breathe', '--ts-heading-marker-breathe'], implode(', ', array_merge(array_diff($a, $b), array_diff($b, $a))));
+        T::ok('the dawn one is light and the velvet one dark, by their grounds', (function () use ($skins) {
+            $lum = function (string $css): float {
+                preg_match('/--p-bg: #([0-9a-f]{6})/', $css, $m);
+                [$r, $g, $b] = array_map('hexdec', str_split($m[1], 2));
+
+                return (0.2126 * $r + 0.7152 * $g + 0.0722 * $b) / 255;
+            };
+
+            return $lum($skins['dawn'][1]['skin.css']) > 0.7 && $lum($skins['velvet'][1]['skin.css']) < 0.15;
+        })());
+    }
+}
+
+/*
  * Stock dark markup hard-codes a few light greys that are unreadable on a skin whose surfaces are light (a
  * light skin in the dark slot). The base answers them with the skin's own roles, in both modes.
  */

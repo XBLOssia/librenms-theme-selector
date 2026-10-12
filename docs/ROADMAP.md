@@ -244,6 +244,9 @@ dark".
    added 2026-10-07, a gothic night face with a template of its own). Still to do: more palettes
    (Sepia?) are one more entry in the script. Fonts (Playfair Display, Cinzel and Libre Baskerville, OFL)
    are bundled with `FONTS.md` and the licence notices.
+   **Paisley** (built 2026-10-12: Dawn for light mode, Velvet for dark, one template) is a second
+   light and dark pair: purple-led, with its print computed in `scripts/make-paisley.py`. It uses
+   one gradient per frame slot; see the note in that script's `corner()`.
 2. **Light variants of Terran, Protoss, Zerg and Digital Rain**, as sibling skins in a family each (the
    same shapes and ornaments, a light palette); until then they are dark skins you can also put in
    the light slot.

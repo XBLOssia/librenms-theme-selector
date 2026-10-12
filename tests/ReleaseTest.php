@@ -49,7 +49,7 @@ function test_release(): void
     T::ok('CI runs on pull requests, on pushes to main, and when called', str_contains($ci, "  pull_request:\n") && (bool) preg_match('/push:\n    branches: \[main\]/', $ci) && str_contains($ci, '  workflow_call:'));
     T::ok('its two jobs are called unit and mutate, the names the branch ruleset requires', (bool) preg_match('/^  unit:\n    name: unit \(PHP/m', $ci) && (bool) preg_match('/^  mutate:\n    name: mutation check/m', $ci));
     T::ok('it runs the unit tests and the mutation check', str_contains($ci, 'run: php tests/run.php') && str_contains($ci, 'run: sh tests/mutate.sh'));
-    T::ok('it runs the generated-file checks', str_contains($ci, 'gen-token-catalog.py --check') && str_contains($ci, 'gen-token-docs.py --check') && str_contains($ci, 'make-clock-tower.py --check'));
+    T::ok('it runs the generated-file checks', str_contains($ci, 'gen-token-catalog.py --check') && str_contains($ci, 'gen-token-docs.py --check') && str_contains($ci, 'make-clock-tower.py --check') && str_contains($ci, 'make-paisley.py --check'));
     $composer = json_decode($read('composer.json'), true) ?: [];
     preg_match('/\^(\d+\.\d+)/', (string) ($composer['require']['php'] ?? ''), $min);
     T::ok('the PHP matrix starts at the lowest version composer.json allows', isset($min[1]) && str_contains($ci, "php: ['{$min[1]}'"), $min[1] ?? '?');

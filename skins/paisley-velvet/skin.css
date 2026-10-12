@@ -1,0 +1,264 @@
+/*
+ * Paisley Velvet (deep purple velvet, white type, peach and gold trim).
+ *
+ * One of two skins that share this design (scripts/make-paisley.py writes both from one template): the
+ * dark-mode face of the Paisley family. Purple-led, with white, peach and gold as the small accents. Panels
+ * are soft-cornered (two long curves, two short, like the tail of a paisley) with a double rule and a gold
+ * flourish at each corner; each panel heading has a lace scallop under it and a ribbon of violet, peach and
+ * gold beside it; the navbar has a ribbon along its top and a string of pearls along its foot; and behind
+ * the page is a faint paisley print.
+ *
+ * Every token here is one an uploaded skin may set (the same file validates as an upload), plus the
+ * texture textures/paisley.png, computed by the script from fixed numbers. The type is Playfair Display
+ * for headings and Libre Baskerville for text (both SIL OFL, bundled in fonts/), and the system's serifs
+ * if they fail to load. Playfair Display's figures are old-style (a 0 looks like an o, a 1 like an l),
+ * which is wrong for hostnames and counters, so the display face is Playfair for everything but the
+ * digits 0-9, which come from Libre Baskerville Bold (two @font-face blocks, split by unicode-range).
+ */
+@font-face {
+  font-family: "Paisley Display";
+  src: url("fonts/PlayfairDisplay-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-002F, U+003A-10FFFF;
+}
+@font-face {
+  font-family: "Paisley Display";
+  src: url("fonts/LibreBaskerville-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Paisley Text";
+  src: url("fonts/LibreBaskerville-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Paisley Text";
+  src: url("fonts/LibreBaskerville-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+html.dark {
+  /* Palette */
+  --p-bg: #0b0614;
+  --p-surface: #1a0e2e;
+  --p-raised: #261548;
+  --p-hover: #36206a;
+  --p-line: #4b2f82;
+  --p-line-strong: #8a5ad6;
+  --p-text: #f1e9fa;
+  --p-dim: #cdbbe8;
+  --p-mute: #ab97cf;
+  --p-bright: #ffffff;
+  --p-violet: #8a5ad6;
+  --p-violet-hi: #b184ff;
+  --p-peach: #ffc9a8;
+  --p-gold: #e2b24a;
+  --p-gold-hi: #ffd97a;
+  --p-gold-dim: #6b5320;
+  --p-link: #ffc9a8;
+  --p-link-hover: #ffe3d2;
+  --p-accent: #c9a0ff;
+  --p-highlight: #ffb98a;
+  --p-danger: #ff7a8e;
+  --p-glow: rgba(177, 132, 255, .50);
+  --p-shade: rgba(5, 0, 14, .50);
+  --p-shade-strong: rgba(5, 0, 14, .70);
+  --p-display: "Paisley Display", "Playfair Display", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --p-serif: "Paisley Text", "Libre Baskerville", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --p-mono: "Courier Prime", "Courier New", Courier, ui-monospace, monospace;
+  --p-wash: linear-gradient(180deg, rgba(190, 140, 255, .09) 0, rgba(190, 140, 255, 0) 60%);
+  --p-lit: linear-gradient(180deg, rgba(150, 95, 235, .34) 0, rgba(150, 95, 235, .08) 100%);
+  --p-page: radial-gradient(ellipse at 50% -10%, rgba(140, 80, 230, .38) 0, rgba(140, 80, 230, 0) 62%), linear-gradient(180deg, #170a2e 0, #0b0614 100%);
+  --p-ribbon: linear-gradient(180deg, var(--p-gold-hi) 0, var(--p-peach) 50%, var(--p-violet-hi) 100%);
+  --tx-paisley: url("textures/paisley.png");
+
+  /* Core roles */
+  --ts-bg: var(--p-bg);
+  --ts-surface: var(--p-surface);
+  --ts-surface-raised: var(--p-raised);
+  --ts-surface-hover: var(--p-hover);
+  --ts-border: var(--p-line);
+  --ts-text: var(--p-text);
+  --ts-text-dim: var(--p-dim);
+  --ts-text-mute: var(--p-mute);
+  --ts-text-bright: var(--p-bright);
+  --ts-accent: var(--p-accent);
+  --ts-link: var(--p-link);
+  --ts-highlight: var(--p-highlight);
+  --ts-success: #7ee0a8;
+  --ts-warning: #ffc65a;
+  --ts-danger: #ff7a8e;
+  --ts-info: #9bb8ff;
+  --ts-danger-text: #ff9cab;
+  --ts-font-display: var(--p-display);
+  --ts-font-mono: var(--p-mono);
+  --ts-font-code: var(--p-mono);
+  --ts-radius-sm: 3px;
+  --ts-radius-md: 5px;
+  --ts-radius-lg: 10px;
+
+  /* The page: a pool of light and a faint paisley print over the ground. */
+  --ts-map-tile-filter: invert(1) hue-rotate(240deg) brightness(.72) contrast(1.05) saturate(.6);
+  --ts-body-bg-image: var(--tx-paisley), var(--p-page);
+  --ts-body-bg-size: 256px 256px, 100% 100%;
+  --ts-body-bg-repeat: repeat, no-repeat;
+
+  /* Type: a serif throughout, with the display face for headings and chrome */
+  --ts-root-font-family: var(--p-serif);
+  --ts-body-font-family: var(--p-serif);
+  --ts-input-font-family: var(--p-serif);
+  --ts-tab-font-family: var(--p-display);
+  --ts-navbar-brand-font-weight: 700;
+  --ts-navbar-brand-letter-spacing: .05em;
+  --ts-navbar-link-font-size: 15px;
+  --ts-navbar-link-letter-spacing: .02em;
+  --ts-panel-heading-font-weight: 700;
+  --ts-panel-heading-letter-spacing: .05em;
+  --ts-widget-title-font-weight: 700;
+  --ts-widget-title-letter-spacing: .05em;
+  --ts-table-head-font-weight: 700;
+  --ts-table-head-letter-spacing: .06em;
+  --ts-table-cell-font-size: 14px;
+  --ts-tab-font-size: 14px;
+  --ts-tab-letter-spacing: .04em;
+  --ts-btn-letter-spacing: .03em;
+  --ts-btn-font-size: 13px;
+  --ts-dropdown-item-font-weight: 400;
+  --ts-navbar-brand-text-shadow: 0 0 10px rgba(177, 132, 255, .55);
+  --ts-panel-heading-text-shadow: 0 0 10px rgba(177, 132, 255, .55);
+
+  /* Surfaces: a double rule of violet round every panel, and corners with two long curves and two short
+     (the tail of a paisley). The recess and bevel are quiet. */
+  --ts-shadow: 0 1px 3px var(--p-shade);
+  --ts-recess: inset 0 1px 2px var(--p-shade);
+  --ts-bevel: inset 0 1px 0 rgba(255, 255, 255, .12);
+  --ts-panel-bg-image: var(--p-wash);
+  --ts-widget-bg-image: var(--p-wash);
+  --ts-panel-heading-bg-image: var(--p-lit);
+  --ts-widget-title-bg-image: var(--p-lit);
+  --ts-panel-border: 1px solid var(--p-line-strong);
+  --ts-widget-border: 1px solid var(--p-line-strong);
+  --ts-panel-shadow: inset 0 0 0 3px var(--p-surface), inset 0 0 0 4px var(--p-line), 0 2px 10px var(--p-shade);
+  --ts-widget-shadow: inset 0 0 0 3px var(--p-surface), inset 0 0 0 4px var(--p-line), 0 2px 10px var(--p-shade);
+  --ts-panel-heading-border-bottom: 1px solid var(--p-line);
+  --ts-widget-title-border-bottom: 1px solid var(--p-line);
+  --ts-panel-radius-tl: 4px;
+  --ts-panel-radius-tr: 18px;
+  --ts-panel-radius-br: 4px;
+  --ts-panel-radius-bl: 18px;
+  --ts-widget-radius-tl: 4px;
+  --ts-widget-radius-tr: 18px;
+  --ts-widget-radius-br: 4px;
+  --ts-widget-radius-bl: 18px;
+  --ts-navbar-bg-image: linear-gradient(180deg, rgba(150, 95, 235, .32) 0, rgba(150, 95, 235, .06) 100%);
+  --ts-navbar-border-bottom: 1px solid var(--p-line-strong);
+  --ts-navbar-shadow: 0 2px 8px var(--p-shade);
+  --ts-navbar-link-hover-shadow: inset 0 -2px 0 0 var(--p-peach);
+  --ts-modal-border: 1px solid var(--p-line-strong);
+  --ts-modal-border-top: 3px double var(--p-gold);
+  --ts-modal-shadow: 0 6px 24px var(--p-shade-strong);
+  --ts-navbar-dropdown-border: 1px solid var(--p-line-strong);
+  --ts-navbar-dropdown-border-top: 2px solid var(--p-gold);
+  --ts-navbar-dropdown-shadow: 0 4px 14px var(--p-shade);
+  --ts-alert-badge-border-radius: 9px;
+  --ts-well-border-radius: 5px;
+  --ts-well-border: 1px solid var(--p-line);
+  --ts-alert-border-width: 1px 1px 1px 5px;
+  --ts-label-success-bg: #27774c;
+  --ts-label-success-fg: #fbf7ff;
+  --ts-label-danger-bg: #b8304a;
+  --ts-label-danger-fg: #fbf7ff;
+  --ts-label-warning-bg: #d99a1c;
+  --ts-label-warning-fg: #1a0e2e;
+  --ts-label-info-bg: #4a63c8;
+  --ts-label-info-fg: #fbf7ff;
+  --ts-label-default-fg: #fbf7ff;
+  --ts-badge-alert: #b8304a;
+  --ts-btn-success-bg: #27774c;
+  --ts-btn-success-fg: #fbf7ff;
+  --ts-btn-warning-bg: #d99a1c;
+  --ts-btn-warning-fg: #1a0e2e;
+  --ts-btn-danger-bg: #b8304a;
+  --ts-pre-bg: var(--p-raised);
+  --ts-pre-border: 1px solid var(--p-line);
+  --ts-code-text: var(--p-text);
+  --ts-progress: var(--p-violet-hi);
+  --ts-progress-glow-shadow: 0 0 8px var(--p-glow);
+
+  /* Ornaments. At each corner of a panel (a gold arc and a peach one outside each long curve, a gold bead in
+     a peach ring at each short corner), a ribbon of gold, peach and violet beside every panel heading with a lace scallop
+     under it, a ribbon along the top of the navbar and a string of pearls along its foot. The glow
+     and the slow fade, where there are any, are the light settling; every period is over 2s and
+     nothing flashes. */
+  --p-corner-tl: radial-gradient(circle at 4.5px 4.5px, var(--p-gold-hi) 0, var(--p-gold-hi) 2.4px, transparent 2.9px, transparent 4px, var(--p-peach) 4.3px, var(--p-peach) 5.1px, transparent 5.5px);
+  --p-corner-tr: radial-gradient(circle at 6px 26px, transparent 21.5px, var(--p-gold-hi) 22px, var(--p-gold-hi) 23.5px, transparent 24px, transparent 25.2px, var(--p-peach) 25.5px, var(--p-peach) 26.2px, transparent 26.5px);
+  --p-corner-bl: radial-gradient(circle at 26px 6px, transparent 21.5px, var(--p-gold-hi) 22px, var(--p-gold-hi) 23.5px, transparent 24px, transparent 25.2px, var(--p-peach) 25.5px, var(--p-peach) 26.2px, transparent 26.5px);
+  --p-corner-br: radial-gradient(circle at 27.5px 27.5px, var(--p-gold-hi) 0, var(--p-gold-hi) 2.4px, transparent 2.9px, transparent 4px, var(--p-peach) 4.3px, var(--p-peach) 5.1px, transparent 5.5px);
+  --ts-frame-tl: var(--p-corner-tl);
+  --ts-frame-tr: var(--p-corner-tr);
+  --ts-frame-bl: var(--p-corner-bl);
+  --ts-frame-br: var(--p-corner-br);
+  --ts-widget-frame-tl: var(--p-corner-tl);
+  --ts-widget-frame-tr: var(--p-corner-tr);
+  --ts-widget-frame-bl: var(--p-corner-bl);
+  --ts-widget-frame-br: var(--p-corner-br);
+  --ts-frame-glow: rgba(177, 132, 255, .50);
+  --ts-frame-breathe: 9s;
+  --ts-heading-marker: var(--p-ribbon);
+  --ts-heading-marker-size: 5px 100%;
+  --ts-heading-marker-position: left top;
+  --ts-heading-marker-glow: rgba(177, 132, 255, .50);
+  --ts-heading-marker-breathe: 6s;
+  --ts-heading-strip: radial-gradient(circle at 50% 0, transparent 5.1px, var(--p-violet-hi) 5.6px, var(--p-violet-hi) 6.6px, transparent 7.1px), radial-gradient(circle at 50% 7.2px, var(--p-gold-hi) 0, var(--p-gold-hi) 1.4px, transparent 1.9px);
+  --ts-heading-strip-size: 14px 9px;
+  --ts-heading-strip-position: left bottom;
+  --ts-heading-strip-repeat: repeat-x;
+  --ts-heading-strip-opacity: .6;
+  --ts-navbar-strip-top: linear-gradient(90deg, var(--p-violet) 0, var(--p-violet-hi) 22%, var(--p-peach) 50%, var(--p-gold-hi) 62%, var(--p-peach) 76%, var(--p-violet-hi) 100%);
+  --ts-navbar-strip-top-size: 100% 2px;
+  --ts-navbar-strip-bottom: radial-gradient(circle at 50% 5px, var(--p-gold-hi) 0, var(--p-gold) 2.4px, transparent 3px), linear-gradient(0deg, transparent 0, transparent 9px, var(--p-violet) 9px, var(--p-violet) 10px, transparent 10px);
+  --ts-navbar-strip-bottom-size: 14px 12px;
+  --ts-navbar-strip-bottom-repeat: repeat-x;
+  --ts-navbar-strip-bottom-opacity: .95;
+  --ts-breathe-low: .75;
+  --ts-breathe-high: 1;
+  --ts-alert-glow-period: 3s;
+  --ts-alert-glow-low: rgba(184, 48, 74, .35);
+  --ts-alert-glow-high: rgba(184, 48, 74, .80);
+
+  /* Tables and controls */
+  --ts-table-border: var(--p-line);
+  --ts-table-head-bg: var(--p-raised);
+  --ts-table-head-border-bottom: 2px solid var(--p-line-strong);
+  --ts-table-stripe-odd-bg: var(--p-surface);
+  --ts-table-stripe-even-bg: var(--p-raised);
+  --ts-table-row-hover-bg: var(--p-hover);
+  --ts-table-row-hover-shadow: inset 3px 0 0 0 var(--p-peach);
+  --ts-table-bg: var(--p-surface);
+  --ts-input-bg: var(--p-surface);
+  --ts-input-border: 1px solid var(--p-line-strong);
+  --ts-input-border-top-color: var(--p-line-strong);
+  --ts-input-shadow: var(--ts-recess);
+  --ts-input-focus-shadow: 0 0 0 2px var(--p-violet-hi);
+  --ts-addon-border: var(--p-line-strong);
+  --ts-btn-default-border: var(--p-line-strong);
+  --ts-btn-default-hover-shadow: 0 0 8px var(--p-glow);
+  --ts-btn-primary-bg: #6a2fc0;
+  --ts-btn-primary-border: #e2b24a;
+  --ts-btn-primary-shadow: var(--ts-bevel);
+  --ts-lnms-btn-primary-bg: #6a2fc0;
+  --ts-lnms-btn-primary-border: #e2b24a;
+  --ts-btn-hover-filter: brightness(1.1);
+  --ts-pagemenu-active-shadow: inset 0 -2px 0 0 var(--p-peach);
+  --ts-tab-active-border: var(--p-line-strong);
+  --ts-tab-active-border-top: 3px double var(--p-gold);
+  --ts-tab-active-border-bottom-color: var(--p-surface);
+}

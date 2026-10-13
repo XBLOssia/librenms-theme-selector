@@ -1,5 +1,10 @@
 # Theme Selector for LibreNMS
 
+[![CI](https://github.com/XBLOssia/librenms-theme-selector/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XBLOssia/librenms-theme-selector/actions/workflows/ci.yml)
+[![Integration](https://github.com/XBLOssia/librenms-theme-selector/actions/workflows/integration.yml/badge.svg?branch=main)](https://github.com/XBLOssia/librenms-theme-selector/actions/workflows/integration.yml)
+[![Release](https://img.shields.io/github/v/release/XBLOssia/librenms-theme-selector)](https://github.com/XBLOssia/librenms-theme-selector/releases)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+
 Skins for [LibreNMS](https://github.com/librenms/librenms): three StarCraft-inspired ones, a green-phosphor "digital rain", a
 clock tower in three moods (one light, two dark), and a purple paisley pair (one light, one dark).
 
@@ -481,17 +486,8 @@ docs/ROADMAP.md             prioritised backlog and open decisions
 
 ## Licence
 
-[MIT](LICENSE).
+[MIT](LICENSE). The bundled webfonts (SIL Open Font License 1.1) and the legacy patches (GPLv3, matching
+LibreNMS) carry their own terms; [NOTICE.md](NOTICE.md) has the detail.
 
-Two carve-outs:
-
-- The bundled webfonts under `skins/*/fonts/` are **SIL Open Font License
-  1.1**, with the upstream notice included beside the font files in each
-  directory.
-- The patches under `patches/` (legacy, see above) are **GPLv3**, matching LibreNMS,
-  which they are diffs against and a small amount of which they quote as context.
-
-No LibreNMS source is otherwise redistributed here. The harness needs several
-of its stylesheets to render anything realistic, and those are fetched at
-setup time by `harness/sync-css.sh` into a gitignored directory rather than
-committed.
+Contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+Security problems go to a [private advisory](docs/SECURITY.md), not an issue.

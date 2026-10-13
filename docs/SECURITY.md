@@ -5,8 +5,11 @@ attacker-controlled bytes enter a system that serves web pages and runs PHP, so
 this page says what is defended, how, how each defence is tested, and what is
 not defended.
 
-Report a problem by opening an issue, or privately to the address on the
-maintainer's GitHub profile.
+Report a problem **privately**, with a
+[private security advisory](https://github.com/XBLOssia/librenms-theme-selector/security/advisories/new)
+(the repository's Security tab, "Report a vulnerability"). Please do not open a public issue for a
+vulnerability. A confirmed problem is fixed in a patch release and credited in the changelog unless you would rather it was
+not. Only the latest release is supported.
 
 ---
 

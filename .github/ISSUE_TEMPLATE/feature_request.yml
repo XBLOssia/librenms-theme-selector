@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest something new, including a skin for the plugin to ship
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you want to do
+      description: The problem or the goal, before the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind
+      description: Optional. A sketch, a reference, or how another tool does it.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Is it a skin?
+      options:
+        - No, it is a feature or a fix
+        - Yes, a skin I would like shipped with the plugin
+        - Yes, but I only need to share it as a bundle

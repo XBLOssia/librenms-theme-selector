@@ -11,6 +11,11 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Project
+- **Community files.** `CONTRIBUTING.md`, a Contributor Covenant 2.1 `CODE_OF_CONDUCT.md`, issue forms and a pull request
+  template. `LICENSE` is now the plain MIT text, so GitHub recognises it; the font and patch carve-outs moved to
+  `NOTICE.md`. Vulnerabilities are now reported through a private advisory, not an issue.
+
 ### Skins
 - **The easter eggs got more to do, and they show on any page** (not only a device page). The white rabbit in
   Digital Rain stays three and a half seconds (it was two), and clicking it blacks the screen out for under

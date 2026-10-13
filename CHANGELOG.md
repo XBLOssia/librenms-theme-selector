@@ -16,6 +16,20 @@ that section into the next version's.
   template. `LICENSE` is now the plain MIT text, so GitHub recognises it; the font and patch carve-outs moved to
   `NOTICE.md`. Vulnerabilities are now reported through a private advisory, not an issue.
 
+### Fixes
+- **A dialog inside a panel could not be used on skins with ornaments** (the Clock Tower, Digital Rain and Paisley
+  skins, and every installed skin, Corpo Blue among them). On the alerts page, opening *Details* dimmed the page and
+  left the dialog dead: no scrolling, no way to close it. LibreNMS writes that dialog inside the panel, the ornament
+  rules made the panel a stacking context, and the dialog's backdrop, a child of the page, painted over the whole
+  panel. A panel that holds an open dialog now stops being a stacking context until it closes.
+- **The dropdowns in the alert rule builder were unreadable.** The builder's selects use select2's default variant,
+  which the base stylesheet never styled, so the skin's light text sat on select2's white list (about 1.3:1). That
+  variant now takes the skin's surface, text, hover and chosen colours, like the other one. Every skin was affected,
+  not only Corpo Blue.
+- **The alert rule builder's rows were white and yellow under the skin's light text**, so the drag handle (⇅) and
+  the tree lines were all but invisible. Rows, groups, the drag placeholder, the tree lines and a row with an error
+  now come from the skin's surfaces, borders and danger colour.
+
 ### Skins
 - **The easter eggs got more to do, and they show on any page** (not only a device page). The white rabbit in
   Digital Rain stays three and a half seconds (it was two), and clicking it blacks the screen out for under

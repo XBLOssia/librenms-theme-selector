@@ -124,6 +124,11 @@ function test_ornaments(): void
         "$gate .grid-stack .grid-stack-item:hover" => [
             'z-index: 1035',
         ],
+        "$gate .panel:has(.modal.in)" => [
+            'isolation: auto',
+            'clip-path: none',
+            'z-index: auto',
+        ],
         "$gate .panel > .panel-heading" => [
             'isolation: isolate',
         ],
@@ -516,6 +521,15 @@ function test_ornaments(): void
         T::ok("$sel is raised above the sticky navbar (1030) and below modals (1040)", count($z) === 1 && preg_match('/^z-index: (\d+)$/', $z[0], $zm) === 1 && (int) $zm[1] > 1030 && (int) $zm[1] < 1040, json_encode($z));
     }
     T::ok('the panel itself is positioned, so its z-index applies', in_array('position: relative', $panelDecls, true));
+
+    // LibreNMS renders some modals inside a panel (alerts: Alert details, Notes, Acknowledge). The backdrop is a child of
+    // <body> at 1040, so a modal trapped in the panel's stacking context paints under it: dimmed, and nothing can be clicked.
+    T::group('ornaments: a modal inside a panel is not trapped under its own backdrop');
+    $open = $rules["$gate .panel:has(.modal.in)"] ?? [];
+    T::ok('a panel holding an open modal is not a stacking context: no isolation, no clip, no z-index', in_array('isolation: auto', $open, true) && in_array('clip-path: none', $open, true) && in_array('z-index: auto', $open, true), json_encode($open));
+    T::ok('and it says nothing else (no z-index above the backdrop, which would leave the panel undimmed)', count($open) === 3, json_encode($open));
+    $order = array_keys($rules);
+    T::ok('it comes after the hover raise, which would otherwise win (the modal is under the pointer, so the panel is hovered)', array_search("$gate .panel:has(.modal.in)", $order, true) > array_search("$gate .panel:is(:hover, :has(.open))", $order, true));
 
     // The panel's ::after draws only the edge lines of the cut (the clip makes the cut).
     $panelAfter = $rules["$gate .panel::after"] ?? [];

@@ -184,15 +184,23 @@ texture.
   sixty-odd panels, Services with a panel for each device, came up blank in places in Chrome: a clip that is not
   a rectangle is drawn through a mask the size of its bounds, and a mask that large for every panel is more than a
   browser will draw), so a dropdown or a hover card that opens
-  past a panel's edge by less than that is not clipped; only the cut triangles are. A fixed-position dialog
-  inside a panel would be cut if it lay more than 400px from it; LibreNMS's dialogs sit at the top level of the
-  page, none inside a panel (checked on the alert rules page, which has eight).
+  past a panel's edge by less than that is not clipped; only the cut triangles are. Most of LibreNMS's dialogs
+  sit at the top level of the page (the alert rules page has eight), but some are written inside a panel (the
+  alerts page: Alert details, Notes, Acknowledge); see the next item for those.
 * **Cards that open inside a panel stay on top.** A panel is a stacking context (isolation and
   clip-path), and LibreNMS renders hover cards, menus and popups inside the element that owns
   them, so without more, every later panel would paint over a card opened in an earlier one
   (the device hover card on the device page did exactly that). While the pointer is over a
   panel or widget, or the panel holds an open menu, it is raised to `z-index: 1035`: above the
   sticky navbar (1030), below modals (1040 and up).
+* **A modal written inside a panel is not trapped under its own backdrop.** A modal's `z-index` (1050) only counts
+  inside its nearest stacking context, and the backdrop (1040) is a child of `<body>`. With the panel isolated, the
+  whole panel, the dialog with it, paints under the backdrop: the page dims and nothing in the dialog can be clicked,
+  scrolled or closed (this was the alerts page's Alert details). So while a panel holds an open modal
+  (`.panel:has(.modal.in)`) it stops being a stacking context: no isolation, no clip and no raised `z-index` (it is
+  hovered, being the dialog's ancestor, so the raise has to be undone too). The frame and the cut corners are not
+  drawn on that panel for as long as the dialog is up, under the dimmed page. It is not raised above the backdrop
+  instead, because that would leave the panel undimmed.
 * **The notch is grown 2px off the box edges.** Each notch is the cut triangle plus 2px on
   the two sides that lie along the box edges (the hypotenuse stays on the same line), and
   the zero-width slit that joins it to the outside runs 2px outside the box. Reason: with

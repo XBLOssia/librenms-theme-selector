@@ -182,6 +182,19 @@ run_with $B "$RZ s/z-index: 1035/z-index: 1/" "cards: a raised panel that still 
 run_with $B "$RZ s/z-index: 1035/z-index: 1045/" "cards: a raised panel that covers modals"
 run_with $B 's/\.panel:is(:hover, :has(\.open)) {/.panel:is(:has(.open)) {/' "cards: a panel that is not raised when hovered (its hover card goes under the next panel)"
 run_with $B 's/\.grid-stack \.grid-stack-item:hover {/.grid-stack .grid-stack-itemx:hover {/' "cards: a widget that is not raised when hovered"
+RM='/data-ts-orn\]) \.panel:has(\.modal\.in) {/,/^}/'
+run_with $B "$RM s/isolation: auto;/isolation: isolate;/" "modals: a panel that stays isolated while it holds an open modal (the modal paints under its backdrop)"
+run_with $B "$RM s/clip-path: none;/clip-path: inset(0);/" "modals: a panel that stays clipped while it holds an open modal"
+run_with $B "$RM s/z-index: auto;/z-index: 1035;/" "modals: a panel that keeps its raised z-index while it holds an open modal"
+run_with $B 's/\.panel:has(\.modal\.in) {/.panel:has(.modalx.in) {/' "modals: a panel that is never released when a modal opens in it"
+RS='/html\.dark \.select2-container--default \.select2-results__option {/,/^}/'
+run_with $B "$RS s/color: var(--ts-text-dim);/color: #dfe3ea;/" "select2: an option with a fixed text colour"
+run_with $B "$RS s/background-color: var(--ts-surface);/background-color: #fff;/" "select2: an option on a white ground (light text on it is unreadable)"
+run_with $B 's/\.select2-container--default \.select2-results__option--highlighted\[aria-selected\] {/.select2-container--default .select2-results__option--highlightedx[aria-selected] {/' "select2: no highlighted option style (select2's own blue shows)"
+RQ='/html\.dark \.query-builder \.rule-container, html\.dark \.query-builder \.rule-placeholder, html\.dark \.query-builder \.rules-group-container {/,/^}/'
+run_with $B "$RQ s/background: var(--ts-surface);/background: #fff;/" "query builder: a white row under the skin's light text"
+run_with $B 's/\.query-builder \.drag-handle {/.query-builder .drag-handlex {/' "query builder: a drag handle left at the skin's text on a row (or white)"
+run_with $B "s/color-mix(in srgb, var(--ts-danger) 30%, var(--ts-surface))/#fdd/" "query builder: a pale pink row with an error under light text"
 PS=src/Graph/PortSeries.php
 PU=src/Graph/PortSeriesSupport.php
 run_with $PS 's# || strtoupper($m\[4\]) !== self::STOCK\[$direction\]\[$role\]##' "port colours: recolour any colour, not only the stock literal"

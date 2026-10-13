@@ -96,8 +96,8 @@ Asymmetric, uneven, grown rather than built.
 Phosphor green on black, a faint scanline over everything, monospace type with a red and cyan
 fringe on the headings, and torn corners on panels and buttons. Behind the page, glyphs fall
 slowly (one tile every 36 seconds; still for visitors who ask for reduced motion). Amber, not
-red, marks outbound traffic on graphs, so it never reads as an alarm. Now and then, on a device
-page, something white and quick crosses the bottom corner.
+red, marks outbound traffic on graphs, so it never reads as an alarm. Now and then, on any page,
+something white appears in the bottom corner. If you are quick, it has something to say.
 
 ![The Digital Rain skin on a LibreNMS dashboard](docs/img/dashboard-digital-rain.png)
 
@@ -145,7 +145,8 @@ Clock Tower skins use. Both are generated from one template by
 [scripts/make-paisley.py](scripts/make-paisley.py), which also checks that every text colour is at least
 4.5:1 on its ground, and each is valid as an upload. They are an original design in the colours and mood of
 mid-1980s pop; nothing in them is copied from anyone's artwork, and none of the names refers to anyone.
-Now and then, on a device page, an eye in a triangle opens in the bottom-left corner, glances either way and is gone.
+Now and then, on any page, an eye in a triangle opens in the bottom-left corner and glances either way. Click it
+while it is there.
 
 ![The Paisley Dawn skin on a LibreNMS dashboard](docs/img/dashboard-paisley-dawn.png)
 

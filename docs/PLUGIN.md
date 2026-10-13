@@ -188,11 +188,16 @@ root or an upload) and only for a bundled skin; `Features::parse` honours two ke
 rest. `ornaments` gives a bundled skin the ornament layer an upload always gets (the
 `data-ts-orn` mark on its stylesheet links). `effects` names fixed pieces of page markup in
 `resources/effects/` that `SkinInjector` pushes into the layout's `scripts` stack (`Effects`): today
-`white-rabbit`, which Digital Rain uses, and `eye-of-providence`, which the Paisley skins use. On one
-device-page load in ten (rolled in PHP) a small rabbit shows in the bottom-right corner for about a second
-and fades; on one in twelve a small eye in a triangle opens in the bottom-left corner, glances either way
-and fades after five seconds, in the skin's own gold and violet (the page's palette variables, each with a
-fallback). Both are CSS animation alone, with no script and no request, hidden under reduced motion. An uploaded skin can ask for neither: the manifest refuses
+`white-rabbit`, which Digital Rain uses, and `eye-of-providence`, which the Paisley skins use. On any
+page, one load in ten (rolled in PHP) a small rabbit shows in the bottom-right corner for three and a half
+seconds and fades; click it and the screen goes black for under five seconds, a line is typed and a cursor
+blinks three times, then it is gone. On one load in twelve a small eye in a triangle opens in the bottom-left
+corner, glances either way and fades after five seconds, in the skin's own gold and violet (the page's palette
+variables, each with a fallback); click it and purple rain falls all over the screen for ten seconds, then
+fades. Both are CSS alone, with no script and no request: the click is a hidden (`display:none`, so
+unfocusable) checkbox inside a label that the sprite belongs to, and `:checked` shows the overlay or the
+rain. Both are hidden under reduced motion, every animation ends, the rain never takes clicks, and a click
+on the overlay ends it. An uploaded skin can ask for neither: the manifest refuses
 the keys and the zip allowlist refuses the file. That difference is tracked in
 [ROADMAP.md](ROADMAP.md), "Bundled-only features".
 
@@ -533,8 +538,8 @@ gave:
 Verification at the time: 1,178 unit checks (hostile archives, a large CSS injection
 corpus, a mutation fuzzer, installer failure paths), a mutation check that
 breaks each defence and requires a failing test (46 caught, 7 documented as
-redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,623 checks and
-190 mutations caught; `sh dev/test.sh all` prints the current figures.)
+redundant layers, 0 missed) and an end-to-end script against the real routes. (Now 2,640 checks and
+188 mutations caught; `sh dev/test.sh all` prints the current figures.)
 Deleting a skin in use falls its users back to the instance default; deleting
 the default clears it and restores the graph colours. See
 [SECURITY.md](SECURITY.md) for the controls and, as important, what is not

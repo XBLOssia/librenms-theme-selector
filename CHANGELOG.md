@@ -11,6 +11,15 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Skins
+- **The easter eggs got more to do, and they show on any page** (not only a device page). The white rabbit in
+  Digital Rain stays three and a half seconds (it was two), and clicking it blacks the screen out for under
+  five seconds with a line typed on it and a cursor that blinks three times, then it is gone as if it had not
+  happened. The eye in the Paisley skins, when clicked, makes purple rain fall all over the screen for ten
+  seconds, then fade. Still CSS only (no script), hidden for visitors who ask for reduced motion, and
+  bundled-only. The chances are unchanged (one load in ten, one in twelve), so with every page now eligible
+  they will be seen more often.
+
 ## [1.1.0] - 2026-10-12
 
 ### Skins

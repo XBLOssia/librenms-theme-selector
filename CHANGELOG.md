@@ -11,6 +11,8 @@ that section into the next version's.
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-13
+
 ### Project
 - **Community files.** `CONTRIBUTING.md`, a Contributor Covenant 2.1 `CODE_OF_CONDUCT.md`, issue forms and a pull request
   template. `LICENSE` is now the plain MIT text, so GitHub recognises it; the font and patch carve-outs moved to

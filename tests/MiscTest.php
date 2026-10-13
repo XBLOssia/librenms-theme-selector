@@ -349,3 +349,45 @@ function test_contextual_rows(): void
     T::ok('no hovered contextual row sets a fixed text colour (a fixed one is right on one palette and wrong on the next)', ! preg_match('/tr\.(success|info|warning|danger):hover > td[^{]*\{[^}]*\bcolor: #/', $css));
     T::ok('the links in a contextual row are the skin\'s bright text, the colour the hovered cell now keeps', (bool) preg_match('/tr\.success > td a[^{]*\{[^}]*color: var\(--ts-text-bright\);/', $css));
 }
+
+function test_select2_default(): void
+{
+    T::group('select2: the default variant (the alert rule builder) keeps its contrast');
+    $css = (string) file_get_contents(__DIR__ . '/../base/base.css');
+    $rule = function (string $sel) use ($css): string {
+        return preg_match('/html\.dark ' . preg_quote($sel, '/') . '\s*\{([^}]*)\}/', $css, $m) === 1 ? preg_replace('/\s+/', ' ', $m[1]) : '';
+    };
+    // select2's own stylesheet paints this variant's dropdown white; the container's light text (html.dark .select2-container)
+    // would sit on it. Every surface and every text colour of the list is the skin's.
+    $dropdown = $rule('.select2-container--default .select2-selection--single, html.dark .select2-container--default .select2-selection--multiple, html.dark .select2-container--default .select2-dropdown');
+    T::ok('the closed box and the dropdown are the skin\'s surface, with the skin\'s text', str_contains($dropdown, 'background-color: var(--ts-surface);') && str_contains($dropdown, 'color: var(--ts-text);'), $dropdown);
+    $option = $rule('.select2-container--default .select2-results__option');
+    T::ok('an option is the skin\'s surface with its dimmed text', str_contains($option, 'background-color: var(--ts-surface);') && str_contains($option, 'color: var(--ts-text-dim);'), $option);
+    $hl = $rule('.select2-container--default .select2-results__option--highlighted[aria-selected]');
+    T::ok('the highlighted option is the skin\'s hover surface with its bright text', str_contains($hl, 'background-color: var(--ts-surface-hover);') && str_contains($hl, 'color: var(--ts-text-bright);'), $hl);
+    $selected = $rule('.select2-container--default .select2-results__option[aria-selected=true]');
+    T::ok('the chosen option is a skin surface with its bright text', str_contains($selected, 'background-color: var(--ts-surface-raised);') && str_contains($selected, 'color: var(--ts-text-bright);'), $selected);
+    $shown = $rule('.select2-container--default .select2-selection--single .select2-selection__rendered');
+    T::ok('the text shown in the closed box is the skin\'s', str_contains($shown, 'color: var(--ts-text);'), $shown);
+    $order = strpos($css, '.select2-container--default .select2-results__option[aria-selected=true] {') < strpos($css, '.select2-container--default .select2-results__option--highlighted[aria-selected] {');
+    T::ok('the highlighted rule comes after the chosen one (they have the same weight, and the row under the pointer wins)', $order);
+    T::ok('no rule for this variant sets a fixed colour', ! preg_match('/select2-container--default[^{]*\{[^}]*(?<![-\w])(color|background-color|border-color):\s*(#|rgb)/', $css));
+}
+
+function test_query_builder(): void
+{
+    T::group('query builder: the alert rule rows are the skin\'s, not its own white and yellow');
+    $css = (string) file_get_contents(__DIR__ . '/../base/base.css');
+    $rule = function (string $sel) use ($css): string {
+        return preg_match('/(?:^|[}\/])\s*html\.dark ' . preg_quote($sel, '/') . '\s*\{([^}]*)\}/', $css, $m) === 1 ? preg_replace('/\s+/', ' ', $m[1]) : '';
+    };
+    // The builder's own stylesheet paints a row translucent white and a group pale yellow; the skin's light text sits on them.
+    $rows = $rule('.query-builder .rule-container, html.dark .query-builder .rule-placeholder, html.dark .query-builder .rules-group-container');
+    T::ok('a row is the skin\'s surface, with its border and text', str_contains($rows, 'background: var(--ts-surface);') && str_contains($rows, 'border-color: var(--ts-border);') && str_contains($rows, 'color: var(--ts-text);'), $rows);
+    T::ok('a group is the skin\'s raised surface', str_contains($rule('.query-builder .rules-group-container'), 'background: var(--ts-surface-raised);'));
+    T::ok('the drag handle is a muted skin text colour', str_contains($rule('.query-builder .drag-handle'), 'color: var(--ts-text-mute);'));
+    T::ok('the tree lines are the skin\'s border', str_contains($rule('.query-builder .rules-list > ::before, html.dark .query-builder .rules-list > ::after'), 'border-color: var(--ts-border);'));
+    $err = $rule('.query-builder .has-error');
+    T::ok('a row with an error is a tint of the skin\'s danger colour over its surface, not the builder\'s pink', str_contains($err, 'color-mix(in srgb, var(--ts-danger) 30%, var(--ts-surface))'), $err);
+    T::ok('no rule for the builder sets a fixed colour', ! preg_match('/\.query-builder[^{]*\{[^}]*(?<![-\w])(color|background|background-color|border-color):\s*(#|rgb)/', $css));
+}

@@ -4,7 +4,7 @@
  * The third skin of the Clock Tower family, and the one that is not the same room: the great clock at
  * night. A bright yellow lamp behind the dial, blue stone in shadow, pointed arches and Roman capitals.
  * Where Daylight and Lantern share a brass-and-cogs design, this one is gothic: square stone corners with
- * a quatrefoil at each, a faint arcade of pointed arches behind every panel heading, a row of lit lancet
+ * a gilt stud at each, a faint arcade of pointed arches behind every panel heading, a row of lit lancet
  * windows along the foot of the navbar, and a faint wall of masonry and tracery windows behind the page.
  * Written by scripts/make-clock-tower.py (the texture too: it is computed from fixed numbers).
  *
@@ -193,22 +193,30 @@ html.dark {
   --ts-progress: var(--p-lamp);
   --ts-progress-glow-shadow: 0 0 8px var(--p-glow);
 
-  /* Ornaments. A quatrefoil (four small lobes) at each corner of a panel; the arcade of a gothic
-     wall, faint, behind every panel heading, and a lit lancet window set between piers along the foot
-     of the navbar; a gilt line of light along its top. The glow and the slow fade are the lamp
-     settling; every period is over 2s and nothing flashes. */
-  --p-quatrefoil-tl: radial-gradient(circle at 3.8px 8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 12.2px 8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 3.8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 12.2px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 8px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px);
-  --p-quatrefoil-tr: radial-gradient(circle at 19.8px 8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 28.2px 8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 3.8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 12.2px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 8px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px);
-  --p-quatrefoil-bl: radial-gradient(circle at 3.8px 24px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 12.2px 24px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 19.8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 28.2px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 8px 24px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px);
-  --p-quatrefoil-br: radial-gradient(circle at 19.8px 24px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 28.2px 24px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 19.8px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 28.2px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px), radial-gradient(circle at 24px 24px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px);
-  --ts-frame-tl: var(--p-quatrefoil-tl);
-  --ts-frame-tr: var(--p-quatrefoil-tr);
-  --ts-frame-bl: var(--p-quatrefoil-bl);
-  --ts-frame-br: var(--p-quatrefoil-br);
-  --ts-widget-frame-tl: var(--p-quatrefoil-tl);
-  --ts-widget-frame-tr: var(--p-quatrefoil-tr);
-  --ts-widget-frame-bl: var(--p-quatrefoil-bl);
-  --ts-widget-frame-br: var(--p-quatrefoil-br);
+  /* Ornaments. A gilt stud with a dark eye at each corner, one gradient to a slot (a slot is exactly
+     one layer; give it more and they spill into the other slots). A panel's frame layer is drawn
+     behind the panel, so only the 8px outside its edge shows: its studs are small and hang off the
+     corner entirely in that strip. A widget's frame is drawn inside its edge, so its studs sit in
+     from the corner and are larger. Then the arcade of a gothic wall, faint, behind every panel
+     heading, and a lit lancet window set between piers along the foot of the navbar; a gilt line of
+     light along its top. The glow and the slow fade are the lamp settling; every period is over 2s
+     and nothing flashes. */
+  --p-stud-tl: radial-gradient(circle at 4px 4px, var(--p-bg) 0, var(--p-bg) 1px, var(--p-lamp) 1.5px, var(--p-lamp) 3px, transparent 3.5px);
+  --p-stud-tr: radial-gradient(circle at 28px 4px, var(--p-bg) 0, var(--p-bg) 1px, var(--p-lamp) 1.5px, var(--p-lamp) 3px, transparent 3.5px);
+  --p-stud-bl: radial-gradient(circle at 4px 28px, var(--p-bg) 0, var(--p-bg) 1px, var(--p-lamp) 1.5px, var(--p-lamp) 3px, transparent 3.5px);
+  --p-stud-br: radial-gradient(circle at 28px 28px, var(--p-bg) 0, var(--p-bg) 1px, var(--p-lamp) 1.5px, var(--p-lamp) 3px, transparent 3.5px);
+  --p-stud-in-tl: radial-gradient(circle at 8px 8px, var(--p-bg) 0, var(--p-bg) 1.5px, var(--p-lamp) 2px, var(--p-lamp) 4px, transparent 4.5px);
+  --p-stud-in-tr: radial-gradient(circle at 24px 8px, var(--p-bg) 0, var(--p-bg) 1.5px, var(--p-lamp) 2px, var(--p-lamp) 4px, transparent 4.5px);
+  --p-stud-in-bl: radial-gradient(circle at 8px 24px, var(--p-bg) 0, var(--p-bg) 1.5px, var(--p-lamp) 2px, var(--p-lamp) 4px, transparent 4.5px);
+  --p-stud-in-br: radial-gradient(circle at 24px 24px, var(--p-bg) 0, var(--p-bg) 1.5px, var(--p-lamp) 2px, var(--p-lamp) 4px, transparent 4.5px);
+  --ts-frame-tl: var(--p-stud-tl);
+  --ts-frame-tr: var(--p-stud-tr);
+  --ts-frame-bl: var(--p-stud-bl);
+  --ts-frame-br: var(--p-stud-br);
+  --ts-widget-frame-tl: var(--p-stud-in-tl);
+  --ts-widget-frame-tr: var(--p-stud-in-tr);
+  --ts-widget-frame-bl: var(--p-stud-in-bl);
+  --ts-widget-frame-br: var(--p-stud-in-br);
   --ts-frame-glow: rgba(255, 214, 82, .55);
   --ts-frame-breathe: 9s;
   --ts-heading-marker: linear-gradient(180deg, var(--p-lamp-hi) 0, var(--p-lamp) 100%);
@@ -217,7 +225,7 @@ html.dark {
   --ts-heading-marker-glow: rgba(255, 214, 82, .55);
   --ts-heading-marker-breathe: 6s;
   --ts-heading-strip: radial-gradient(circle at 0 100%, transparent 20.4px, var(--p-lamp) 20.5px, var(--p-lamp) 22px, transparent 22.2px), radial-gradient(circle at 22px 100%, transparent 20.4px, var(--p-lamp) 20.5px, var(--p-lamp) 22px, transparent 22.2px);
-  --ts-heading-strip-size: 22px 20px;
+  --ts-heading-strip-size: 22px 18px;
   --ts-heading-strip-position: left bottom;
   --ts-heading-strip-repeat: repeat-x;
   --ts-heading-strip-opacity: .32;

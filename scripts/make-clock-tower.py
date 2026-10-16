@@ -428,7 +428,7 @@ GOTHAM_CSS = Template(r'''/*
  * The third skin of the Clock Tower family, and the one that is not the same room: the great clock at
  * night. A bright yellow lamp behind the dial, blue stone in shadow, pointed arches and Roman capitals.
  * Where Daylight and Lantern share a brass-and-cogs design, this one is gothic: square stone corners with
- * a quatrefoil at each, a faint arcade of pointed arches behind every panel heading, a row of lit lancet
+ * a gilt stud at each, a faint arcade of pointed arches behind every panel heading, a row of lit lancet
  * windows along the foot of the navbar, and a faint wall of masonry and tracery windows behind the page.
  * Written by scripts/make-clock-tower.py (the texture too: it is computed from fixed numbers).
  *
@@ -617,22 +617,30 @@ $wrap {
   --ts-progress: var(--p-lamp);
   --ts-progress-glow-shadow: 0 0 8px var(--p-glow);
 
-  /* Ornaments. A quatrefoil (four small lobes) at each corner of a panel; the arcade of a gothic
-     wall, faint, behind every panel heading, and a lit lancet window set between piers along the foot
-     of the navbar; a gilt line of light along its top. The glow and the slow fade are the lamp
-     settling; every period is over 2s and nothing flashes. */
-  --p-quatrefoil-tl: $quatrefoil_tl;
-  --p-quatrefoil-tr: $quatrefoil_tr;
-  --p-quatrefoil-bl: $quatrefoil_bl;
-  --p-quatrefoil-br: $quatrefoil_br;
-  --ts-frame-tl: var(--p-quatrefoil-tl);
-  --ts-frame-tr: var(--p-quatrefoil-tr);
-  --ts-frame-bl: var(--p-quatrefoil-bl);
-  --ts-frame-br: var(--p-quatrefoil-br);
-  --ts-widget-frame-tl: var(--p-quatrefoil-tl);
-  --ts-widget-frame-tr: var(--p-quatrefoil-tr);
-  --ts-widget-frame-bl: var(--p-quatrefoil-bl);
-  --ts-widget-frame-br: var(--p-quatrefoil-br);
+  /* Ornaments. A gilt stud with a dark eye at each corner, one gradient to a slot (a slot is exactly
+     one layer; give it more and they spill into the other slots). A panel's frame layer is drawn
+     behind the panel, so only the 8px outside its edge shows: its studs are small and hang off the
+     corner entirely in that strip. A widget's frame is drawn inside its edge, so its studs sit in
+     from the corner and are larger. Then the arcade of a gothic wall, faint, behind every panel
+     heading, and a lit lancet window set between piers along the foot of the navbar; a gilt line of
+     light along its top. The glow and the slow fade are the lamp settling; every period is over 2s
+     and nothing flashes. */
+  --p-stud-tl: $stud_tl;
+  --p-stud-tr: $stud_tr;
+  --p-stud-bl: $stud_bl;
+  --p-stud-br: $stud_br;
+  --p-stud-in-tl: $stud_in_tl;
+  --p-stud-in-tr: $stud_in_tr;
+  --p-stud-in-bl: $stud_in_bl;
+  --p-stud-in-br: $stud_in_br;
+  --ts-frame-tl: var(--p-stud-tl);
+  --ts-frame-tr: var(--p-stud-tr);
+  --ts-frame-bl: var(--p-stud-bl);
+  --ts-frame-br: var(--p-stud-br);
+  --ts-widget-frame-tl: var(--p-stud-in-tl);
+  --ts-widget-frame-tr: var(--p-stud-in-tr);
+  --ts-widget-frame-bl: var(--p-stud-in-bl);
+  --ts-widget-frame-br: var(--p-stud-in-br);
   --ts-frame-glow: $glow;
 $frame_breathe_decl
   --ts-heading-marker: linear-gradient(180deg, var(--p-lamp-hi) 0, var(--p-lamp) 100%);
@@ -641,7 +649,7 @@ $frame_breathe_decl
   --ts-heading-marker-glow: $glow;
 $marker_breathe_decl
   --ts-heading-strip: radial-gradient(circle at 0 100%, transparent 20.4px, var(--p-lamp) 20.5px, var(--p-lamp) 22px, transparent 22.2px), radial-gradient(circle at 22px 100%, transparent 20.4px, var(--p-lamp) 20.5px, var(--p-lamp) 22px, transparent 22.2px);
-  --ts-heading-strip-size: 22px 20px;
+  --ts-heading-strip-size: 22px 18px;
   --ts-heading-strip-position: left bottom;
   --ts-heading-strip-repeat: repeat-x;
   --ts-heading-strip-opacity: .32;
@@ -906,19 +914,22 @@ def outputs():
     return out
 
 
-def quatrefoil(cx, cy):
-    """Four small lobes round a point and a dark eye in the middle: the gothic corner stud. Gradients only."""
-    lobes = [(cx - 4.2, cy), (cx + 4.2, cy), (cx, cy - 4.2), (cx, cy + 4.2)]
-    parts = [f'radial-gradient(circle at {x:g}px {y:g}px, var(--p-lamp) 0, var(--p-lamp) 2.5px, transparent 3px)' for x, y in lobes]
-    parts.append(f'radial-gradient(circle at {cx:g}px {cy:g}px, var(--p-bg) 0, var(--p-bg) 1.5px, transparent 2px)')
-    return ', '.join(parts)
+def stud(cx, cy, r, eye):
+    """A gilt stud with a dark eye: the gothic corner ornament. ONE gradient, because a frame slot is one layer
+    (base.css gives each slot one size and one position, and a second layer in a slot lands in another slot)."""
+    return (f'radial-gradient(circle at {cx:g}px {cy:g}px, var(--p-bg) 0, var(--p-bg) {eye:g}px, '
+            f'var(--p-lamp) {eye + .5:g}px, var(--p-lamp) {r:g}px, transparent {r + .5:g}px)')
 
 
 def decls(p):
     """The slow-fade periods, as whole declarations, or nothing when a skin sets none (Daylight does not breathe)."""
     return {
-        'quatrefoil_tl': quatrefoil(8, 8), 'quatrefoil_tr': quatrefoil(24, 8),
-        'quatrefoil_bl': quatrefoil(8, 24), 'quatrefoil_br': quatrefoil(24, 24),
+        # A panel's stud hangs off the corner (the corner is at 8px in its 32px slot): 7px across, wholly in the
+        # 8px outside the edge. A widget's sits 8px in from its corner, 8px across.
+        'stud_tl': stud(4, 4, 3, 1), 'stud_tr': stud(28, 4, 3, 1),
+        'stud_bl': stud(4, 28, 3, 1), 'stud_br': stud(28, 28, 3, 1),
+        'stud_in_tl': stud(8, 8, 4, 1.5), 'stud_in_tr': stud(24, 8, 4, 1.5),
+        'stud_in_bl': stud(8, 24, 4, 1.5), 'stud_in_br': stud(24, 24, 4, 1.5),
         'frame_breathe_decl': f"  --ts-frame-breathe: {p['frame_breathe']};" if p['frame_breathe'] else '  /* the frame does not breathe in daylight */',
         'marker_breathe_decl': f"  --ts-heading-marker-breathe: {p['marker_breathe']};" if p['marker_breathe'] else '  /* nor the heading marker */',
     }

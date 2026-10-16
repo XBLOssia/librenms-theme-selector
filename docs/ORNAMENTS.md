@@ -58,7 +58,10 @@ second axis. A 32px-long bar, 4px thick, jutting out of the top-left corner is
 --ts-frame-tl: linear-gradient(180deg, transparent 2px, #e50832 2px, #e50832 6px, transparent 6px);
 ```
 
-Layered gradients in one slot (comma-separated) make L-shapes and stacked stripes.
+A slot is **one** layer. `base.css` gives each slot one size and one position, so a slot holding two
+gradients (comma-separated) pushes the second into the next slot's size and position, and the pieces
+turn up at other corners. What one gradient can draw is a bead (`radial-gradient`), a bar that spans the
+slot, or a wedge; for anything built from several shapes, use one slot per shape.
 
 **Per-corner radii.** `--ts-panel-radius-tl` `-tr` `-br` `-bl` (default
 `--ts-radius-lg`, at most 64px) let each corner of a panel be square or round on

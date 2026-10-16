@@ -42,7 +42,7 @@ asset ports.
 | **Digital Rain** | Square, torn corners, scanlined | Phosphor green on black, amber and red for alarms | System monospace (Share Tech Mono when installed) |
 | **Clock Tower Daylight** (light) | Double-ruled, leaf-cornered, gilt-bracketed | Parchment, walnut and brass | Playfair Display + Libre Baskerville |
 | **Clock Tower Lantern** (dark) | The same room at night | Umber, candle cream, amber glow | The same |
-| **Clock Tower Gotham** (dark) | Square stone, pointed arches, quatrefoils | Blue-black stone, lamp yellow | Cinzel (carved capitals) + Libre Baskerville |
+| **Clock Tower Gotham** (dark) | Square stone, pointed arches, gilt studs | Blue-black stone, lamp yellow | Cinzel (carved capitals) + Libre Baskerville |
 | **Paisley Dawn** (light) | Two long corners, two short, gilt flourishes, lace headings | Lilac and white, peach and gold | Playfair Display + Libre Baskerville |
 | **Paisley Velvet** (dark) | The same, by night | Deep aubergine, white type, peach and gold trim | The same |
 
@@ -120,7 +120,7 @@ checks that every text colour is at least 4.5:1 on its ground, and each is valid
 
 **Gotham** is the same tower seen from the street at night, and has a design of its own: a bright yellow
 lamp behind the dial, blue stone in shadow, gothic architecture and carved Roman capitals. Panels are
-square stone with a double rule and a quatrefoil at each corner; behind every panel heading runs a
+square stone with a double rule and a gilt stud at each corner; behind every panel heading runs a
 faint arcade of pointed arches, lit from below; along the foot of the navbar stand narrow lancet windows,
 lit yellow, between piers; and the page is a masonry wall with a tracery window in it, a faint tile
 computed from fixed numbers. Headings are Cinzel, the lettering of a Roman inscription (its digits come

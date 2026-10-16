@@ -397,15 +397,18 @@ function test_clock_tower(): void
         })());
         T::ok('its display face is Cinzel for everything but the digits, which come from Libre Baskerville Bold (Cinzel 1 is a capital I)', substr_count($css, 'font-family: "Clock Tower Display"') === 2
             && str_contains($css, "src: url(\"fonts/Cinzel-SemiBold.woff2\")") && (bool) preg_match('~LibreBaskerville-Bold\.woff2"\) format\("woff2"\);[^}]*unicode-range: U\+0030-0039;~', $css));
-        T::ok('all four corners of panels and widgets take a quatrefoil, and the navbar has lit windows between piers', (function () use ($css) {
+        T::ok('all four corners of panels and widgets take a stud, one gradient each (a slot is one layer: a second would land in another slot), and the navbar has lit windows between piers', (function () use ($css) {
             foreach (['--ts-frame-tl', '--ts-frame-tr', '--ts-frame-bl', '--ts-frame-br', '--ts-widget-frame-tl', '--ts-widget-frame-tr', '--ts-widget-frame-bl', '--ts-widget-frame-br'] as $t) {
-                if (! str_contains($css, "  $t: var(--p-quatrefoil-")) {
+                if (! preg_match('~^  ' . preg_quote($t, '~') . ': var\((--p-stud-[a-z-]+)\);$~m', $css, $m)
+                    || ! preg_match('~^  ' . preg_quote($m[1], '~') . ': ([^;]+);$~m', $css, $def)
+                    || substr_count($def[1], 'gradient(') !== 1) {
                     return false;
                 }
             }
 
             return str_contains($css, '--ts-navbar-strip-bottom: radial-gradient(') && str_contains($css, 'var(--p-pier)') && str_contains($css, '--ts-navbar-strip-bottom-repeat: repeat-x;');
         })());
+        T::ok('its arcade is cut at the tip of the arches (a tile no taller than 19px: the two curves of an arch meet there, and are not drawn on past each other)', str_contains($css, '--ts-heading-strip-size: 22px 18px;'));
         T::ok('its page is a wall: the tracery tile over a pool of lamplight', str_contains($css, '--ts-body-bg-image: var(--tx-tracery), var(--p-page);') && str_contains($css, '--tx-tracery: url("textures/tracery.png");'));
         T::ok('every corner is square (it is stone)', (bool) preg_match('/--ts-panel-radius-tl: 0px;.*--ts-widget-radius-bl: 0px;/s', $css));
     }

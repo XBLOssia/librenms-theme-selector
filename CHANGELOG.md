@@ -11,6 +11,15 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Fixes
+- **Clock Tower Gotham's corner ornaments sat at random.** Each corner was drawn as a quatrefoil of five
+  gradients, but a frame slot is one layer with one size and one position, so the five pieces spread over the
+  other slots and turned up as loose dots along the edges. Each corner is now a single gilt stud with a dark eye: a
+  small one hanging off every panel corner, a larger one inside every widget corner.
+- **The arcs behind Gotham's panel headings crossed at the tip.** The tile was taller than the arch, so each curve
+  was drawn on past the point where the two meet. They now meet at the point.
+- **`docs/ORNAMENTS.md` said a slot could hold several gradients.** It can't; the page now says what a slot can draw.
+
 ## [1.1.1] - 2026-10-13
 
 ### Project

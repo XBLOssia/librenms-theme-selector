@@ -11,6 +11,8 @@ that section into the next version's.
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-21
+
 ### Project
 - **The nightly check failed on a stray backup file.** `dev/test-patch.sh` sets up the old two-file patch with plain
   `patch`, which leaves a `config_definitions.json.orig` whenever the hunk lands with a line offset, and the

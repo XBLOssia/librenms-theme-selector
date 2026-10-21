@@ -1,6 +1,6 @@
 {
- "commit": "cdc6df4920a660df096806465168171c123fc29a",
- "commit_date": "2026-10-12T14:11:46-05:00",
+ "commit": "c1e2715a6ef6444def15d3c9dd9c6c23fe2f0077",
+ "commit_date": "2026-10-21T10:17:50-05:00",
  "css_classes": [
   "actions",
   "active",
@@ -394,8 +394,8 @@
   "html/css/styles.css": "39136d76a501165b1e2ea157f3459c400d219c9da641e1ed85917dc1bae45b3d",
   "html/css/tw_dark.css": "c2b538f8d5be280f7c95c95f884fdc84031cb1392740445e16e3bc07157993c7",
   "resources/css/app.css": "27016e015686eb57640a63c1e7556da7c0f077dc500de05ca6f622a29927c681",
-  "resources/views/layouts/librenmsv1.blade.php": "b7a60342ba57bca8cf1a2770882193e408943fc757655026ec66c47cf3d84e54",
-  "resources/views/layouts/menu.blade.php": "e292ffb829f5064c0c2e099c06815e8bd5a7c24b063377c3a7e997ce23584a11"
+  "resources/views/layouts/librenmsv1.blade.php": "92b8972302187dd948ce934642ed59398baedd13925ab60d58830a27816b6535",
+  "resources/views/layouts/menu.blade.php": "9d321d54fe0c859749a93fdded143cf4acfb9ea7418e9cb9de62cecef2c6a25e"
  },
  "light_unmapped": [],
  "unstyled_colour_classes": [

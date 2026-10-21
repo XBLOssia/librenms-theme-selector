@@ -11,6 +11,13 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Project
+- **The nightly check failed on a stray backup file.** `dev/test-patch.sh` sets up the old two-file patch with plain
+  `patch`, which leaves a `config_definitions.json.orig` whenever the hunk lands with a line offset, and the
+  check that only the one-file patch is applied counted it as a local change. The newest LibreNMS image moved the
+  hunk, so the check failed. The setup now passes `--no-backup-if-mismatch`. Test setup only: the plugin and the
+  scripts it ships are unchanged.
+
 ### Fixes
 - **Clock Tower Gotham's corner ornaments sat at random.** Each corner was drawn as a quatrefoil of five
   gradients, but a frame slot is one layer with one size and one position, so the five pieces spread over the

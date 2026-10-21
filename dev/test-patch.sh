@@ -144,8 +144,10 @@ cp "$W/helper.orig" "$C/$HELPER.pre-skins-patch"; echo "stale" >> "$C/$HELPER.pr
 P apply --wrapped >/dev/null 2>&1; P revert >/dev/null 2>&1
 check "a stale *.pre-skins-patch is never restored over the file, and is removed" "$(yes_if "grep -q 'upstream edit' '$C/$HELPER' && [ ! -e '$C/$HELPER.pre-skins-patch' ]")"
 
+# --no-backup-if-mismatch: the hunk lands with a line offset on newer LibreNMS, and GNU patch would leave a .orig
+# that the `git status` check further down counts as a local change.
 mkrepo
-(cd "$C" && patch -p1 -s < "$ROOT/patches/legacy-0001-config_definitions-declare-port-keys.patch") >/dev/null 2>&1
+(cd "$C" && patch -p1 -s --no-backup-if-mismatch < "$ROOT/patches/legacy-0001-config_definitions-declare-port-keys.patch") >/dev/null 2>&1
 check "(setup) the old declaration is in place" "$(yes_if "grep -q 'graph_colours.port_in' '$C/$DEFS'")"
 P status > "$W/out" 2>&1
 check "status warns about it" "$(yes_if "grep -q 'WARNING' '$W/out' && grep -q 'old port-key declaration' '$W/out'")"
@@ -153,7 +155,7 @@ P apply --wrapped > "$W/out" 2>&1; rc=$?
 check "apply removes it and applies the one-file patch" "$(yes_if "[ $rc = 0 ] && ! grep -q 'graph_colours.port_in' '$C/$DEFS' && [ \"\$(SUM '$C/$DEFS')\" = \"\$(SUM '$W/defs.orig')\" ] && grep -q 'graph_colours.port_in' '$C/$HELPER'")"
 # The incident: the earlier two-file patch was applied, and upstream then edited config_definitions.json.
 mkrepo
-(cd "$C" && patch -p1 -s < "$ROOT/patches/legacy-0001-config_definitions-declare-port-keys.patch") >/dev/null 2>&1
+(cd "$C" && patch -p1 -s --no-backup-if-mismatch < "$ROOT/patches/legacy-0001-config_definitions-declare-port-keys.patch") >/dev/null 2>&1
 (cd "$C" && git stash -q && git checkout -q -b upstream main && sed -i '1a\ ' "$DEFS" && git commit -q -am "upstream adds lines to config_definitions.json" && git checkout -q main && git stash pop -q) >/dev/null 2>&1
 (cd "$C" && git merge --ff-only upstream) > "$W/out" 2>&1; rc=$?
 check "(setup) with the old declaration in place, the pull stops on config_definitions.json" "$(yes_if "[ $rc != 0 ] && grep -qi 'overwritten' '$W/out'")"

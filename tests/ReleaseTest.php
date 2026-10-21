@@ -112,6 +112,9 @@ function test_release(): void
     T::ok('it requires CI and Integration to have passed on the commit, with no way round it', str_contains($script, 'for workflow in CI Integration') && str_contains($script, '"completed success") ;;') && ! preg_match('/--(skip|force|no-verify|ignore)/', $script));
     T::ok('it asks before it tags, unless told --yes', str_contains($script, 'Tag and push? [y/N]') && str_contains($script, '[ "$yes" != "--yes" ]'));
     T::ok('it pushes one tag and nothing else (no branch, no force)', substr_count($script, 'git push') === 2 && str_contains($script, 'git push -q origin "v$version"') && str_contains($script, 'git push -q -u origin "$branch"') && ! str_contains($script, '--force'));
+    // Git for Windows' sort.exe can be blocked on a machine ("Permission denied"); the pipeline then yields nothing, which read as "not newer".
+    $bare = (string) preg_replace('/^\s*#.*$/m', '', $script);
+    T::ok('it never runs the sort program: versions are compared by compare_versions, in awk', ! preg_match('/(^|[\s|;&(`])sort(\s|$)/m', $bare) && substr_count($bare, 'compare_versions "') === 2 && str_contains($bare, '[ "$order" = newer ] || die "$next is not newer') && str_contains($bare, '[ "$order" = newer ] || die "$version is not newer'));
 
     // The one command that can run without git or GitHub: notes. Run it on fixtures.
     $dir = sys_get_temp_dir() . '/ts-release-' . bin2hex(random_bytes(4));
@@ -164,6 +167,20 @@ case "$1 $2" in
 esac
 SH);
     chmod("$box/bin/gh", 0755);
+    // A sort that is first on the PATH and fails the way a blocked one does, and says it was run.
+    file_put_contents("$box/bin/sort", <<<'SH'
+#!/bin/sh
+echo "$@" >> "$FAKE_GH_LOG.sort"
+echo "sort: Permission denied" >&2
+exit 126
+SH);
+    chmod("$box/bin/sort", 0755);
+    // An awk that fails, and one that exits 0 with something that is not an answer.
+    foreach (['failawk' => "exit 1\n", 'badawk' => "echo oops\n"] as $dirName => $body) {
+        mkdir("$box/$dirName", 0755);
+        file_put_contents("$box/$dirName/awk", "#!/bin/sh\n$body");
+        chmod("$box/$dirName/awk", 0755);
+    }
     $env = 'HOME=' . escapeshellarg($box) . ' GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@example.test GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@example.test'
         . ' PATH=' . escapeshellarg("$box/bin") . ':$PATH FAKE_GH_LOG=' . escapeshellarg("$box/gh.log");
     $sh = function (string $cmd, string $in = 'work', string $extra = '') use ($box, $env): array {
@@ -225,6 +242,68 @@ SH);
     [$code, $out] = $sh('sh scripts/release.sh prepare minor', 'work', 'FAKE_CI=x FAKE_INTEGRATION=x');
     T::ok('prepare: refused when there is nothing under Unreleased', $code !== 0 && str_contains($out, 'nothing under'), $out);
     [$code, $out] = $sh('sh scripts/release.sh prepare 1.0.0', 'work', 'FAKE_CI=x FAKE_INTEGRATION=x');
-    T::ok('prepare: a version that is not newer than the latest tag is refused', $code !== 0, $out);
+    T::ok('prepare: a version that is not newer than the latest tag is refused', $code !== 0 && str_contains($out, '1.0.0 is not newer than the latest release, v1.0.0'), $out);
+
+    // The comparison itself, in a second repository whose latest tag the test sets before each run. A newer
+    // version gets past the comparison and stops at the next guard (CI is made to fail); an older one stops at it.
+    T::group('scripts/release.sh: which version is newer');
+    $cases = [
+        ['1.1.1', '1.1.2', true],
+        ['1.2.3', '1.2.4', true],
+        ['1.2.3', '1.3.0', true],
+        ['1.2.3', '2.0.0', true],
+        ['1.2.3', '1.2.2', false],
+        ['1.2.3', '1.1.9', false],
+        ['1.2.3', '0.9.9', false],
+        ['1.9.0', '1.10.0', true],
+        ['1.10.0', '1.9.1', false],
+        ['1.9.9', '1.9.10', true],
+        ['1.9.10', '1.9.9', false],
+        ['9.9.9', '10.0.0', true],
+        ['10.0.0', '9.9.9', false],
+        ['1.0.99999999999999999999', '1.0.100000000000000000000', true],
+        ['1.0.100000000000000000000', '1.0.99999999999999999999', false],
+    ];
+    $sections = '';
+    foreach (array_unique(array_column($cases, 1)) as $v) {
+        $sections .= "## [$v] - 2026-10-09\n\n- x\n\n";
+    }
+    $sh('git init -q --bare -b main cmp.git', '.');
+    $sh('git clone -q cmp.git cmp 2>/dev/null; cd cmp && git switch -q -c main 2>/dev/null; mkdir -p scripts', '.');
+    copy("$root/scripts/release.sh", "$box/cmp/scripts/release.sh");
+    file_put_contents("$box/cmp/CHANGELOG.md", "# Changelog\n\n## [Unreleased]\n\n- a fix\n\n$sections");
+    $sh('git add -A && git commit -q -m first && git push -q -u origin main', 'cmp');
+    $latest = fn (string $tag) => $sh('for t in $(git tag -l); do git tag -d "$t" > /dev/null; done; git tag ' . escapeshellarg("v$tag"), 'cmp');
+    $failing = 'FAKE_CI=' . escapeshellarg('completed failure') . ' FAKE_INTEGRATION=' . escapeshellarg($ok);
+    foreach ($cases as [$last, $version, $newer]) {
+        $latest($last);
+        [$code, $out] = $sh("sh scripts/release.sh tag $version --yes", 'cmp', $failing);
+        $passed = $code !== 0 && str_contains($out, 'CI did not pass') && ! str_contains($out, 'not newer') && ! str_contains($out, 'cannot compare');
+        $refused = $code !== 0 && str_contains($out, "$version is not newer than the latest release, v$last");
+        T::ok("tag: $version after v$last " . ($newer ? 'is newer, so the checks go on' : 'is not newer: refused'), $newer ? $passed : $refused, $out);
+    }
+    foreach ([['1.2.3', '1.2.3'], ['1.2.3', '1.2.2'], ['1.10.0', '1.9.0']] as [$last, $version]) {
+        $latest($last);
+        [$code, $out] = $sh("sh scripts/release.sh prepare $version", 'cmp');
+        T::ok("prepare: $version after v$last is refused" . ($last === $version ? ' (the same is not newer)' : ''), $code !== 0 && str_contains($out, "$version is not newer than the latest release, v$last") && trim((string) shell_exec('git -C ' . escapeshellarg("$box/cmp") . ' rev-parse --abbrev-ref HEAD')) === 'main', $out);
+    }
+
+    $latest('1.9.9');
+    [$code, $out] = $sh('sh scripts/release.sh prepare minor', 'cmp');
+    T::ok('prepare minor after v1.9.9 is 1.10.0, which is newer', $code === 0 && trim((string) shell_exec('git -C ' . escapeshellarg("$box/cmp") . ' rev-parse --abbrev-ref HEAD')) === 'release-v1.10.0', $out);
+    $sh('git switch -q main', 'cmp');
+
+    // When the comparison cannot be made it says so, and nothing is called "not newer".
+    $latest('1.2.3-rc1');
+    [$code, $out] = $sh('sh scripts/release.sh tag 1.2.4 --yes', 'cmp', $failing);
+    T::ok('a latest tag that is not X.Y.Z stops the release with a message that says so', $code !== 0 && str_contains($out, "cannot compare '1.2.4' with '1.2.3-rc1'") && ! str_contains($out, 'not newer'), $out);
+    $latest('1.2.3');
+    foreach (['failawk' => 'awk failed', 'badawk' => "awk said 'oops'"] as $dirName => $says) {
+        $path = 'PATH=' . escapeshellarg("$box/$dirName") . ':' . escapeshellarg("$box/bin") . ':$PATH';
+        [$code, $out] = $sh('sh scripts/release.sh prepare 1.2.4', 'cmp', $path);
+        T::ok("prepare: a comparison that cannot run ($says) stops the release and is not reported as not newer", $code !== 0 && str_contains($out, 'cannot compare 1.2.4 with 1.2.3') && str_contains($out, $says) && ! str_contains($out, 'not newer') && trim((string) shell_exec('git -C ' . escapeshellarg("$box/cmp") . ' rev-parse --abbrev-ref HEAD')) === 'main', $out);
+    }
+
+    T::ok('with a sort that fails first on the PATH, none of the above ever ran it', ! file_exists("$box/gh.log.sort"), (string) @file_get_contents("$box/gh.log.sort"));
     exec('rm -rf ' . escapeshellarg($box));
 }

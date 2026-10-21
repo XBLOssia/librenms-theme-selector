@@ -11,6 +11,13 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Project
+- **`scripts/release.sh` no longer needs the `sort` program.** It compared the new version with the latest release
+  through `sort -V`; on a machine where `sort` cannot be run (Git for Windows' `sort.exe` failed with "Permission
+  denied") the pipeline produced nothing and the script reported "1.1.2 is not newer than the latest release". It
+  now compares the three numbers in awk, correct for 1.10.0 against 1.9.0, and stops with "cannot compare" when the
+  comparison cannot be made. Every other check is unchanged. Release tooling only: nothing the plugin ships.
+
 ## [1.1.2] - 2026-10-21
 
 ### Project

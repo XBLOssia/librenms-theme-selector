@@ -2129,6 +2129,7 @@ html.dark {
   --tw-color-gray-900: var(--ts-bg);
   --tw-color-zinc-800: var(--ts-border);
   --tw-color-zinc-900: var(--ts-surface-raised);
+  --tw-color-blue-300: var(--ts-link-hover-fg);
   --tw-color-blue-500: var(--ts-accent);
   --tw-color-blue-600: var(--ts-btn-primary-bg);
   --tw-color-blue-700: color-mix(in srgb, var(--ts-btn-primary-bg) 80%, var(--ts-bg));
@@ -2140,6 +2141,7 @@ html.dark {
   --tw-color-green-600: var(--ts-success);
   --tw-color-green-700: var(--ts-success);
   --tw-color-green-900: var(--ts-success-deep);
+  --tw-color-green-950: var(--ts-success-deep);
   --tw-color-emerald-900: var(--ts-success-deep);
   --tw-color-red-300: var(--ts-danger-text);
   --tw-color-red-600: var(--ts-danger);
@@ -2148,10 +2150,20 @@ html.dark {
   --tw-color-red-900: var(--ts-danger-deep);
   --tw-color-red-950: var(--ts-danger-deep);
   --tw-color-amber-200: var(--ts-warning);
+  --tw-color-amber-300: var(--ts-warning);
   --tw-color-amber-400: var(--ts-warning);
+  --tw-color-amber-600: var(--ts-warning);
   --tw-color-amber-700: var(--ts-warning);
+  --tw-color-amber-900: var(--ts-warning-deep);
   --tw-color-amber-950: var(--ts-warning-deep);
+  --tw-color-yellow-400: var(--ts-warning);
+  --tw-color-yellow-500: var(--ts-warning);
+  --tw-color-yellow-800: color-mix(in srgb, var(--ts-warning) 40%, var(--ts-bg));
   --tw-color-yellow-900: var(--ts-warning-deep);
+  /* Purple has no role of its own; where LibreNMS uses it (the "Custom Template" chip) it is a marker, not a
+     status, so it takes the skin's signature colour, washed into the page the way the `-deep` roles are. */
+  --tw-color-purple-300: var(--ts-accent);
+  --tw-color-purple-900: color-mix(in srgb, var(--ts-accent) 22%, var(--ts-bg));
 }
 /* A primary button's hover under `dark:hover:bg-blue-500` is a lighter tone of the skin's primary button; the
    skin's accent (what blue-500 is above) is meant for text and rules, and white text on it can be under 2:1.

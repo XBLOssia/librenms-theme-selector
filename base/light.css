@@ -76,6 +76,11 @@ html:not(.dark) {
   --tw-color-blue-900: var(--ts-link);
   --tw-color-blue-950: var(--ts-link);
 
+  /* Purple has no role of its own; where LibreNMS uses it (the "Custom Template" chip) it is a marker, not a
+     status, so it takes the skin's signature colour: a wash of it behind, the colour itself for the text. */
+  --tw-color-purple-100: color-mix(in srgb, var(--ts-accent) 14%, var(--ts-surface));
+  --tw-color-purple-800: var(--ts-accent);
+
   /* Status scales: the pale steps (backgrounds) are a wash of the status colour, the rest is the colour. */
   --tw-color-green-50: color-mix(in srgb, var(--ts-success) 8%, var(--ts-surface));
   --tw-color-green-100: color-mix(in srgb, var(--ts-success) 14%, var(--ts-surface));
@@ -89,6 +94,7 @@ html:not(.dark) {
   --tw-color-green-900: var(--ts-success);
   --tw-color-emerald-100: color-mix(in srgb, var(--ts-success) 14%, var(--ts-surface));
   --tw-color-emerald-600: var(--ts-success);
+  --tw-color-emerald-700: var(--ts-success);
   --tw-color-emerald-900: var(--ts-success);
 
   --tw-color-red-50: color-mix(in srgb, var(--ts-danger) 8%, var(--ts-surface));
@@ -103,15 +109,20 @@ html:not(.dark) {
   --tw-color-red-900: var(--ts-danger-text);
 
   --tw-color-amber-50: color-mix(in srgb, var(--ts-warning) 8%, var(--ts-surface));
+  --tw-color-amber-100: color-mix(in srgb, var(--ts-warning) 14%, var(--ts-surface));
   --tw-color-amber-300: color-mix(in srgb, var(--ts-warning) 50%, var(--ts-surface));
+  --tw-color-amber-400: var(--ts-warning);
   --tw-color-amber-500: var(--ts-warning);
   --tw-color-amber-600: var(--ts-warning);
   --tw-color-amber-700: var(--ts-warning);
   --tw-color-amber-800: var(--ts-warning);
   --tw-color-orange-400: var(--ts-warning);
   --tw-color-orange-600: var(--ts-warning);
+  --tw-color-yellow-50: color-mix(in srgb, var(--ts-warning) 8%, var(--ts-surface));
   --tw-color-yellow-100: color-mix(in srgb, var(--ts-warning) 14%, var(--ts-surface));
+  --tw-color-yellow-200: color-mix(in srgb, var(--ts-warning) 24%, var(--ts-surface));
   --tw-color-yellow-600: var(--ts-warning);
+  --tw-color-yellow-800: var(--ts-warning);
 
   /* The map: left as LibreNMS draws it. (The dark base inverts and dims the tiles by default; a dark skin
      in this slot sets its own filter, and its map is dark.) */

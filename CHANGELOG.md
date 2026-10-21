@@ -20,6 +20,19 @@ that section into the next version's.
   was drawn on past the point where the two meet. They now meet at the point.
 - **`docs/ORNAMENTS.md` said a slot could hold several gradients.** It can't; the page now says what a slot can draw.
 
+### Skins
+- **The new polling and add-device pages follow the skin.** LibreNMS's "Polling Methods & Secrets"
+  ([librenms#19409](https://github.com/librenms/librenms/pull/19409), merged 2026-10-20) paints its unsaved-changes
+  dot and chip, the "no availability source" notice, the hint under a secret's description, the Custom Template and
+  placeholder chips on the add-device page, and the icon of the validation dialog in Tailwind's own ambers, yellows
+  and purples, which no skin pointed at. In a skin's own mode that only looked off; in the other (a dark skin in the
+  light slot, a light skin in the dark slot) the text sat on a stock fill at as little as 1.1:1. Those shades now come
+  from the skin's warning, success, link and accent roles in both modes (purple has no role of its own, so it takes the
+  accent), and the new text reads at 4.5:1 or better in every bundled skin in either mode, except the amber chips of
+  Clock Tower Daylight and Paisley Dawn (3.9:1 to 4.5:1: their warning colour is only about 4.7:1 on their own surface).
+  The one shade that was already unmapped on master, `green-950` (the green bar above selectable tables), is done
+  too, and `harness/mockup.html` shows these pages below the dashboard.
+
 ## [1.1.1] - 2026-10-13
 
 ### Project

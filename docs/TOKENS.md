@@ -60,8 +60,8 @@ Default to a mix of the core roles.
 | `--ts-radius-md` | `var(--ts-radius-sm)` | `.alert` border-radius; `.gs-w (+1)` border-radius; default of `widget-radius-tl`, `widget-radius-tr`, `widget-radius-br`, `widget-radius-bl` |
 | `--ts-bevel` | `inset 0 1px 0 rgba(255, 255, 255, .05), inset 0 -1px 0 rgba(0, 0, 0, .4)` | `.alert` box-shadow; `.graph-image (+1)` box-shadow; default of `btn-danger-shadow` |
 | `--ts-danger-deep` | `color-mix(in srgb, var(--ts-danger) 22%, var(--ts-bg))` | `.alert-danger` background-color; `.panel-danger > .panel-heading` background; `.bg-danger` background-color; +9 more; default of `btn-danger-bg` |
-| `--ts-success-deep` | `color-mix(in srgb, var(--ts-success) 22%, var(--ts-bg))` | `.alert-success` background-color; `.panel-success > .panel-heading` background; `.bg-success` background-color; +8 more; default of `btn-success-bg` |
-| `--ts-warning-deep` | `color-mix(in srgb, var(--ts-warning) 22%, var(--ts-bg))` | `.alert-warning` background-color; `.panel-warning > .panel-heading` background; `.table > thead > tr.warning > td (+7)` background-color; +4 more |
+| `--ts-success-deep` | `color-mix(in srgb, var(--ts-success) 22%, var(--ts-bg))` | `.alert-success` background-color; `.panel-success > .panel-heading` background; `.bg-success` background-color; +9 more; default of `btn-success-bg` |
+| `--ts-warning-deep` | `color-mix(in srgb, var(--ts-warning) 22%, var(--ts-bg))` | `.alert-warning` background-color; `.panel-warning > .panel-heading` background; `.table > thead > tr.warning > td (+7)` background-color; +5 more |
 | `--ts-info-deep` | `color-mix(in srgb, var(--ts-info) 22%, var(--ts-bg))` | `.alert-info` background-color; `.panel-primary > .panel-heading` background; `.panel-info > .panel-heading` background; +8 more; default of `btn-primary-bg` |
 | `--ts-badge-alert` | `var(--ts-danger)` | `.badge-navbar-user.badge-danger` background-color |
 | `--ts-progress` | `var(--ts-accent)` | `.pace .pace-activity` border-left-color; default of `progress-bar-bg`, `progress-glow-shadow`, `progress-glow-shadow` |
@@ -92,7 +92,7 @@ Used by the defaults below.
 | `--ts-hr-border-top-color` | `rgb(238, 238, 238)` | `hr` border-top-color |
 | `--ts-hr-border-width` | `1px 0px 0px` | `hr` border-width |
 | `--ts-hr-height` | `0px` | `hr` height |
-| `--ts-link-hover-fg` | `color-mix(in srgb, var(--ts-link) 70%, #fff)` | `a:hover (+1)` color |
+| `--ts-link-hover-fg` | `color-mix(in srgb, var(--ts-link) 70%, #fff)` | `a:hover (+1)` color; `html.dark` --tw-color-blue-300 |
 | `--ts-link-hover-text-shadow` | `none` | `a:hover (+1)` text-shadow |
 | `--ts-link-transition` | `all` | `a` transition |
 | `--ts-root-font-family` | `sans-serif` | `html.dark` font-family |

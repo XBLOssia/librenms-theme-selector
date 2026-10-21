@@ -29,6 +29,29 @@ latest_version() {
     git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1 | sed 's/^v//'
 }
 
+# How version $1 stands against version $2, in $order: newer, same or older. Both must be X.Y.Z. Plain awk, no
+# `sort -V`: a comparison that cannot run must stop the release, not read as "not newer". Components are compared
+# as digit strings (a longer one is bigger, then character by character; none has a leading zero), so they can be
+# any size and 1.10.0 is newer than 1.9.0.
+compare_versions() {
+    valid_version "$1" && valid_version "$2" || die "cannot compare '$1' with '$2': both must be versions (X.Y.Z)"
+    order="$(awk -v a="$1" -v b="$2" 'BEGIN {
+        split(a, x, "."); split(b, y, ".")
+        for (i = 1; i <= 3; i++) {
+            p = x[i] ""; q = y[i] ""
+            if (p == q) continue
+            if (length(p) != length(q)) newer = length(p) > length(q); else newer = p > q
+            print (newer ? "newer" : "older")
+            exit
+        }
+        print "same"
+    }')" || die "cannot compare $1 with $2: awk failed"
+    case "$order" in
+        newer | same | older) ;;
+        *) die "cannot compare $1 with $2: awk said '$order'" ;;
+    esac
+}
+
 # The body of a version's changelog section, which must exist and not be empty.
 notes() {
     valid_version "$1" || die "'$1' is not a version (X.Y.Z)"
@@ -59,8 +82,9 @@ cmd_prepare() {
             next="$1"
             ;;
     esac
-    if [ -n "$current" ] && [ "$(printf '%s\n%s\n' "$current" "$next" | sort -V | tail -n 1)" != "$next" ] || [ "$current" = "$next" ]; then
-        die "$next is not newer than the latest release, v$current"
+    if [ -n "$current" ]; then
+        compare_versions "$next" "$current"
+        [ "$order" = newer ] || die "$next is not newer than the latest release, v$current"
     fi
     pending="$(awk '/^## \[Unreleased\]/ { on = 1; next } /^## \[/ { on = 0 } on { print }' CHANGELOG.md)"
     printf '%s' "$pending" | grep -q '[^[:space:]]' || die "CHANGELOG.md has nothing under '## [Unreleased]': write what changed first"
@@ -85,8 +109,9 @@ cmd_tag() {
     notes "$version" > /dev/null
     git rev-parse -q --verify "refs/tags/v$version" > /dev/null && die "v$version already exists"
     current="$(latest_version)"
-    if [ -n "$current" ] && [ "$(printf '%s\n%s\n' "$current" "$version" | sort -V | tail -n 1)" != "$version" ]; then
-        die "$version is not newer than the latest release, v$current"
+    if [ -n "$current" ]; then
+        compare_versions "$version" "$current"
+        [ "$order" = newer ] || die "$version is not newer than the latest release, v$current"
     fi
     sha="$(git rev-parse HEAD)"
     for workflow in CI Integration; do

@@ -12,7 +12,12 @@
 // Same mode substitutions as Modes::mirror/lightBase; this offline fixture needs no PHP.
 const params = new URLSearchParams(location.search);
 const mode = params.get('mode') === 'light' ? 'light' : 'dark';
-const skinId = ['clock-tower-daylight', 'clock-tower-lantern', 'digital-rain'].includes(params.get('skin')) ? params.get('skin') : 'clock-tower-daylight';
+// Select trusted literals, rather than passing a URL parameter on to asset or link construction.
+let skinId = 'clock-tower-daylight';
+switch (params.get('skin')) {
+  case 'clock-tower-lantern': skinId = 'clock-tower-lantern'; break;
+  case 'digital-rain': skinId = 'digital-rain'; break;
+}
 document.documentElement.classList.toggle('dark', mode === 'dark');
 const read = path => { const x = new XMLHttpRequest(); x.open('GET', path + '?t=' + Date.now(), false); x.send(); if (x.status !== 200) throw Error('Missing fixture asset: ' + path); return x.responseText; };
 let base = read('../base/base.css');
@@ -25,7 +30,12 @@ let skin = read('../skins/' + skinId + '/skin.css');
 const native = /^html:not\(\.dark\) \{$/m.test(skin) ? 'light' : 'dark';
 if (mode !== native) skin = native === 'light' ? skin.replace(/^html:not\(\.dark\) \{$/mg, 'html.dark {') : skin.replace(/^html\.dark \{$/mg, 'html:not(.dark) {');
 skin = skin.replace(/url\("(fonts|textures)\//g, 'url("../skins/' + skinId + '/$1/');
-document.write('<style>' + base + '</style><style>' + skin + '</style>');
+// Stylesheets are text, never HTML: a closing style tag cannot become page markup.
+for (const text of [base, skin]) {
+  const sheet = document.createElement('style');
+  sheet.textContent = text;
+  document.head.appendChild(sheet);
+}
 </script>
 <style>
 /* Layout only: colours, borders and shadows must come from the real cascade. */
@@ -39,7 +49,7 @@ main { max-width: 1180px; margin: 20px auto; padding: 0 16px; }
 <main>
 <h1>Daylight contrast fixtures</h1>
 <p>Invented content only. Inspect normal and keyboard-focus states; hover the table rows.
-  <a href="?mode=dark">Night mode</a> · <a href="?mode=light">Light mode</a>.</p>
+  <a id="mode-dark" href="?mode=dark">Night mode</a> · <a id="mode-light" href="?mode=light">Light mode</a>.</p>
 <div class="fixtures">
 <section class="panel panel-default">
   <div class="panel-heading"><h2 class="panel-title">Banners and badges</h2></div>
@@ -97,7 +107,8 @@ document.querySelector('h1').textContent = skinId + ' / ' + mode + ' contrast fi
 document.querySelector('.graph-image').src = 'graphs/' + skinId + '-port_bits-wide.png';
 document.querySelector('.graph-image').alt = 'Real RRDtool rendering from invented traffic, using ' + skinId + "'s graph palette";
 // Preserve the chosen comparison skin when switching modes.
-for (const link of document.querySelectorAll('a[href^="?mode="]')) link.href += '&skin=' + skinId;
+document.getElementById('mode-dark').href = '?mode=dark&skin=' + skinId;
+document.getElementById('mode-light').href = '?mode=light&skin=' + skinId;
 </script>
 </body>
 </html>

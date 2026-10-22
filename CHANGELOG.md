@@ -11,6 +11,9 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Tooling
+- **A failed development check now fails the command.** The unit runner stops on a failed test or generated-file
+  check, and the live runner stops on the first failed suite, including when run with `all`.
 ### Fixes
 - **Clock Tower Daylight, Lantern and Digital Rain keep their corner brackets in place.** Each bracket now uses
   one gradient, so its arms stay together instead of spreading into other frame slots. Clock Tower's brackets

@@ -26,7 +26,7 @@ APP="${TS_CONTAINER:-theme-selector-dev-librenms-1}"
 
 sealed() {
   docker run --rm --read-only --tmpfs /tmp:rw,exec,size=1g --entrypoint sh \
-    -v "$ROOT:/plugin:ro" "$IMAGE" -c "$1"
+    -v "$ROOT:/plugin:ro" "$IMAGE" -ec "$1"
 }
 
 unit() {
@@ -34,14 +34,17 @@ unit() {
   sealed '
     bad=0
     for f in $(find /plugin/src /plugin/routes /plugin/database /plugin/tests /plugin/dev -name "*.php"); do
-      php -l "$f" | grep -v "^No syntax errors" && bad=1
+      php -l "$f" >/dev/null || bad=1
     done
-    [ $bad = 0 ] && echo "lint: clean"
+    [ $bad = 0 ] || exit 1
+    echo "lint: clean"
     php /plugin/tests/run.php
     python3 /plugin/scripts/gen-token-catalog.py --check
     python3 /plugin/scripts/gen-token-docs.py --check
-    python3 /plugin/scripts/make-clock-tower.py --check && echo "Clock Tower skins are current (and every text colour is 4.5:1 or better)"
-    python3 /plugin/scripts/make-paisley.py --check && echo "Paisley skins are current (and every text colour is 4.5:1 or better)"
+    python3 /plugin/scripts/make-clock-tower.py --check
+    echo "Clock Tower skins are current (and every text colour is 4.5:1 or better)"
+    python3 /plugin/scripts/make-paisley.py --check
+    echo "Paisley skins are current (and every text colour is 4.5:1 or better)"
     python3 /plugin/scripts/upstream-drift.py --selftest
   '
 }
@@ -53,10 +56,10 @@ mutate() {
 
 live() {
   echo "== end to end, against $APP"
-  TS_CONTAINER="$APP" sh "$ROOT/dev/test-patch.sh"
-  docker exec "$APP" sh /plugin/dev/test-graphs.sh
-  TS_CONTAINER="$APP" sh "$ROOT/dev/test-port-recolour.sh"
-  docker exec "$APP" sh /plugin/dev/test-picker.sh
+  TS_CONTAINER="$APP" sh "$ROOT/dev/test-patch.sh" || return
+  docker exec "$APP" sh /plugin/dev/test-graphs.sh || return
+  TS_CONTAINER="$APP" sh "$ROOT/dev/test-port-recolour.sh" || return
+  docker exec "$APP" sh /plugin/dev/test-picker.sh || return
   docker exec "$APP" sh /plugin/dev/test-upload.sh
 }
 

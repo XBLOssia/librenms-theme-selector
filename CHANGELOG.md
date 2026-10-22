@@ -11,6 +11,11 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Fixes
+- **Clock Tower Daylight, Lantern and Digital Rain keep their corner brackets in place.** Each bracket now uses
+  one gradient, so its arms stay together instead of spreading into other frame slots. Clock Tower's brackets
+  are plain brass L-shapes; the scattered rivets and extra hairlines are removed.
+
 ## [1.1.2] - 2026-10-21
 
 ### Project

@@ -137,8 +137,8 @@ html.dark {
   /* Ornaments. Corner brackets, like a terminal's selection frame, a block cursor on each panel
      heading, scanlines across it, and two strips on the navbar. The glow and the slow fade are
      the phosphor settling; every period is over 2s and there is no flashing. */
-  --ts-frame-tl: linear-gradient(180deg, var(--p-phosphor) 0, var(--p-phosphor) 2px, transparent 2px), linear-gradient(90deg, var(--p-phosphor) 0, var(--p-phosphor) 2px, transparent 2px);
-  --ts-frame-br: linear-gradient(0deg, var(--p-phosphor) 0, var(--p-phosphor) 2px, transparent 2px), linear-gradient(270deg, var(--p-phosphor) 0, var(--p-phosphor) 2px, transparent 2px);
+  --ts-frame-tl: conic-gradient(from 90deg at 2px 2px, transparent 0deg, transparent 90deg, var(--p-phosphor) 90deg, var(--p-phosphor) 360deg);
+  --ts-frame-br: conic-gradient(from 270deg at 30px 30px, transparent 0deg, transparent 90deg, var(--p-phosphor) 90deg, var(--p-phosphor) 360deg);
   --ts-frame-glow: rgba(0, 255, 65, .55);
   --ts-frame-breathe: 8s;
   --ts-heading-marker: linear-gradient(90deg, var(--p-phosphor) 0, var(--p-phosphor) 100%);

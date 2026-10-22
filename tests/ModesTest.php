@@ -323,6 +323,7 @@ function test_light_css(): void
  */
 function test_clock_tower(): void
 {
+    test_bundled_frame_slots();
     T::group('clock tower: three skins, one family, each valid as an upload');
     $compiler = new SkinCompiler(catalog());
     $skins = [];
@@ -411,6 +412,48 @@ function test_clock_tower(): void
         T::ok('its arcade is cut at the tip of the arches (a tile no taller than 19px: the two curves of an arch meet there, and are not drawn on past each other)', str_contains($css, '--ts-heading-strip-size: 22px 18px;'));
         T::ok('its page is a wall: the tracery tile over a pool of lamplight', str_contains($css, '--ts-body-bg-image: var(--tx-tracery), var(--p-page);') && str_contains($css, '--tx-tracery: url("textures/tracery.png");'));
         T::ok('every corner is square (it is stone)', (bool) preg_match('/--ts-panel-radius-tl: 0px;.*--ts-widget-radius-bl: 0px;/s', $css));
+    }
+}
+
+function test_bundled_frame_slots(): void
+{
+    T::group('bundled ornaments: one image per fixed frame slot');
+    foreach (glob(__DIR__ . '/../skins/*/features.json') ?: [] as $file) {
+        if (! Features::parse((string) file_get_contents($file))['ornaments']) {
+            continue;
+        }
+        $id = basename(dirname($file));
+        $css = preg_replace('#/\*.*?\*/#s', '', (string) file_get_contents(dirname($file) . '/skin.css'));
+        preg_match_all('/(--(?:p|ts)-[a-z0-9-]+):\s*([^;]+);/', $css, $matches, PREG_SET_ORDER);
+        $values = [];
+        foreach ($matches as $match) {
+            $values[$match[1]] = trim($match[2]);
+        }
+        $bad = [];
+        foreach (['frame', 'widget-frame'] as $layer) {
+            foreach (FRAME_SLOTS as $slot) {
+                $token = "--ts-$layer-$slot";
+                $paint = $values[$token] ?? 'none';
+                // Count the actual images, including ones hidden behind private palette references.
+                for ($i = 0; $i < count($values) && str_contains($paint, 'var('); $i++) {
+                    $next = preg_replace_callback('/var\((--(?:p|ts)-[a-z0-9-]+)\)/', fn ($m) => $values[$m[1]] ?? $m[0], $paint);
+                    if ($next === $paint) {
+                        break;
+                    }
+                    $paint = $next;
+                }
+                $depth = 0;
+                $list = false;
+                foreach (str_split($paint) as $char) {
+                    $depth += $char === '(' ? 1 : ($char === ')' ? -1 : 0);
+                    $list = $list || ($char === ',' && $depth === 0);
+                }
+                if ($paint !== 'none' && ($list || str_contains($paint, 'var(') || substr_count($paint, 'gradient(') !== 1)) {
+                    $bad[] = $token;
+                }
+            }
+        }
+        T::ok("$id's panel and widget frame slots each hold one image", $bad === [], implode(', ', $bad));
     }
 }
 

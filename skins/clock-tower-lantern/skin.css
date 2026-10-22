@@ -3,7 +3,7 @@
  *
  * One of two skins that share this design (scripts/make-clock-tower.py writes both from one
  * template): the dark-mode face of the Clock Tower family. A double rule round every panel, gilt
- * corner brackets with a rivet, leaf-shaped corners, a strip of brass and a row of dentils on the
+ * corner brackets, leaf-shaped corners, a strip of brass and a row of dentils on the
  * navbar, a block of brass beside each heading, and a faint tile of cogwheels behind the page.
  *
  * Every token here is one an uploaded skin may set (the same file validates as an upload), plus the
@@ -186,14 +186,15 @@ html.dark {
   --ts-progress: var(--p-brass);
   --ts-progress-glow-shadow: 0 0 6px var(--p-glow);
 
-  /* Ornaments. Gilt brackets at the corners (two rules and a rivet), a block of brass beside each
+  /* Ornaments. Gilt L-brackets at the corners, a block of brass beside each
      panel heading with a double hairline under it, a thin line of brass along the top of the navbar
      and a row of dentils along its foot. The glow and the slow fade are the lamp settling; every
      period is over 2s and nothing flashes. */
-  --p-bracket-tl: radial-gradient(circle at 12px 12px, var(--p-brass-hi) 0, var(--p-brass-hi) 2.5px, transparent 3px), linear-gradient(180deg, var(--p-brass) 0, var(--p-brass) 3px, transparent 3px), linear-gradient(90deg, var(--p-brass) 0, var(--p-brass) 3px, transparent 3px), linear-gradient(180deg, transparent 6px, var(--p-brass-dim) 6px, var(--p-brass-dim) 7px, transparent 7px), linear-gradient(90deg, transparent 6px, var(--p-brass-dim) 6px, var(--p-brass-dim) 7px, transparent 7px);
+  /* A conic gradient leaves the inner quadrant clear and paints both arms in one slot. */
+  --p-bracket-tl: conic-gradient(from 90deg at 3px 3px, transparent 0deg, transparent 90deg, var(--p-brass) 90deg, var(--p-brass) 360deg);
   --ts-frame-tl: var(--p-bracket-tl);
   --ts-widget-frame-tl: var(--p-bracket-tl);
-  --p-bracket-br: radial-gradient(circle at 20px 20px, var(--p-brass-hi) 0, var(--p-brass-hi) 2.5px, transparent 3px), linear-gradient(0deg, var(--p-brass) 0, var(--p-brass) 3px, transparent 3px), linear-gradient(270deg, var(--p-brass) 0, var(--p-brass) 3px, transparent 3px), linear-gradient(0deg, transparent 6px, var(--p-brass-dim) 6px, var(--p-brass-dim) 7px, transparent 7px), linear-gradient(270deg, transparent 6px, var(--p-brass-dim) 6px, var(--p-brass-dim) 7px, transparent 7px);
+  --p-bracket-br: conic-gradient(from 270deg at 29px 29px, transparent 0deg, transparent 90deg, var(--p-brass) 90deg, var(--p-brass) 360deg);
   --ts-frame-br: var(--p-bracket-br);
   --ts-widget-frame-br: var(--p-bracket-br);
   --ts-frame-glow: rgba(255, 179, 71, .55);

@@ -165,6 +165,11 @@ html.dark {
   --ts-well-border-radius: 3px;
   --ts-well-border: 1px solid var(--p-line);
   --ts-alert-border-width: 1px 1px 1px 5px;
+  /* Pale banners need walnut text; the lantern keeps the dark base's foregrounds. */
+  --ts-alert-success-fg: color-mix(in srgb, var(--ts-success) 60%, #fff);
+  --ts-alert-warning-fg: color-mix(in srgb, var(--ts-warning) 60%, #fff);
+  --ts-alert-info-fg: color-mix(in srgb, var(--ts-info) 60%, #fff);
+  --ts-alert-danger-fg: var(--ts-danger-text);
   --ts-label-success-bg: #4d7a2f;
   --ts-label-success-fg: #fff3d6;
   --ts-label-danger-bg: #b8412c;

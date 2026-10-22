@@ -15,6 +15,8 @@ that section into the next version's.
 - **A failed development check now fails the command.** The unit runner stops on a failed test or generated-file
   check, and the live runner stops on the first failed suite, including when run with `all`.
 ### Fixes
+- **Navigation text follows the skin in both modes.** The username no longer stays white on a light
+  background, and expanded mobile menus use the skin's text and interaction colours instead of stock greys.
 - **Clock Tower Daylight, Lantern and Digital Rain keep their corner brackets in place.** Each bracket now uses
   one gradient, so its arms stay together instead of spreading into other frame slots. Clock Tower's brackets
   are plain brass L-shapes; the scattered rivets and extra hairlines are removed.

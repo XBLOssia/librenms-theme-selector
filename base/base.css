@@ -549,6 +549,11 @@ html.dark .navbar-default .navbar-nav > li > a {
   transition: var(--ts-navbar-link-transition);
   font-size: var(--ts-navbar-link-font-size);
 }
+/* tw_dark.css gives every small element a white foreground. The username must instead follow
+   its own toggle, including the toggle's hover and focus colour. */
+html.dark .navbar-default .navbar-nav > li > a small {
+  color: inherit;
+}
 html.dark .navbar-default .navbar-nav > li > a:hover, html.dark .navbar-default .navbar-nav > li > a:focus, html.dark .navbar-default .navbar-nav > .open > a, html.dark .navbar-default .navbar-nav > .open > a:hover, html.dark .navbar-default .navbar-nav > .open > a:focus {
   background-color: var(--ts-navbar-link-hover-bg);
   color: var(--ts-nav-accent);
@@ -587,6 +592,27 @@ html.dark .dropdown-menu > li > a:hover, html.dark .dropdown-menu > li > a:focus
   color: var(--ts-text-bright);
   border-left-color: var(--ts-highlight);
   padding-left: var(--ts-dropdown-item-hover-padding-left);
+}
+/* Stock mobile navigation uses more specific selectors than the generic dropdown rules above.
+   Match those states with the skin's roles; a light skin can also occupy the dark mode slot. */
+@media (max-width: 767px) {
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+    color: var(--ts-text-dim);
+  }
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus,
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: var(--ts-text-bright);
+    background-color: var(--ts-dropdown-item-hover-bg);
+  }
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a,
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:hover,
+  html.dark .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:focus {
+    color: var(--ts-text-mute);
+    background-color: transparent;
+  }
 }
 html.dark .dropdown-menu .divider {
   background-color: var(--ts-dropdown-divider-bg);

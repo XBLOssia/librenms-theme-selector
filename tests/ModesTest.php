@@ -589,4 +589,36 @@ function test_stock_greys(): void
         T::ok("$wrap: the two states do not share a fill", $active !== null && $inactive !== null && preg_replace('/.*background-color: ([^;]+) !important;.*/s', '$1', $active) !== preg_replace('/.*background-color: ([^;]+) !important;.*/s', '$1', $inactive));
     }
     T::ok('the tile filter is a token read by the map in both modes, and the twin defaults it to none', str_contains($twin, "html:not(.dark) .leaflet-tile {\n  filter: var(--ts-map-tile-filter);") && str_contains((string) file_get_contents(__DIR__ . '/../base/light.css'), '--ts-map-tile-filter: none;'));
+
+    T::group('navbar contrast: stock white and mobile greys cannot override the skin');
+    foreach (['html.dark' => $base, 'html:not(.dark)' => $twin] as $wrap => $css) {
+        // These selectors match (and exceed by one element) tw_dark.css's mobile specificity.
+        // Merely checking the generic dropdown rule would miss the expanded-menu regression.
+        preg_match_all('/([^{}]+)\{([^{}]*)\}/', preg_replace('#/\*.*?\*/#s', '', $css), $matches, PREG_SET_ORDER);
+        $rules = [];
+        foreach ($matches as $match) {
+            foreach (explode(',', $match[1]) as $selector) {
+                $selector = trim(preg_replace('/\s+/', ' ', $selector));
+                $rules[$selector] = ($rules[$selector] ?? '') . $match[2];
+            }
+        }
+        $declares = fn (string $selector, string $property, string $value): bool =>
+            preg_match('/(?:^|[;{])\s*' . preg_quote($property, '/') . ':\s*' . preg_quote($value, '/') . '\s*;/m', $rules[$selector] ?? '') === 1;
+        T::ok("$wrap: the username inherits its toggle's normal, hover and focus colour instead of stock white", $declares("$wrap .navbar-default .navbar-nav > li > a small", 'color', 'inherit'));
+        $menu = "$wrap .navbar-default .navbar-nav .open .dropdown-menu";
+        foreach (['' => '--ts-text-dim', ':hover' => '--ts-text-bright', ':focus' => '--ts-text-bright'] as $state => $role) {
+            $selector = "$menu > li > a$state";
+            T::ok("$wrap: expanded mobile link '$state' uses $role with enough specificity", $declares($selector, 'color', "var($role)"));
+            if ($state !== '') {
+                T::ok("$wrap: expanded mobile link '$state' has the skin's hover fill", $declares($selector, 'background-color', 'var(--ts-dropdown-item-hover-bg)'));
+            }
+        }
+        foreach (['active' => '--ts-text-bright', 'disabled' => '--ts-text-mute'] as $class => $role) {
+            foreach (['', ':hover', ':focus'] as $state) {
+                $selector = "$menu > .$class > a$state";
+                $fill = $class === 'active' ? 'var(--ts-dropdown-item-hover-bg)' : 'transparent';
+                T::ok("$wrap: expanded mobile $class link '$state' keeps its skin colour and fill", $declares($selector, 'color', "var($role)") && $declares($selector, 'background-color', $fill));
+            }
+        }
+    }
 }

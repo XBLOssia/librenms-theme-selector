@@ -14,8 +14,20 @@ Not for production.
 
 ## One-time: Docker in WSL
 
-Docker runs inside the WSL Debian distro, not Docker Desktop. Run in Debian (13; its
-`docker-compose` package is Compose v2, which provides the `docker compose` command used below):
+Run the shell commands from WSL Debian. Either Docker Desktop with Debian integration enabled or
+Docker Engine inside Debian works; use one engine. The live suites also need Git and GNU patch on
+the WSL host, even though PHP runs in containers:
+
+```bash
+sudo apt-get update && sudo apt-get install -y git patch curl python3
+docker version
+docker compose version
+```
+
+With Docker Desktop, enable Debian under Settings -> Resources -> WSL integration. No separate
+Docker Engine installation in Debian is needed. This route was checked on 2026-10-21.
+
+For Docker Engine inside Debian instead (Debian 13's `docker-compose` package provides Compose v2):
 
 ```bash
 sudo apt-get update && sudo apt-get install -y docker.io docker-compose docker-buildx
@@ -27,6 +39,9 @@ Then from Windows, restart the distro so the group change applies:
 ```bash
 wsl --terminate Debian
 ```
+
+To regenerate the skin textures, install the optional development dependencies `python3-numpy` and
+`python3-pil` in Debian. The generated-file checks do not need them.
 
 ## Run
 

@@ -11,6 +11,10 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Tooling
+- **A failed development check now fails the command.** The unit runner stops on a failed test or generated-file
+  check, and the live runner stops on the first failed suite, including when run with `all`.
+
 ## [1.1.2] - 2026-10-21
 
 ### Project

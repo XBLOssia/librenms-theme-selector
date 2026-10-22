@@ -109,7 +109,7 @@ something white appears in the bottom corner. If you are quick, it has something
 ### Clock Tower
 A building-mounted clock, in two moods that share one design (a family: pick either for either mode,
 or both together). Every panel has a double rule of brass and leaf-shaped corners (two long curves,
-two short), gilt brackets with a rivet at the corners, a block of brass beside each heading, a thin
+two short), gilt L-brackets at the corners, a block of brass beside each heading, a thin
 line of brass along the top of the navbar and a row of dentils along its foot, and a faint tile of
 cogwheels behind the page. **Daylight** is natural light on parchment and walnut text, for light mode.
 **Lantern** is the same room at night, lit from inside: umber surfaces, candle-cream text, an amber

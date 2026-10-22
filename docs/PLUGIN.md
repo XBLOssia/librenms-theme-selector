@@ -273,6 +273,10 @@ sends a skin for *each* mode and lets the browser pick:
   blue, status colours) onto the skin's roles, plus two small rules. Tests pin both: the twin is
   *only* those substitutions, and `light.css` can set Tailwind colour variables and exactly two
   rules, nothing that places, hides, resizes or adds content.
+- **Navigation uses the skin's foregrounds in both modes.** The username inherits its toggle's
+  colour, including hover and focus. Expanded menus below 768px use selectors specific enough
+  to override stock mobile navigation colours for normal, hover, focus, active and disabled links.
+  These are shared base rules, not per-skin fixes; they also apply to a light skin in the dark slot.
 - **A page carries one skin per mode.** `SkinInjector` links, for each slot that has a skin, the
   slot's base (`base.css` or `base-light.css`) and the skin's stylesheet for that slot. Whichever
   selector matches the page's mode applies; the other is inert. Slots with no skin load nothing,

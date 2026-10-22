@@ -165,7 +165,7 @@ Used by the defaults below.
 | `--ts-dropdown-header-letter-spacing` | `.06em` | `.dropdown-header` letter-spacing |
 | `--ts-dropdown-item-border-left` | `2px solid transparent` | `.dropdown-menu > li > a` border-left |
 | `--ts-dropdown-item-font-weight` | `400` | `.dropdown-menu > li > a` font-weight |
-| `--ts-dropdown-item-hover-bg` | `var(--ts-surface-hover)` | `.dropdown-menu > li > a:hover (+1)` background-color |
+| `--ts-dropdown-item-hover-bg` | `var(--ts-surface-hover)` | `.dropdown-menu > li > a:hover (+1)` background-color; `.navbar-default .navbar-nav .open .dropdown-menu > li > a:hover (+4)` background-color |
 | `--ts-dropdown-item-hover-padding-left` | `16px` | `.dropdown-menu > li > a:hover (+1)` padding-left |
 | `--ts-dropdown-item-letter-spacing` | `normal` | `.dropdown-menu > li > a` letter-spacing |
 | `--ts-dropdown-item-padding` | `6px 18px` | `.dropdown-menu > li > a` padding |

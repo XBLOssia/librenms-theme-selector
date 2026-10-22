@@ -63,6 +63,11 @@ gradients (comma-separated) pushes the second into the next slot's size and posi
 turn up at other corners. What one gradient can draw is a bead (`radial-gradient`), a bar that spans the
 slot, or a wedge; for anything built from several shapes, use one slot per shape.
 
+A conic gradient can draw both arms of an L-bracket as one image: put its centre 3px from the top-left of the
+32px slot, leave the inner quadrant clear, and paint the other three quadrants. Daylight and Lantern use this
+for their brass brackets; Digital Rain uses the same shape at 2px. This replaces their layered brackets
+(corrected 2026-10-21). The bottom-right bracket uses the opposite quadrant, centred at 29px or 30px.
+
 **Per-corner radii.** `--ts-panel-radius-tl` `-tr` `-br` `-bl` (default
 `--ts-radius-lg`, at most 64px) let each corner of a panel be square or round on
 its own.

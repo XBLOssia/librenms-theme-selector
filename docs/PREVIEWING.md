@@ -15,6 +15,20 @@ Open `http://localhost:8777/harness/mockup.html?skin=<id>` (for example `?skin=p
 `?skin=paisley-velvet`). Add `&mode=dark` or `&mode=light` to see a skin in the other mode. Needs
 `harness/css/` vendored once (`harness/sync-css.sh /opt/librenms`).
 
+### Contrast fixtures
+
+Open `http://localhost:8777/harness/contrast.html?mode=dark` for Clock Tower Daylight's banners
+(including links), badges, ordinary/placeholder/read-only/disabled inputs, validation messages and
+addons, striped/contextual tables, and a real RRDtool graph rendered from synthetic traffic. Add
+`&skin=clock-tower-lantern` or `&skin=digital-rain` to check the same shared styles with a dark palette.
+Use `mode=light` for the generated light base, tab through the controls, and hover the table rows.
+The fixture changes no account settings and uses only local assets.
+
+`tests/ContrastTest.php` resolves the bundled Daylight colour pairs (including `var()` and the sRGB
+mixes used by the base) and requires 4.5:1 for text and 3:1 for graph outlines. It also pins the shared
+banner-link and validation selectors in both modes. This is a targeted regression check, not a complete
+CSS engine or a claim that every possible skin or page is accessible; verify the browser cascade too.
+
 ## 2. A LibreNMS host that follows `main`
 
 Staging boxes only. Production should follow releases (`'^1.0'`).

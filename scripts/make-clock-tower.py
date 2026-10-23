@@ -286,6 +286,11 @@ $wrap {
   --ts-well-border-radius: 3px;
   --ts-well-border: 1px solid var(--p-line);
   --ts-alert-border-width: 1px 1px 1px 5px;
+  /* Pale banners need walnut text; the lantern keeps the dark base's foregrounds. */
+  --ts-alert-success-fg: $alert_success_fg;
+  --ts-alert-warning-fg: $alert_warning_fg;
+  --ts-alert-info-fg: $alert_info_fg;
+  --ts-alert-danger-fg: $alert_danger_fg;
   --ts-label-success-bg: $label_success;
   --ts-label-success-fg: $on_label;
   --ts-label-danger-bg: $label_danger;
@@ -294,7 +299,7 @@ $wrap {
   --ts-label-warning-fg: $on_warn;
   --ts-label-info-bg: $label_info;
   --ts-label-info-fg: $on_label;
-  --ts-label-default-fg: $on_label;
+  --ts-label-default-fg: $default_label_text;
   --ts-badge-alert: $label_danger;
   --ts-btn-success-bg: $label_success;
   --ts-btn-success-fg: $on_label;
@@ -772,11 +777,25 @@ def contrast_problems(p):
             r = ratio(p[fg], p[bg])
             if r < 4.5:
                 bad.append(f'{fg} on {bg}: {r:.2f}')
-    for fg, bg in (('on_label', 'label_success'), ('on_label', 'label_danger'), ('on_label', 'label_info'), ('on_label', 'label_default'),
+    for fg, bg in (('on_label', 'label_success'), ('on_label', 'label_danger'), ('on_label', 'label_info'),
                    ('on_warn', 'label_warning'), ('bright', 'btn_primary')):
         r = ratio(p[fg], p[bg])
         if r < 4.5:
             bad.append(f'{fg} on {bg}: {r:.2f}')
+    # The neutral badge is painted by base.css with surface-hover, not label_default (unused).
+    default_text = p['text'] if p['mode'] == 'light' else p['on_label']
+    r = ratio(default_text, p['hover'])
+    if r < 4.5:
+        bad.append(f'default badge on hover: {r:.2f}')
+    # Daylight supplies ordinary walnut text on tinted banners; the dark palettes keep their defaults.
+    if p['mode'] == 'light':
+        for status in ('success', 'warning', 'info', 'danger'):
+            status_rgb = [int(p[status][i:i + 2], 16) for i in (1, 3, 5)]
+            ground_rgb = [int(p['bg'][i:i + 2], 16) for i in (1, 3, 5)]
+            mix = '#' + ''.join(f'{round(x * .22 + y * .78):02x}' for x, y in zip(status_rgb, ground_rgb))
+            r = ratio(p['text'], mix)
+            if r < 4.5:
+                bad.append(f'{status} banner: {r:.2f}')
     return bad
 
 
@@ -923,8 +942,13 @@ def stud(cx, cy, r, eye):
 
 
 def decls(p):
-    """The slow-fade periods, as whole declarations, or nothing when a skin sets none (Daylight does not breathe)."""
+    """Palette-specific foregrounds and slow-fade periods (Daylight does not breathe)."""
     return {
+        **{f'alert_{status}_fg': 'var(--p-text)' if p['mode'] == 'light'
+           else 'var(--ts-danger-text)' if status == 'danger'
+           else f'color-mix(in srgb, var(--ts-{status}) 60%, #fff)'
+           for status in ('success', 'warning', 'info', 'danger')},
+        'default_label_text': p['text'] if p['mode'] == 'light' else p['on_label'],
         # A panel's stud hangs off the corner (the corner is at 8px in its 32px slot): 7px across, wholly in the
         # 8px outside the edge. A widget's sits 8px in from its corner, 8px across.
         'stud_tl': stud(4, 4, 3, 1), 'stud_tr': stud(28, 4, 3, 1),

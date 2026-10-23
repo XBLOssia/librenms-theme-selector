@@ -15,6 +15,10 @@ that section into the next version's.
 - **A failed development check now fails the command.** The unit runner stops on a failed test or generated-file
   check, and the live runner stops on the first failed suite, including when run with `all`.
 ### Fixes
+- **Clock Tower Daylight's banners, badges and validation messages stay readable at night.** Pale status
+  banners now use walnut text, ignored/default badges use dark text, banner links inherit the banner's
+  foreground, and success/warning form feedback follows the skin. Contrast tests cover both modes,
+  contextual table rows and graph labels/outlines; a synthetic browser fixture exercises the real cascade.
 - **Navigation text follows the skin in both modes.** The username no longer stays white on a light
   background, and expanded mobile menus use the skin's text and interaction colours instead of stock greys.
 - **Clock Tower Daylight, Lantern and Digital Rain keep their corner brackets in place.** Each bracket now uses

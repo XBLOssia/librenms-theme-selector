@@ -1133,6 +1133,10 @@ html.dark .alert-info {
   color: var(--ts-alert-info-fg);
   box-shadow: var(--ts-alert-info-shadow);
 }
+/* Stock alert links are white in dark mode, even when the selected skin has a pale banner. */
+html.dark .alert .alert-link {
+  color: inherit;
+}
 html.dark .label {
   border-radius: var(--ts-radius-sm);
   font-family: var(--ts-font-mono);
@@ -1564,8 +1568,14 @@ html.dark .has-error .control-label, html.dark .has-error .help-block {
 html.dark .has-success .form-control {
   border-color: var(--ts-success);
 }
-html.dark .has-success .control-label {
+html.dark .has-success .control-label, html.dark .has-success .help-block {
   color: var(--ts-success);
+}
+html.dark .has-warning .form-control {
+  border-color: var(--ts-warning);
+}
+html.dark .has-warning .control-label, html.dark .has-warning .help-block {
+  color: var(--ts-warning);
 }
 html.dark .device-overview, html.dark .device-availability, html.dark .service-availability {
   background-color: var(--ts-surface);

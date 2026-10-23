@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daylight contrast fixtures</title>
+<!-- Real LibreNMS styles, vendored by harness/sync-css.sh; no production data or network calls. -->
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/tw_dark.css">
+<script>
+// Same mode substitutions as Modes::mirror/lightBase; this offline fixture needs no PHP.
+const params = new URLSearchParams(location.search);
+const mode = params.get('mode') === 'light' ? 'light' : 'dark';
+// Select trusted literals, rather than passing a URL parameter on to asset or link construction.
+let skinId = 'clock-tower-daylight';
+switch (params.get('skin')) {
+  case 'clock-tower-lantern': skinId = 'clock-tower-lantern'; break;
+  case 'digital-rain': skinId = 'digital-rain'; break;
+}
+document.documentElement.classList.toggle('dark', mode === 'dark');
+const read = path => { const x = new XMLHttpRequest(); x.open('GET', path + '?t=' + Date.now(), false); x.send(); if (x.status !== 200) throw Error('Missing fixture asset: ' + path); return x.responseText; };
+let base = read('../base/base.css');
+if (mode === 'light') {
+  base = base.replace(/\/\* ts:dark-only[^*]*\*\/[^]*?\/\* ts:end-dark-only \*\/\n?/g, '')
+    .replaceAll('html.dark:has(link[data-ts-orn])', 'html.dark:has(link[data-ts-orn-light])')
+    .replaceAll('html.dark', 'html:not(.dark)') + '\n' + read('../base/light.css');
+}
+let skin = read('../skins/' + skinId + '/skin.css');
+const native = /^html:not\(\.dark\) \{$/m.test(skin) ? 'light' : 'dark';
+if (mode !== native) skin = native === 'light' ? skin.replace(/^html:not\(\.dark\) \{$/mg, 'html.dark {') : skin.replace(/^html\.dark \{$/mg, 'html:not(.dark) {');
+skin = skin.replace(/url\("(fonts|textures)\//g, 'url("../skins/' + skinId + '/$1/');
+// Stylesheets are text, never HTML: a closing style tag cannot become page markup.
+for (const text of [base, skin]) {
+  const sheet = document.createElement('style');
+  sheet.textContent = text;
+  document.head.appendChild(sheet);
+}
+</script>
+<style>
+/* Layout only: colours, borders and shadows must come from the real cascade. */
+main { max-width: 1180px; margin: 20px auto; padding: 0 16px; }
+.fixtures { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
+.graph-fixture { grid-column: 1 / -1; }
+.graph-image { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<main>
+<h1>Daylight contrast fixtures</h1>
+<p>Invented content only. Inspect normal and keyboard-focus states; hover the table rows.
+  <a id="mode-dark" href="?mode=dark">Night mode</a> · <a id="mode-light" href="?mode=light">Light mode</a>.</p>
+<div class="fixtures">
+<section class="panel panel-default">
+  <div class="panel-heading"><h2 class="panel-title">Banners and badges</h2></div>
+  <div class="panel-body">
+    <div class="alert alert-success" data-contrast>Settings saved. <a href="#forms" class="alert-link" data-contrast>Review settings</a></div>
+    <div class="alert alert-warning" data-contrast>Sensor above threshold. <a href="#forms" class="alert-link" data-contrast>Review threshold</a></div>
+    <div class="alert alert-info" data-contrast>Discovery queued. <a href="#forms" class="alert-link" data-contrast>View queue</a></div>
+    <div class="alert alert-danger" data-contrast>Device unavailable. <a href="#forms" class="alert-link" data-contrast>View device</a></div>
+    <span class="label label-default" data-contrast>Ignored</span>
+    <span class="label label-success" data-contrast>Up</span>
+    <span class="label label-warning" data-contrast>Warning</span>
+    <span class="label label-info" data-contrast>Information</span>
+    <span class="label label-danger" data-contrast>Down</span>
+  </div>
+</section>
+<section class="panel panel-default" id="forms">
+  <div class="panel-heading"><h2 class="panel-title">Forms</h2></div>
+  <div class="panel-body">
+    <div class="form-group"><label for="normal" data-contrast>Device name</label><input id="normal" class="form-control" value="lab-switch.example.net" data-contrast><p class="help-block" data-contrast>Normal help text</p></div>
+    <div class="form-group"><label for="placeholder" data-contrast>Filter</label><input id="placeholder" class="form-control" placeholder="Search invented devices" data-contrast></div>
+    <div class="form-group"><label for="readonly" data-contrast>Read-only value</label><input id="readonly" class="form-control" value="Inventory reference 42" readonly data-contrast></div>
+    <div class="form-group"><label for="disabled" data-contrast>Disabled value (exempt, but still checked)</label><input id="disabled" class="form-control" value="Unavailable action" disabled data-contrast></div>
+    <div class="form-group has-success"><label class="control-label" for="success" data-contrast>Valid threshold</label><div class="input-group"><span class="input-group-addon" data-contrast>ms</span><input id="success" class="form-control" value="10" data-contrast></div><p class="help-block" data-contrast>Threshold accepted</p></div>
+    <div class="form-group has-warning"><label class="control-label" for="warning" data-contrast>Warning threshold</label><div class="input-group"><span class="input-group-addon" data-contrast>ms</span><input id="warning" class="form-control" value="90" data-contrast></div><p class="help-block" data-contrast>Check this threshold</p></div>
+    <div class="form-group has-error"><label class="control-label" for="error" data-contrast>Invalid threshold</label><div class="input-group"><span class="input-group-addon" data-contrast>ms</span><input id="error" class="form-control" value="-1" data-contrast></div><p class="help-block" data-contrast>A positive value is required</p></div>
+    <button class="btn btn-default" type="button" data-contrast>Cancel</button>
+    <button class="btn btn-primary" type="button" data-contrast>Save</button>
+  </div>
+</section>
+<section class="panel panel-default">
+  <div class="panel-heading"><h2 class="panel-title">Tables</h2></div>
+  <table class="table table-striped table-hover">
+    <thead><tr><th data-contrast>Device</th><th data-contrast>Status</th></tr></thead>
+    <tbody>
+      <tr><td data-contrast><a href="#forms" data-contrast>Normal row</a></td><td data-contrast>Ready</td></tr>
+      <tr><td data-contrast>Striped row</td><td data-contrast>Ready</td></tr>
+      <tr class="success"><td data-contrast><a href="#forms" data-contrast>Recovered device</a></td><td data-contrast>Up</td></tr>
+      <tr class="warning"><td data-contrast><a href="#forms" data-contrast>Busy device</a></td><td data-contrast>Warning</td></tr>
+      <tr class="info"><td data-contrast><a href="#forms" data-contrast>Queued device</a></td><td data-contrast>Information</td></tr>
+      <tr class="danger"><td data-contrast><a href="#forms" data-contrast>Unavailable device</a></td><td data-contrast>Down</td></tr>
+    </tbody>
+  </table>
+</section>
+<section class="panel panel-default graph-fixture">
+  <div class="panel-heading"><h2 class="panel-title">Graph</h2></div>
+  <div class="panel-body">
+    <img class="graph-image" src="graphs/clock-tower-daylight-port_bits-wide.png" alt="Real RRDtool rendering from invented traffic, using Daylight's graph palette">
+    <p data-contrast>Check axis labels, legend, grid and traffic outlines. The image uses the same palette in either mode.</p>
+  </div>
+</section>
+</div>
+</main>
+<script>
+document.querySelector('h1').textContent = skinId + ' / ' + mode + ' contrast fixtures';
+document.querySelector('.graph-image').src = 'graphs/' + skinId + '-port_bits-wide.png';
+document.querySelector('.graph-image').alt = 'Real RRDtool rendering from invented traffic, using ' + skinId + "'s graph palette";
+// Preserve the chosen comparison skin when switching modes.
+document.getElementById('mode-dark').href = '?mode=dark&skin=' + skinId;
+document.getElementById('mode-light').href = '?mode=light&skin=' + skinId;
+</script>
+</body>
+</html>

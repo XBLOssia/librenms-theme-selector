@@ -56,6 +56,11 @@ in PHP, or a layout that moves without a class changing will not show here; the 
 against a running instance) and your own eyes on a real instance remain the check for those. And it can't tell you
 whether a mapping *looks* right, only that one is missing.
 
+Interaction changes have their own [checklist and tree comparison](INTERACTION-CHECKLIST.md). That check
+lists added, changed and removed page/control sources, including paths not mapped to a checklist family;
+it does not modify this visual baseline or automatically accept an untested interaction. It can be run
+locally on demand, without creating another scheduled GitHub workflow.
+
 ## History
 
 The first pass (2026-10-12) went through 232 upstream commits since the survey at `63e0394` (2026-09-17):

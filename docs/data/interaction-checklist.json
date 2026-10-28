@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "comparison_base": "c1e2715a6ef6444def15d3c9dd9c6c23fe2f0077",
+  "comparison_base_note": "Inherited visual-design checkpoint, not evidence that every interaction at that revision was tested.",
+  "families": [
+    {
+      "id": "shared",
+      "name": "Shared navigation, dialogs, tooltips and controls",
+      "sources": ["resources/views/layouts/*", "resources/views/components/*", "resources/js/components/*", "resources/css/*", "html/css/*", "html/js/*", "includes/html/api_functions.inc.php", "app/View/Components/*", "app/Livewire/*", "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "vite.config.js", "vite.config.ts"]
+    },
+    {
+      "id": "settings",
+      "name": "Settings and poller configuration",
+      "sources": ["resources/views/settings/*", "resources/views/poller/*", "resources/js/components/*Settings*", "resources/js/components/*Setting*", "includes/html/pages/settings*"]
+    },
+    {
+      "id": "devices",
+      "name": "Device lists, details and edit pages",
+      "sources": ["resources/views/device/*", "resources/views/devices/*", "resources/views/device-dependencies/*", "includes/html/pages/device/*", "includes/html/pages/devices*", "resources/js/components/alpine/device*"]
+    },
+    {
+      "id": "ports",
+      "name": "Ports and bulk port editing",
+      "sources": ["resources/views/port/*", "resources/views/ports/*", "resources/views/device/edit/ports*", "includes/html/pages/port*"]
+    },
+    {
+      "id": "polling",
+      "name": "Polling methods and synthetic credentials",
+      "sources": ["resources/views/secrets/*", "resources/views/device/edit/polling*", "resources/views/components/device/polling/*"]
+    },
+    {
+      "id": "alerts",
+      "name": "Alerts, alert rules and history",
+      "sources": ["resources/views/alerts/*", "resources/views/widgets/alert*", "includes/html/pages/alert*", "includes/html/pages/faults*", "includes/html/common/alert*", "includes/html/modal/alert*", "includes/html/print-alert*", "includes/html/print-graph-alert*"]
+    },
+    {
+      "id": "logs",
+      "name": "Event logs and other filtered tables",
+      "sources": ["resources/views/eventlog/*", "resources/views/logs/*", "includes/html/pages/eventlog*", "includes/html/pages/log*"]
+    },
+    {
+      "id": "dashboard",
+      "name": "Dashboards and widgets",
+      "sources": ["resources/views/dashboard*", "resources/views/overview/*", "resources/views/widgets/*", "resources/js/components/*dashboard*", "html/js/*dashboard*"]
+    },
+    {
+      "id": "maps",
+      "name": "Maps and map editors",
+      "sources": ["resources/views/map/*", "resources/views/maps/*", "includes/html/pages/map*", "resources/js/components/*map*"]
+    },
+    {
+      "id": "account",
+      "name": "Account and API access",
+      "sources": ["resources/views/user/*", "resources/views/users/*", "includes/html/pages/user*"]
+    },
+    {
+      "id": "install",
+      "name": "Installation and setup",
+      "sources": ["resources/views/install/*", "includes/html/pages/install*"]
+    },
+    {
+      "id": "routes",
+      "name": "Route and page entry points",
+      "sources": ["routes/*", "app/Http/Controllers/*"]
+    }
+  ]
+}

@@ -187,6 +187,8 @@ run_with $B "$RM s/isolation: auto;/isolation: isolate;/" "modals: a panel that 
 run_with $B "$RM s/clip-path: none;/clip-path: inset(0);/" "modals: a panel that stays clipped while it holds an open modal"
 run_with $B "$RM s/z-index: auto;/z-index: 1035;/" "modals: a panel that keeps its raised z-index while it holds an open modal"
 run_with $B 's/\.panel:has(\.modal\.in) {/.panel:has(.modalx.in) {/' "modals: a panel that is never released when a modal opens in it"
+run_with $B 's/z-index: 1050;/z-index: 50;/' "Alpine dialogs: let the raised panel cover the dialog"
+run_with $B 's/z-index: 1030;/z-index: 1100;/' "Alpine dialogs: leave the navbar above the backdrop"
 RS='/html\.dark \.select2-container--default \.select2-results__option {/,/^}/'
 run_with $B "$RS s/color: var(--ts-text-dim);/color: #dfe3ea;/" "select2: an option with a fixed text colour"
 run_with $B "$RS s/background-color: var(--ts-surface);/background-color: #fff;/" "select2: an option on a white ground (light text on it is unreadable)"

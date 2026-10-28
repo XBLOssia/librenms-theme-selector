@@ -46,6 +46,7 @@ unit() {
     python3 /plugin/scripts/make-paisley.py --check
     echo "Paisley skins are current (and every text colour is 4.5:1 or better)"
     python3 /plugin/scripts/upstream-drift.py --selftest
+    python3 /plugin/scripts/interaction-drift.py --selftest
   '
 }
 

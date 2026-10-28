@@ -412,6 +412,8 @@ skin styles; the skins just look a little wrong. A weekly workflow
 [scripts/upstream-drift.py](scripts/upstream-drift.py), compares it with what we last looked at
 ([docs/data/upstream-baseline.json](docs/data/upstream-baseline.json)), and opens one issue when something
 new needs an answer. What it compares, and how to answer it: [docs/UPSTREAM-DRIFT.md](docs/UPSTREAM-DRIFT.md).
+For changes in interaction behavior, use the [interaction checklist](docs/INTERACTION-CHECKLIST.md) and
+the local `scripts/interaction-drift.py` comparison; it reports changed page/control sources for review.
 To look at a skin without a release: [docs/PREVIEWING.md](docs/PREVIEWING.md).
 
 ---
@@ -460,6 +462,7 @@ scripts/make-rain.py        compute the Digital Rain glyph tile
 scripts/make-clock-tower.py write the three Clock Tower skins (and their cogwheel and tracery tiles)
 scripts/make-paisley.py     write the two Paisley skins (and their paisley print) from one template
 scripts/upstream-drift.py   tell us when LibreNMS master changes how it looks (the weekly design check)
+scripts/interaction-drift.py list changed upstream page/control sources for interaction review
 scripts/coverage.sh         report which components no skin has styled yet
 scripts/dead-css.py         find styles.css rules nothing can match (docs/data/ holds the list)
 scripts/helper-audit.py     which graph helpers hard-code colours (FINDINGS section 5)
@@ -473,6 +476,7 @@ docs/PLUGIN.md              plugin design, decisions and phases
 docs/TOKENS.md              token reference (generated)
 docs/AUTHORING.md           writing a skin: files, rules, fonts, graph colours
 docs/ORNAMENTS.md           frame ornaments, cut corners, motion: the rules and the reasons
+docs/INTERACTION-CHECKLIST.md page/control checks, evidence scope, and update comparison
 docs/TEXTURES.md            repeating textures: format, limits, how the tiles are made
 docs/SECURITY.md            uploaded skins: threat model, controls, what isn't defended
 docs/DEPLOYMENT.md          install, updates, migration, uninstall, rollback

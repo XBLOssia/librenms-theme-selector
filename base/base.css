@@ -696,8 +696,9 @@ html.dark:has(link[data-ts-orn]) .panel::before {
  * LibreNMS draws its hover cards, menus and popups inside the element that owns them
  * (position: fixed, z-index 9999, but only within that panel). Left alone, every later panel
  * paints over a card opened in an earlier one. So the panel under the pointer, or holding an
- * open menu, is raised for as long as that is so: above its neighbours and the sticky navbar
- * (1030), below modals (1040 and up). */
+ * open menu, is raised for as long as that is so: above ordinary neighbouring panels and below
+ * the Bootstrap modal backdrop (1040). Newer LibreNMS navbars use 1100, so a card at the very
+ * top of the page can still sit below the navbar. */
 html.dark:has(link[data-ts-orn]) .panel:is(:hover, :has(.open)) {
   z-index: 1035;
 }
@@ -716,11 +717,45 @@ html.dark:has(link[data-ts-orn]) .panel:has(.modal.in) {
   clip-path: none;
   z-index: auto;
 }
+/* Newer LibreNMS raises the sticky navbar to 1100, above Bootstrap's modal
+ * backdrop (1040) and dialog (1050). Lower it for the lifetime of an open
+ * Bootstrap modal, too, so it cannot remain active above the dimmed page. */
+html.dark:has(.modal.in) .navbar-sticky-top {
+  z-index: 1030;
+}
+/* LibreNMS's Alpine <x-modal> uses a full-screen z-50 overlay, below both the
+ * sticky navbar (1100 in 26.10.2) and an ornamented hovered panel (1035). Identify the
+ * dialog by its overlay classes AND its click-outside dialog child, so unrelated
+ * z-50 controls keep their own stacking. The light base is generated from this
+ * rule as well. */
+html.dark [x-show][class~="tw:fixed"][class~="tw:inset-0"][class~="tw:z-50"][class~="tw:bg-black/50"]:has(> [x-on\:click\.outside]) {
+  z-index: 1050;
+}
+/* Lower the navbar only while an Alpine dialog is visible. This keeps the
+ * backdrop above it without raising the dialog above Bootstrap's body-mounted
+ * tooltips (1070) and Select2 dropdowns (1051). */
+html.dark:has([x-show][class~="tw:fixed"][class~="tw:inset-0"][class~="tw:z-50"][class~="tw:bg-black/50"]:not([x-cloak]):not([hidden]):not([style*="display: none"]):not([style*="display:none"]) > [x-on\:click\.outside]) .navbar-sticky-top {
+  z-index: 1030;
+}
+/* If an Alpine dialog is placed inside an ornamented panel, the panel's clip
+ * and stacking context would still trap it. Release them only while the
+ * dialog is shown: Alpine hides x-show with an inline display:none, and
+ * x-cloak covers the period before Alpine has initialized. */
+html.dark:has(link[data-ts-orn]) .panel:has([x-show][class~="tw:fixed"][class~="tw:inset-0"][class~="tw:z-50"][class~="tw:bg-black/50"]:not([x-cloak]):not([hidden]):not([style*="display: none"]):not([style*="display:none"]) > [x-on\:click\.outside]) {
+  isolation: auto;
+  clip-path: none;
+  z-index: auto;
+}
 /* Panel headings: a marker on the left edge and a strip across the heading,
  * both painted under the heading's text (the heading is isolated so that -1
  * puts them above its background and below its content). */
 html.dark:has(link[data-ts-orn]) .panel > .panel-heading {
   isolation: isolate;
+}
+/* A dialog nested in a heading must also escape the heading's own isolated
+ * stacking context; restore the decorative isolation as soon as it closes. */
+html.dark:has(link[data-ts-orn]) .panel > .panel-heading:has([x-show][class~="tw:fixed"][class~="tw:inset-0"][class~="tw:z-50"][class~="tw:bg-black/50"]:not([x-cloak]):not([hidden]):not([style*="display: none"]):not([style*="display:none"]) > [x-on\:click\.outside]) {
+  isolation: auto;
 }
 html.dark:has(link[data-ts-orn]) .panel > .panel-heading::before {
   content: "";

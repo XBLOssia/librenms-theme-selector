@@ -65,6 +65,7 @@ jobs:
           python scripts/make-clock-tower.py --check
           python scripts/make-paisley.py --check
           python scripts/upstream-drift.py --selftest
+          python scripts/interaction-drift.py --selftest
 
   mutate:
     name: mutation check

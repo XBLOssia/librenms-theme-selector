@@ -94,6 +94,9 @@ function test_ornaments(): void
     T::group('ornaments: the fixed mechanics in base.css');
     $rules = ornament_rules();
     $gate = 'html.dark:has(link[data-ts-orn])';
+    $alpineOverlay = '[x-show][class~="tw:fixed"][class~="tw:inset-0"][class~="tw:z-50"][class~="tw:bg-black/50"]';
+    $alpineChild = '[x-on\\:click\\.outside]';
+    $shownAlpine = $alpineOverlay . ':not([x-cloak]):not([hidden]):not([style*="display: none"]):not([style*="display:none"]) > ' . $alpineChild;
 
     // Every declaration of the ornament layer, written out. A change to any of
     // them (a higher z-index, pointer-events, text in content, a bigger
@@ -129,8 +132,16 @@ function test_ornaments(): void
             'clip-path: none',
             'z-index: auto',
         ],
+        "$gate .panel:has($shownAlpine)" => [
+            'isolation: auto',
+            'clip-path: none',
+            'z-index: auto',
+        ],
         "$gate .panel > .panel-heading" => [
             'isolation: isolate',
+        ],
+        "$gate .panel > .panel-heading:has($shownAlpine)" => [
+            'isolation: auto',
         ],
         "$gate .panel > .panel-heading::before" => [
             'content: ""',
@@ -518,7 +529,7 @@ function test_ornaments(): void
     T::group('ornaments: a card opened inside a panel is not trapped under the next one');
     foreach (["$gate .panel:is(:hover, :has(.open))", "$gate .grid-stack .grid-stack-item:hover"] as $sel) {
         $z = array_values(array_filter($rules[$sel] ?? [], fn ($d) => str_starts_with($d, 'z-index:')));
-        T::ok("$sel is raised above the sticky navbar (1030) and below modals (1040)", count($z) === 1 && preg_match('/^z-index: (\d+)$/', $z[0], $zm) === 1 && (int) $zm[1] > 1030 && (int) $zm[1] < 1040, json_encode($z));
+        T::ok("$sel is raised above ordinary panels and below the Bootstrap backdrop (1040)", count($z) === 1 && preg_match('/^z-index: (\d+)$/', $z[0], $zm) === 1 && (int) $zm[1] > 0 && (int) $zm[1] < 1040, json_encode($z));
     }
     T::ok('the panel itself is positioned, so its z-index applies', in_array('position: relative', $panelDecls, true));
 
@@ -530,6 +541,20 @@ function test_ornaments(): void
     T::ok('and it says nothing else (no z-index above the backdrop, which would leave the panel undimmed)', count($open) === 3, json_encode($open));
     $order = array_keys($rules);
     T::ok('it comes after the hover raise, which would otherwise win (the modal is under the pointer, so the panel is hovered)', array_search("$gate .panel:has(.modal.in)", $order, true) > array_search("$gate .panel:is(:hover, :has(.open))", $order, true));
+
+    T::group('ornaments: the newer Alpine dialog stays above panels and the navbar');
+    $alpineRule = "html.dark $alpineOverlay:has(> $alpineChild) {\n  z-index: 1050;\n}";
+    $navRule = "html.dark:has($shownAlpine) .navbar-sticky-top {\n  z-index: 1030;\n}";
+    $bootstrapNavRule = "html.dark:has(.modal.in) .navbar-sticky-top {\n  z-index: 1030;\n}";
+    T::ok('the full-screen Alpine dialog is above the hovered panel and navbar', str_contains($base, $alpineRule));
+    T::ok('light mode receives the same rule', str_contains(\Xblossia\ThemeSelector\Modes::lightBase($base), str_replace('html.dark', 'html:not(.dark)', $alpineRule)));
+    T::ok('the navbar lowers only while an Alpine dialog is shown', str_contains($base, $navRule));
+    T::ok('the light navbar has the same visible-dialog rule', str_contains(\Xblossia\ThemeSelector\Modes::lightBase($base), str_replace('html.dark', 'html:not(.dark)', $navRule)));
+    T::ok('the navbar also lowers under an open Bootstrap modal', str_contains($base, $bootstrapNavRule));
+    T::ok('the light navbar has the same Bootstrap rule', str_contains(\Xblossia\ThemeSelector\Modes::lightBase($base), str_replace('html.dark', 'html:not(.dark)', $bootstrapNavRule)));
+    T::ok('a panel with a shown Alpine dialog releases its stacking context and clip', ($rules["$gate .panel:has($shownAlpine)"] ?? []) === ['isolation: auto', 'clip-path: none', 'z-index: auto']);
+    T::ok('the Alpine release comes after the hover raise', array_search("$gate .panel:has($shownAlpine)", $order, true) > array_search("$gate .panel:is(:hover, :has(.open))", $order, true));
+    T::ok('a heading with a shown Alpine dialog releases its own isolation', ($rules["$gate .panel > .panel-heading:has($shownAlpine)"] ?? []) === ['isolation: auto']);
 
     // The panel's ::after draws only the edge lines of the cut (the clip makes the cut).
     $panelAfter = $rules["$gate .panel::after"] ?? [];

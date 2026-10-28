@@ -199,8 +199,9 @@ texture.
   clip-path), and LibreNMS renders hover cards, menus and popups inside the element that owns
   them, so without more, every later panel would paint over a card opened in an earlier one
   (the device hover card on the device page did exactly that). While the pointer is over a
-  panel or widget, or the panel holds an open menu, it is raised to `z-index: 1035`: above the
-  sticky navbar (1030), below modals (1040 and up).
+  panel or widget, or the panel holds an open menu, it is raised to `z-index: 1035`: above ordinary
+  neighbouring panels and below the Bootstrap backdrop (1040). LibreNMS 26.10.2's sticky navbar is
+  1100, so a card near the top of the page can still fall below that navbar and needs its own check.
 * **A modal written inside a panel is not trapped under its own backdrop.** A modal's `z-index` (1050) only counts
   inside its nearest stacking context, and the backdrop (1040) is a child of `<body>`. With the panel isolated, the
   whole panel, the dialog with it, paints under the backdrop: the page dims and nothing in the dialog can be clicked,
@@ -209,6 +210,14 @@ texture.
   hovered, being the dialog's ancestor, so the raise has to be undone too). The frame and the cut corners are not
   drawn on that panel for as long as the dialog is up, under the dimmed page. It is not raised above the backdrop
   instead, because that would leave the panel undimmed.
+* **New Alpine dialogs also clear panels and the navbar.** LibreNMS's full-screen `<x-modal>` uses `z-50`,
+  which puts it below a hovered panel. The shared base identifies that dialog's overlay and click-outside child
+  and gives it 1050. While a Bootstrap or Alpine dialog is open, the navbar is lowered to 1030, below the
+  backdrop; its original stacking returns on close. This preserves room above the dialog for Bootstrap
+  tooltips (1070) and Select2 dropdowns (1051). An Alpine dialog nested in an ornamented panel or heading
+  temporarily releases that ancestor's clip/isolation; hidden dialogs do not. Unrelated z-50 layers are
+  untouched. The selector is tied to upstream's current component structure, so include it in the
+  [interaction update check](INTERACTION-CHECKLIST.md).
 * **The notch is grown 2px off the box edges.** Each notch is the cut triangle plus 2px on
   the two sides that lie along the box edges (the hypotenuse stays on the same line), and
   the zero-width slit that joins it to the outside runs 2px outside the box. Reason: with

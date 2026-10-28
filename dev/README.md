@@ -117,6 +117,22 @@ and close on mouseleave. No settings are saved. Run it against the pinned and ne
 LibreNMS dev builds when changing tooltip styles. `--skin clock-tower-gotham --mode dark`
 limits a run; `--base-css /path/to/base.css` compares an earlier stylesheet.
 
+The Alpine dialog regression uses a LibreNMS dev instance with the newer dependency
+dialog (26.10.2 was tested). It exercises the real page, a nested-panel fixture and an
+existing Bootstrap modal in both modes, at desktop and narrow viewport sizes:
+
+```bash
+node dev/test-dialogs.cjs --url http://127.0.0.1:8000
+node dev/test-dialogs.cjs --url http://127.0.0.1:8000 --skin clock-tower-gotham --mode dark --viewport desktop
+```
+
+Both browser checks load the working tree's CSS into the browser and leave saved
+settings alone. `test-dialogs.cjs` also accepts `--base-css /path/to/base.css` to
+compare a previous shared stylesheet. These browser checks are separate from
+`dev/test.sh`; install Playwright and Chrome in the development environment first.
+The [interaction checklist](../docs/INTERACTION-CHECKLIST.md) records their scope and
+how to compare upstream changes with the list.
+
 **The update rehearsal** (`sh dev/test.sh update`) is the one test that does not use this stack. It
 starts a clean LibreNMS of its own (`dev/compose-clean.yml`: no plugin, no bind mount, nothing like this
 instance's path repository) and installs the plugin from a local git repository the test builds from

@@ -12,10 +12,18 @@ that section into the next version's.
 ## [Unreleased]
 
 ### Fixes
+- **New Alpine dialogs stay above the page in every skin.** Their full-screen backdrop and dialog no
+  longer fall behind ornamented panels or the sticky navbar; tooltips and Select2 stay above the dialog,
+  and a nested dialog temporarily releases its panel's clip and stacking context.
 - **Settings help tooltips stay open when hovered.** Large Font Awesome tooltip icons now have a full-height
   box, so Bootstrap positions the tooltip above the visible icon instead of overlapping it and repeatedly
   opening and closing. The shared fix covers bundled and uploaded skins in both modes; a browser regression
   check exercises hover, layering and click behavior across the bundled skins and custom-skin examples.
+
+### Tooling
+- **Interaction update checklist.** A local source-tree comparison flags new, changed, removed and
+  unmapped upstream page/control sources without accepting them as reviewed. Browser checks cover the
+  new dialog at desktop and narrow sizes in both modes across bundled skins and custom-skin examples.
 
 ## [1.1.3] - 2026-10-23
 

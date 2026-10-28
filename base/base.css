@@ -1967,6 +1967,14 @@ html.dark .purple, html.dark a.purple {
 html.dark .minigraph-div {
   border-color: var(--ts-border);
 }
+/* Font Awesome's .fa-lg has a .05em line-height. Bootstrap measures that tiny box
+ * when positioning a tooltip, so the tooltip can cover the visible glyph and
+ * repeatedly trigger mouseleave/mouseenter. Give initialized tooltip icons a
+ * full line box. Both Bootstrap and the older Vue tooltips mark their triggers
+ * with data-original-title; keeping this shared also covers uploaded skins. */
+html.dark .fa-lg[data-original-title] {
+  line-height: 1;
+}
 html.dark .popover-inner {
   background-color: var(--ts-surface-raised);
   color: var(--ts-text);

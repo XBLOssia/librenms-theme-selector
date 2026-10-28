@@ -102,6 +102,21 @@ tests need this stack up; its container mounts the repository read-only as well.
 rehearsal on every push to `main`, and a nightly run against the newest LibreNMS. `LIBRENMS_VERSION=latest`
 (or any LibreNMS release tag) builds either stack on that release instead of the pinned one.
 
+For tooltip hover regressions, with Node.js, PHP, Playwright and Chrome available:
+
+```bash
+node dev/test-tooltips.cjs --url http://127.0.0.1:8000
+```
+
+This browser check uses the dev instance's real Bootstrap and Font Awesome assets,
+then replaces the page in the browser with a synthetic settings fixture. It checks
+all bundled skins and the three custom-skin examples in both modes, using the working
+tree's CSS and the publisher's mirror generation. Help must stay visible when hovering
+the top, centre and bottom of the icon, paint above neighbouring panels, toggle on click
+and close on mouseleave. No settings are saved. Run it against the pinned and newest
+LibreNMS dev builds when changing tooltip styles. `--skin clock-tower-gotham --mode dark`
+limits a run; `--base-css /path/to/base.css` compares an earlier stylesheet.
+
 **The update rehearsal** (`sh dev/test.sh update`) is the one test that does not use this stack. It
 starts a clean LibreNMS of its own (`dev/compose-clean.yml`: no plugin, no bind mount, nothing like this
 instance's path repository) and installs the plugin from a local git repository the test builds from

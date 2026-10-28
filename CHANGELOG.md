@@ -11,6 +11,12 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Fixes
+- **Settings help tooltips stay open when hovered.** Large Font Awesome tooltip icons now have a full-height
+  box, so Bootstrap positions the tooltip above the visible icon instead of overlapping it and repeatedly
+  opening and closing. The shared fix covers bundled and uploaded skins in both modes; a browser regression
+  check exercises hover, layering and click behavior across the bundled skins and custom-skin examples.
+
 ## [1.1.3] - 2026-10-23
 
 ### Tooling

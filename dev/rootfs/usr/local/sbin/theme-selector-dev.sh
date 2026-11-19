@@ -1,8 +1,8 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
 #
-# Dev-only setup, run by s6 on every container start, after the image's own
-# init (01-08) has written nginx/php config and migrated the database.
+# Dev-only setup, run on every container start after the image has written
+# nginx/php config and migrated the database, before the web services start.
 #
 #   1. Header-based login, so nobody types a password into the dev instance.
 #   2. PHP edits in /plugin take effect on the next request.
@@ -28,7 +28,7 @@ $config['http_auth_header'] = 'DEV_USER';
 EOF
 chown librenms:librenms /data/config/dev-auth.php
 
-# nginx.conf is regenerated from a template by 03-config.sh on every start,
+# nginx.conf is regenerated from a template by the image on every start,
 # so these edits are re-applied each time rather than accumulating.
 sed -i 's|^http {|http {\n    map $http_x_dev_user $dev_user { "" dev-admin; default $http_x_dev_user; }|' /etc/nginx/nginx.conf
 sed -i 's|include fastcgi_params;|include fastcgi_params;\n            fastcgi_param DEV_USER $dev_user;|' /etc/nginx/nginx.conf
@@ -52,7 +52,7 @@ if [ ! -e "vendor/$PACKAGE" ]; then
 fi
 
 echo "[theme-selector] migrate and publish"
-# The image's own migrate (04) ran before the plugin was installed.
+# The image's own migration ran before the plugin was installed.
 as_librenms php lnms migrate --force --no-interaction
 # Earlier dev setups linked the published directory to the repo; the plugin
 # now copies into it, the same way it does in production.
@@ -80,3 +80,4 @@ done
 artisan config:cache --no-interaction
 artisan route:clear --no-interaction
 artisan view:clear --no-interaction
+echo "[theme-selector] ready"

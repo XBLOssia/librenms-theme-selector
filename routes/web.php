@@ -17,6 +17,10 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 // group's CSRF check, and uploads are rate limited. Skin ids in URLs are
 // constrained to the same slug the manifest validator enforces.
 Route::middleware(['web', 'auth', 'can:admin'])->group(function (): void {
+    Route::post('plugin/theme-selector/update/check', [PickerController::class, 'checkUpdate'])
+        ->middleware('throttle:6,1')->name('theme-selector.update.check');
+    Route::post('plugin/theme-selector/update/install', [PickerController::class, 'installUpdate'])
+        ->middleware('throttle:3,1')->name('theme-selector.update.install');
     Route::post('plugin/theme-selector/default', [PickerController::class, 'setDefault'])->name('theme-selector.default');
     Route::post('plugin/theme-selector/skins', [PickerController::class, 'upload'])
         ->middleware('throttle:12,1')

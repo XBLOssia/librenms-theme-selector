@@ -153,6 +153,12 @@ final class Status
         return str_starts_with($pretty, 'dev-') ? "$pretty@$short" : "$pretty ($short)";
     }
 
+    /** Display released versions with a v prefix; preserve branches and hashes. */
+    public static function displayVersion(?string $version): ?string
+    {
+        return $version !== null && preg_match('/^\d+\.\d+\.\d+(?:\s|$)/', $version) ? 'v' . $version : $version;
+    }
+
     /**
      * What Composer says is installed here, described; null if the package is not installed by Composer.
      *

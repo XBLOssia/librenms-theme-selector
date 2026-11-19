@@ -407,8 +407,27 @@
         </div>
     </div>
     @endcan
+    @can('admin')
+    <div class="panel panel-default" id="ts-update">
+        <div class="panel-heading"><h3 class="panel-title">Plugin updates</h3></div>
+        <div class="panel-body">
+            <p>Check for updates from the source configured for this installation. Installing can take several minutes and may require you to sign in again.</p>
+            @if(is_array($updateResult))
+                <p class="{{ $updateResult['state'] === 'error' ? 'text-danger' : 'text-success' }}" role="status">{{ $updateResult['message'] }}</p>
+            @endif
+            <form method="post" action="{{ route('theme-selector.update.check') }}" style="display:inline-block">
+                @csrf
+                <button type="submit" class="btn btn-default">Check for update</button>
+            </form>
+            <form method="post" action="{{ route('theme-selector.update.install') }}" style="display:inline-block" onsubmit="this.querySelector('button').disabled = true">
+                @csrf
+                <button type="submit" class="btn btn-primary" @disabled(! session()->has('theme_selector.update_check'))>Install update</button>
+            </form>
+        </div>
+    </div>
+    @endcan
     <p class="text-muted text-center" style="margin: 14px 0 6px">
-        <a href="{{ $projectUrl }}" target="_blank" rel="noopener noreferrer">Theme Selector plugin by XBLOssia and Claude</a>@if($version !== null) <span title="The installed version">&middot; {{ $version }}</span>@endif
+        <a href="{{ $projectUrl }}" target="_blank" rel="noopener noreferrer">Theme Selector plugin</a>@if($version !== null) <span title="The installed version">&middot; {{ $version }}</span>@endif
     </p>
 </div>
 @endsection

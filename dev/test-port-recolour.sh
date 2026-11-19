@@ -80,7 +80,10 @@ T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 
 echo "== the unmodified LibreNMS"
 check "generic_data.inc.php still has its literals (no core patch)" "$($D grep -c 'graph_colours.port_in' /opt/librenms/includes/html/graphs/generic_data.inc.php | grep -qx 0 && echo ok || echo no)"
-check "the store reports itself recolourable" "$($D sh -c "cd /opt/librenms && gosu librenms php artisan tinker --execute='echo Xblossia\\ThemeSelector\\Graph\\PortSeriesSupport::compatible() ? \"yes\" : \"no\";'" 2>/dev/null | tail -1 | grep -qx yes && echo ok || echo no)"
+check "the graph backend reports itself recolourable" "$($D sh -c "cd /opt/librenms && gosu librenms php artisan tinker --execute='echo Xblossia\\ThemeSelector\\Graph\\PortSeriesSupport::available() ? \"yes\" : \"no\";'" 2>/dev/null | tail -1 | grep -qx yes && echo ok || echo no)"
+if $D sh -c "cd /opt/librenms && gosu librenms php artisan tinker --execute='echo Xblossia\\ThemeSelector\\Graph\\PortSeriesSupport::backendCompatible() ? \"yes\" : \"no\";'" 2>/dev/null | tail -1 | grep -qx yes; then
+  check "the new backend delegates non-graph operations, timezone and errors" "$($D sh -c 'cd /opt/librenms && gosu librenms php /plugin/dev/test-backend-delegation.php' >/dev/null 2>&1 && echo ok || echo no)"
+fi
 
 set_default ""
 echo "== per-user skins"

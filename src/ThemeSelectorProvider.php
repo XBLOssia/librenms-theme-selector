@@ -12,6 +12,7 @@ use Xblossia\ThemeSelector\Console\PublishCommand;
 use Xblossia\ThemeSelector\Console\StatusCommand;
 use Xblossia\ThemeSelector\Console\ValidateCommand;
 use Xblossia\ThemeSelector\Graph\PortSeriesSupport;
+use Xblossia\ThemeSelector\Graph\RecolouringBackend;
 use Xblossia\ThemeSelector\Graph\RecolouringRrd;
 use Xblossia\ThemeSelector\Hooks\Menu;
 use Xblossia\ThemeSelector\Http\Middleware\GraphColours;
@@ -108,6 +109,14 @@ class ThemeSelectorProvider extends ServiceProvider
     private function recolourPortSeries(): void
     {
         try {
+            if (PortSeriesSupport::backendCompatible()) {
+                if ($this->app->resolved(PortSeriesSupport::BACKEND)) {
+                    Log::info('ThemeSelector: port graph colours not installed: the RRD backend was already in use');
+                    return;
+                }
+                $this->app->extend(PortSeriesSupport::BACKEND, fn ($backend) => new RecolouringBackend($backend));
+                return;
+            }
             if (! PortSeriesSupport::compatible()) {
                 return;
             }

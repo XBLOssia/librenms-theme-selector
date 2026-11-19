@@ -368,7 +368,7 @@ src/
   PreviewChoice, PreviewGraph  what the picker previews, and the sample graph in the preview
   Settings, InstallException
   GraphPalette, GraphColours (middleware), SkinResolver, SkinInjector
-  Graph/                     port series recolouring: RecolouringRrd, PortSeries, PortSeriesSupport
+  Graph/                     port series recolouring: RecolouringRrd, RecolouringBackend, PortSeries, PortSeriesSupport
   Http/Controllers/PickerController.php
   Console/                   theme-selector:publish, theme-selector:status, theme-selector:validate
 routes/web.php
@@ -594,11 +594,11 @@ comes from the skin in the slot of the mode LibreNMS draws the graph in (the req
 `includes/html/graphs/generic_data.inc.php` (port_bits and 19 other graph types)
 hard-codes its six in/out series colours and reads no config. An earlier version of this
 document said a plugin can't reach them; that was never tested, and it is wrong. Every
-graph is drawn by `Rrd::graph($rrd_options)` (`LibreNMS/Util/Graph.php`), and `Rrd` is a
-container binding, so the plugin can wrap it:
+graph is drawn through a container binding, so the plugin can wrap it:
 
-- `Graph/RecolouringRrd` extends core's `LibreNMS\Data\Store\Rrd`, overrides only
-  `graph()`, and rewrites the six options (`AREA:inbits_max#D7FFC7`, `AREA:inbits#90B040`,
+- `Graph/RecolouringRrd` extends the older `LibreNMS\Data\Store\Rrd`; on newer LibreNMS,
+  `Graph/RecolouringBackend` decorates `RrdBackendInterface` and delegates its other methods.
+  Both rewrite the six graph options (`AREA:inbits_max#D7FFC7`, `AREA:inbits#90B040`,
   `LINE:inbits#608720`, and the `dout` three) from `graph_colours.port_in` / `port_out`
   just before rrdtool runs. Because it runs after the per-request override, each user's
   graphs follow their own skin.
@@ -606,18 +606,17 @@ container binding, so the plugin can wrap it:
   its colour is still the stock literal for its role, so a caller's own colour is never
   touched, a helper that already reads the palette is left alone, and if core changes
   those lines nothing matches and the graph is drawn in stock colours.
-- `Graph/PortSeriesSupport` checks by reflection that core's `Rrd` is still a class this
-  can extend (not final, `graph(array): string` public, no constructor arguments). A
-  subclass whose parent changed shape would be an uncatchable fatal on every request, so
-  if the check fails the subclass is never loaded.
+- `Graph/PortSeriesSupport` checks the full newer backend contract or the older store's
+  subclass requirements by reflection before loading a wrapper. An incompatible interface
+  could otherwise cause an uncatchable fatal on every request.
 - It is installed by `ThemeSelectorProvider::boot()` while the plugin is enabled, on web
   requests and in console processes alike. Web requests draw graphs for users; the alert
   process draws them for emails and chat messages (`Util/Mail.php`, `Transport/Telegram.php`),
   with no session, so those use the instance default, which is what the config holds. If
   something has already used the store when the plugin boots, it is not replaced (that
   state isn't ours) and an `info`-level line is logged (hidden at LibreNMS's default level).
-  If core's store has changed shape, nothing is installed and nothing is logged; the
-  `PortSeriesSupport::compatible()` check in `docs/DEPLOYMENT.md` is how to tell.
+  If neither API is compatible, nothing is installed and nothing is logged; the
+  `PortSeriesSupport::available()` check in `docs/DEPLOYMENT.md` is how to tell.
 - A palette that is not three six-digit hex colours is ignored for that direction.
 
 Nothing in LibreNMS is edited, so `daily.sh` has nothing to trip over. Tested on the dev

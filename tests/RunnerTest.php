@@ -72,7 +72,7 @@ SH,
             }
         }
         foreach (['live', 'all'] as $mode) {
-            foreach (['test-patch', 'test-graphs', 'test-port-recolour', 'test-picker', 'test-upload'] as $stage) {
+            foreach (['test-patch', 'test-graphs', 'test-port-recolour', 'test-picker', 'test-update-access', 'test-upload'] as $stage) {
                 [$code, $log, $out] = $run($mode, $stage);
                 T::ok("$mode reports a failure in $stage and stops the live suites", $code !== 0 && ($stage === 'test-upload' || ! str_contains($log, 'test-upload')), $out . "\n" . $log);
             }

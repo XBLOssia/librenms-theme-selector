@@ -11,7 +11,14 @@ that section into the next version's.
 
 ## [Unreleased]
 
+### Added
+- **Update from settings.** Administrators can check the configured plugin source and install an
+  available update from the bottom of the Theme Selector page.
+
 ### Fixes
+- **Port graph series colours on newer LibreNMS.** The plugin now supports the new RRD backend
+  interface as well as the older store, preserving each skin's port colours.
+- **Settings footer.** The plugin name and installed version are shown without author attribution.
 - **New Alpine dialogs stay above the page in every skin.** Their full-screen backdrop and dialog no
   longer fall behind ornamented panels or the sticky navbar; tooltips and Select2 stay above the dialog,
   and a nested dialog temporarily releases its panel's clip and stacking context.
@@ -21,6 +28,9 @@ that section into the next version's.
   check exercises hover, layering and click behavior across the bundled skins and custom-skin examples.
 
 ### Tooling
+- **Nightly LibreNMS compatibility checks.** The dev container waits for the image's setup under
+  either legacy or native s6 initialization. The update rehearsal checks Laravel's route registry
+  and an authenticated picker request, and verifies the route cache is rebuilt after removal.
 - **Interaction update checklist.** A local source-tree comparison flags new, changed, removed and
   unmapped upstream page/control sources without accepting them as reviewed. Browser checks cover the
   new dialog at desktop and narrow sizes in both modes across bundled skins and custom-skin examples.

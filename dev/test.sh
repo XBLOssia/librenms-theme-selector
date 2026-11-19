@@ -61,6 +61,7 @@ live() {
   docker exec "$APP" sh /plugin/dev/test-graphs.sh || return
   TS_CONTAINER="$APP" sh "$ROOT/dev/test-port-recolour.sh" || return
   docker exec "$APP" sh /plugin/dev/test-picker.sh || return
+  docker exec "$APP" sh /plugin/dev/test-update-access.sh || return
   docker exec "$APP" sh /plugin/dev/test-upload.sh
 }
 

@@ -18,7 +18,7 @@ set -u
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 compose() { docker compose -f "$ROOT/dev/compose-clean.yml" "$@"; }
-C=theme-selector-clean-librenms-1
+C=${COMPOSE_PROJECT_NAME:-theme-selector-clean}-librenms-1
 OLD=f84876e # main as of the merge of PR 26: before light/dark (one migration fewer), before versions were recorded
 FAILED=0
 STATUS_OUT="$(mktemp)"
@@ -36,11 +36,16 @@ sql() { docker exec "$C" mariadb -h db -u librenms -pclean-pass librenms -N -e "
 migs() { sql "select count(*) from migrations where migration like '%theme_selector%'"; }
 cfgrows() { sql "select count(*) from config where config_name like 'graph_colours.%' or config_name like 'rrdgraph_def_text%'"; }
 leftovers() { sql "select (select count(*) from information_schema.tables where table_schema = 'librenms' and table_name like 'theme_selector%') + (select count(*) from users_prefs where pref like 'theme_selector%') + (select count(*) from migrations where migration like '%theme_selector%') + (select count(*) from plugins where plugin_name = 'ThemeSelector')"; }
-routes() { inl "php artisan route:list 2>/dev/null | grep -c $1"; }
+routes() {
+  # route:list is overridden by Restify on newer LibreNMS and may omit web
+  # routes. Query Laravel's registry directly; errors must not look like zero.
+  docker exec "$C" gosu librenms:librenms env COMPOSER_HOME=/data/composer php /plugin/dev/count-theme-routes.php "$1"
+}
 nvendor() { inr 'ls /opt/librenms/vendor/xblossia 2>/dev/null | wc -l'; }
 plugins_json() { inr 'cat /opt/librenms/composer.plugins.json'; }
 locked() { inr 'grep -A8 "\"name\": \"xblossia/librenms-theme-selector\"" /opt/librenms/composer.lock | grep reference | cut -d\" -f4 | cut -c1-7'; }
 web() { inr 'curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/login'; }
+picker() { docker exec "$C" sh /plugin/dev/check-picker-http.sh; }
 status() { inl './lnms theme-selector:status' >"$STATUS_OUT" 2>&1; }
 # What daily.sh does before and during its post-pull phase: clear caches, put composer's files back to
 # stock (it does `git checkout` of them), then its own `post-pull`, which re-requires the plugins listed in
@@ -69,7 +74,7 @@ done
 check "the stack came up" "$(yes_if '[ "$ready" = yes ]')"
 [ "$ready" = yes ] || exit 1
 inr 'sed -i "/^INSTALL=/d" /opt/librenms/.env; cd /opt/librenms && git config --global --add safe.directory "*"; mkdir -p /data/pristine && cp composer.json composer.lock /data/pristine/'
-inl './lnms user:add --no-interaction -r admin -p "pw-$(date +%s)-clean" tester >/dev/null 2>&1'
+inl './lnms user:add --no-interaction -r admin -p theme-selector-test-only tester >/dev/null 2>&1'
 check "no plugin is installed" "$(yes_if '[ "$(nvendor)" = 0 ]')"
 
 # The scratch source is a clone of the repository, so it has the repository's real release tags (v1.1.0 and later). This
@@ -92,10 +97,13 @@ check "plugin:add succeeds" "$(yes_if "[ $rc = 0 ]")"
 inl './lnms migrate --force >/dev/null 2>&1'
 inl 'php artisan route:cache >/dev/null 2>&1'
 inl './lnms theme-selector:publish >/dev/null 2>&1'
+# The live FPM process may still hold the pre-install Composer autoloader.
+inr 'pkill -USR2 -f "php-fpm: master process"; sleep 3'
 check "composer.plugins.json records it, for daily.sh" "$(yes_if 'plugins_json | grep -q "librenms-theme-selector.*dev-main"')"
 check "it installed the old commit" "$(yes_if '[ "$(locked)" = "$OLD" ]')"
 check "its migrations ran (four, at the old commit)" "$(yes_if '[ "$(migs)" = 4 ]')"
 check "the picker page is routed" "$(yes_if '[ "$(routes theme-selector.index)" = 1 ]')"
+check "the authenticated picker renders" "$(yes_if 'picker')"
 check "the base stylesheet is published" "$(yes_if 'inr "test -f /opt/librenms/html/css/custom/theme-selector/base.css"')"
 
 section "choices made before a bundled skin was renamed"
@@ -113,6 +121,7 @@ check "a user's old choices now name the renamed skins (zerg is organic, protoss
 check "and the instance default followed (protoss is ascended), the other one untouched" "$(yes_if '[ "$(sql "select group_concat(value order by name) from theme_selector_settings where name like \"default_skin%\"")" = "\"ascended\",\"terran\"" ]')"
 sql "delete from users_prefs where user_id = 1 and pref like 'theme_selector.skin%'; delete from theme_selector_settings where name like 'default_skin%'" >/dev/null
 check "LibreNMS rebuilt its route cache with the plugin in it" "$(yes_if '[ "$(routes theme-selector.preview)" = 1 ]')"
+check "the authenticated picker still renders after the update" "$(yes_if 'picker')"
 check "it is still enabled and a page renders" "$(yes_if '[ "$(web)" = 200 ]')"
 check "the first page load published the light base stylesheet" "$(yes_if 'inr "test -f /opt/librenms/html/css/custom/theme-selector/base-light.css"')"
 status; rc=$?
@@ -147,6 +156,7 @@ OUT="$(inl '/usr/local/sbin/theme-selector-ensure.sh' 2>&1)"; rc=$?
 check "with the source back it restores the plugin (exit 0, says so)" "$(yes_if "[ $rc = 0 ] && echo \"\$OUT\" | grep -q 'restored xblossia/librenms-theme-selector (dev-main)' && [ \"\$(locked)\" = \"$NEXT2\" ] && [ \"\$(nvendor)\" = 1 ]")"
 inr 'pkill -USR2 -f "php-fpm: master process"; sleep 3'
 check "the plugin works again: a page renders and its commands exist" "$(yes_if '[ "$(web)" = 200 ] && [ "$(routes theme-selector.index)" = 1 ]')"
+check "the authenticated picker renders after recovery" "$(yes_if 'picker')"
 OUT="$(inl '/usr/local/sbin/theme-selector-ensure.sh' 2>&1)"; rc=$?
 check "run again it does nothing, silently" "$(yes_if "[ $rc = 0 ] && [ -z \"\$OUT\" ]")"
 OUT="$(nightly)"
@@ -188,6 +198,14 @@ check "a new major release (v2.0.0) is not taken: ^1.0 stays on v1.1.0" "$(yes_i
 docker exec -u librenms "$C" sh -c 'cd /opt/librenms && COMPOSER_HOME=/data/composer vendor/xblossia/librenms-theme-selector/scripts/update.sh' >"$UPDATE_OUT" 2>&1; rc=$?
 check "update.sh keeps following ^1.0 (it asked for ^1.0, and stayed on v1.1.0)" "$(yes_if "[ $rc = 0 ] && grep -q 'plugin:add xblossia/librenms-theme-selector ^1.0' $UPDATE_OUT && [ \"\$(locked)\" = \"$NEXT3\" ]")"
 
+section "the administrator checks for and installs an update"
+# A new compatible tag in the synthetic repository. The web worker and CLI
+# need the same source; PHP-FPM clears COMPOSER_HOME in these test images.
+tag v1.2.0 "$NEXT4"
+inr 'mkdir -p /home/librenms/.composer && cp /data/composer/config.json /home/librenms/.composer/config.json && chown -R librenms:librenms /home/librenms/.composer'
+docker exec "$C" sh /plugin/dev/test-update-ui.sh; rc=$?
+check "the update buttons install the new revision and report the result" "$(yes_if "[ $rc = 0 ] && [ \"\$(locked)\" = \"$NEXT4\" ]")"
+
 section "what theme-selector:status catches"
 inr 'cp /opt/librenms/composer.plugins.json /data/plugins.json.keep && echo "{\"require\":{}}" > /opt/librenms/composer.plugins.json'
 status; rc=$?
@@ -211,7 +229,11 @@ check "defaults for both modes write graph colours" "$(yes_if '[ "$(cfgrows)" -g
 inl "php artisan tinker --execute='\$d = app(Xblossia\\ThemeSelector\\DefaultSkin::class); \$d->set(null, \"dark\"); \$d->set(null, \"light\");' >/dev/null 2>&1"
 check "clearing both restores them (none left)" "$(yes_if '[ "$(cfgrows)" = 0 ]')"
 inl './lnms plugin:remove xblossia/librenms-theme-selector >/dev/null 2>&1'
-inl 'rm -rf html/css/custom/theme-selector; php artisan route:cache >/dev/null 2>&1; php scripts/composer_wrapper.php config --global --unset repositories.theme-selector'
+inl 'rm -rf html/css/custom/theme-selector'
+inl 'php artisan route:cache' >"$UPDATE_OUT" 2>&1; rc=$?
+check "route cache rebuilds after plugin removal" "$(yes_if "[ $rc = 0 ]")"
+[ "$rc" = 0 ] || sed 's/^/        /' "$UPDATE_OUT"
+inl 'php scripts/composer_wrapper.php config --global --unset repositories.theme-selector'
 OUT="$(inl '/usr/local/sbin/theme-selector-ensure.sh' 2>&1)"; rc=$?
 check "after plugin:remove the safety net leaves it removed (it was taken out of composer.plugins.json)" "$(yes_if "[ $rc = 0 ] && [ -z \"\$OUT\" ] && [ \"\$(nvendor)\" = 0 ]")"
 check "the package and its routes are gone" "$(yes_if '[ "$(nvendor)" = 0 ] && [ "$(routes theme-selector)" = 0 ]')"

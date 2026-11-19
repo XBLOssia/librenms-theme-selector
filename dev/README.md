@@ -101,6 +101,11 @@ tests need this stack up; its container mounts the repository read-only as well.
 [docs/RELEASING.md](../docs/RELEASING.md)): unit and mutation on every pull request, the live suites and the
 rehearsal on every push to `main`, and a nightly run against the newest LibreNMS. `LIBRENMS_VERSION=latest`
 (or any LibreNMS release tag) builds either stack on that release instead of the pinned one.
+The dev image supports both the older container's legacy init scripts and the newer native s6 services;
+it waits for the upstream configuration and migrations before installing the test plugin. The update
+rehearsal checks routes through Laravel's registry and logs in to the picker, because some newer images'
+`route:list` command only shows Restify API routes. Set `COMPOSE_PROJECT_NAME` to give the clean rehearsal
+its own Docker project and container names when running it alongside another test.
 
 For tooltip hover regressions, with Node.js, PHP, Playwright and Chrome available:
 

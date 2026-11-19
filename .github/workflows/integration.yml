@@ -50,7 +50,10 @@ jobs:
         run: |
           docker compose -f dev/compose.yml up -d --build
           for _ in $(seq 1 120); do
-            if docker compose -f dev/compose.yml logs librenms 2>&1 | grep -q '\[theme-selector\] users'; then exit 0; fi
+            if docker compose -f dev/compose.yml logs librenms 2>&1 | grep -q '\[theme-selector\] ready' &&
+              docker compose -f dev/compose.yml exec -T librenms sh -c 'curl -fsS http://127.0.0.1:8000/plugin/theme-selector | grep -q "id=\"ts-picker\""'; then
+              exit 0
+            fi
             sleep 5
           done
           echo "the dev instance did not finish starting" >&2

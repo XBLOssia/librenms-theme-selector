@@ -11,6 +11,8 @@ that section into the next version's.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-19
+
 ### Added
 - **Update from settings.** Administrators can check the configured plugin source and install an
   available update from the bottom of the Theme Selector page.

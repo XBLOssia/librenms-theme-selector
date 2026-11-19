@@ -13,7 +13,8 @@
 # The upload route is rate limited per user (12 a minute). Rather than sleep out
 # the window, the uploads are spread over seven extra admins (dev-up1 to dev-up7,
 # created below), each with a bucket of its own; only the test of the limit itself
-# bursts one admin. So the suite takes about a minute and a half, not nine.
+# bursts a separate admin with its own fresh bucket. So the suite takes about
+# a minute and a half, not nine.
 set -u
 
 B=http://127.0.0.1:8000
@@ -68,8 +69,7 @@ echo "== setup"
 rm -rf "$FIX"; php /plugin/dev/make-fixtures.php "$FIX" || exit 1
 reset_state
 login dev-admin; login dev-user
-for i in 1 2 3 4 5 6 7; do
-  n="dev-up$i"
+for n in dev-up1 dev-up2 dev-up3 dev-up4 dev-up5 dev-up6 dev-up7 dev-rate; do
   if [ "$(q "select count(*) from users where username='$n'")" = 0 ]; then
     (cd /opt/librenms && gosu librenms php lnms user:add --no-interaction -r admin -p "$(head -c 24 /dev/urandom | base64)" "$n" >/dev/null 2>&1)
     q "update users set auth_type='http-auth' where username='$n'" >/dev/null
@@ -303,8 +303,8 @@ rm -rf "$PUB/skins/rogue"
 echo "== the rate limit"
 n429=0
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
-  tok="$(token dev-admin)"
-  c="$(curl -s -o /dev/null -w '%{http_code}' -b "$(jar dev-admin)" -H 'X-Dev-User: dev-admin' -F "_token=$tok" -F "bundle=@$FIX/notzip.zip" $B/plugin/theme-selector/skins)"
+  tok="$(token dev-rate)"
+  c="$(curl -s -o /dev/null -w '%{http_code}' -b "$(jar dev-rate)" -H 'X-Dev-User: dev-rate' -F "_token=$tok" -F "bundle=@$FIX/notzip.zip" $B/plugin/theme-selector/skins)"
   [ "$c" = 429 ] && n429=$((n429 + 1))
 done
 check "a burst of uploads is rate limited (429)" "$(yes_if "[ $n429 -ge 1 ]")"

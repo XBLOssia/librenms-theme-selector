@@ -15,6 +15,7 @@ use Xblossia\ThemeSelector\InstallException;
 use Xblossia\ThemeSelector\Modes;
 use Xblossia\ThemeSelector\PreviewChoice;
 use Xblossia\ThemeSelector\PreviewGraph;
+use Xblossia\ThemeSelector\PluginUpdater;
 use Xblossia\ThemeSelector\Skin\GraphConf;
 use Xblossia\ThemeSelector\Skin\Limits;
 use Xblossia\ThemeSelector\Skin\Report;
@@ -30,6 +31,13 @@ class PickerController extends Controller
 {
     public function index(Request $request, SkinRepository $skins, SkinResolver $resolver): View
     {
+        $updateResult = null;
+        if ($request->user()->can('admin')) {
+            $updateResult = session('theme_selector.update_result') ?? UserPref::getPref($request->user(), 'theme_selector.update_result');
+            if (! is_array($updateResult) || ! is_string($updateResult['state'] ?? null) || ! is_string($updateResult['message'] ?? null)) {
+                $updateResult = null;
+            }
+        }
         // One dropdown and preview for each mode. ?light=<choice> and ?dark=<choice> open the page
         // with that choice already selected (the "Preview" link on a row of the skin list); a
         // choice that is not one of the choices is ignored.
@@ -57,8 +65,39 @@ class PickerController extends Controller
             'uploadLimit' => intdiv(Limits::ARCHIVE_BYTES, 1024 * 1024),
             'phpLimit' => ini_get('upload_max_filesize'),
             'projectUrl' => ThemeSelectorProvider::PROJECT_URL,
-            'version' => Status::installedVersion(),
+            'version' => Status::displayVersion(Status::installedVersion()),
+            'updateResult' => $updateResult,
         ]);
+    }
+
+    public function checkUpdate(Request $request, PluginUpdater $updater): RedirectResponse
+    {
+        UserPref::forgetPref($request->user(), 'theme_selector.update_result');
+        $result = $updater->check();
+        $request->session()->forget('theme_selector.update_check');
+        if ($result['state'] === 'available') {
+            $request->session()->put('theme_selector.update_check', [
+                'fingerprint' => $result['fingerprint'], 'time' => time(),
+            ]);
+        }
+        return redirect()->route('theme-selector.index')->with('theme_selector.update_result', $result);
+    }
+
+    public function installUpdate(Request $request, PluginUpdater $updater): RedirectResponse
+    {
+        $checked = $request->session()->pull('theme_selector.update_check');
+        $fingerprint = is_array($checked) && is_int($checked['time'] ?? null)
+            && $checked['time'] <= time() && $checked['time'] >= time() - 900
+            && is_string($checked['fingerprint'] ?? null) ? $checked['fingerprint'] : null;
+        $result = $updater->install($fingerprint);
+        // Composer may clear Redis sessions while installing. Store the small,
+        // sanitized outcome on this user so it survives a required re-login.
+        UserPref::setPref($request->user(), 'theme_selector.update_result', $result);
+        Log::warning('ThemeSelector: plugin update requested', [
+            'user' => $request->user()->username ?? $request->user()->user_id,
+            'ip' => $request->ip(), 'result' => $result['state'],
+        ]);
+        return redirect()->route('theme-selector.index');
     }
 
     /**

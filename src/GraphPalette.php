@@ -111,7 +111,7 @@ class GraphPalette
      */
     private function portSeriesHonoured(): bool
     {
-        return $this->portHonoured ??= PortSeriesSupport::compatible() || str_contains(
+        return $this->portHonoured ??= PortSeriesSupport::available() || str_contains(
             (string) @file_get_contents(base_path('includes/html/graphs/generic_data.inc.php')),
             'graph_colours.port_in',
         );

@@ -43,6 +43,8 @@ function test_status(): void
     T::ok('a commit with no version', Status::describeVersion(null, '668fa5ffbc0105038ef775d14dfda8025fe60a62') === '668fa5f');
     T::ok('nothing known', Status::describeVersion(null, null) === 'unknown');
     T::ok('a reference that is not a commit is not shown', Status::describeVersion('dev-main', "x\ny; rm -rf /") === 'dev-main');
+    T::ok('release versions carry a v in the footer', Status::displayVersion('1.2.0 (668fa5f)') === 'v1.2.0 (668fa5f)');
+    T::ok('already prefixed versions and branches are preserved', Status::displayVersion('v1.2.0 (668fa5f)') === 'v1.2.0 (668fa5f)' && Status::displayVersion('dev-main@668fa5f') === 'dev-main@668fa5f');
 
     T::group('status: reading what Composer installed');
     $tmp = sys_get_temp_dir() . '/ts-installed-' . bin2hex(random_bytes(4)) . '.php';

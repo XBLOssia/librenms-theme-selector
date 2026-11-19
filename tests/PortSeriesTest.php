@@ -102,6 +102,28 @@ abstract class PS_Abstract
     abstract public function graph(array $options): string;
 }
 
+interface PS_BackendGood
+{
+    public function create(\LibreNMS\RRD\RrdPath $rrd, \LibreNMS\RRD\RrdDefinition $definition): void;
+    public function update(\LibreNMS\RRD\RrdPath $rrd, array $values, ?int $timestamp = null): void;
+    public function tune(\LibreNMS\RRD\RrdPath $rrd, array $limits): void;
+    public function last(\LibreNMS\RRD\RrdPath $rrd): int;
+    public function list(string $hostname, string $prefix = ''): array;
+    public function graph(array $options, ?string $timezone = null): string;
+    public function remote(): bool;
+}
+interface PS_BackendExtra extends PS_BackendGood { public function another(): void; }
+interface PS_BackendWrongGraph
+{
+    public function create(\LibreNMS\RRD\RrdPath $rrd, \LibreNMS\RRD\RrdDefinition $definition): void;
+    public function update(\LibreNMS\RRD\RrdPath $rrd, array $values, ?int $timestamp = null): void;
+    public function tune(\LibreNMS\RRD\RrdPath $rrd, array $limits): void;
+    public function last(\LibreNMS\RRD\RrdPath $rrd): int;
+    public function list(string $hostname, string $prefix = ''): array;
+    public function graph(array $options, string $timezone): string;
+    public function remote(): bool;
+}
+
 function test_port_series(): void
 {
     T::group('port graph colours: rewriting the six series options');
@@ -177,4 +199,9 @@ function test_port_series(): void
         T::ok("$why is refused", ! $ok($class));
     }
     T::ok('the real store is refused outside LibreNMS (not loaded)', ! PortSeriesSupport::compatible());
+    T::group('port graph colours: the new backend contract');
+    T::ok('the known backend interface is accepted', PortSeriesSupport::backendCompatible(PS_BackendGood::class));
+    T::ok('an added interface method is refused', ! PortSeriesSupport::backendCompatible(PS_BackendExtra::class));
+    T::ok('a changed graph signature is refused', ! PortSeriesSupport::backendCompatible(PS_BackendWrongGraph::class));
+    T::ok('a class and an absent interface are refused', ! PortSeriesSupport::backendCompatible(PS_Good::class) && ! PortSeriesSupport::backendCompatible('PS_BackendMissing'));
 }

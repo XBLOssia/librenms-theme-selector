@@ -162,6 +162,19 @@ What this means in practice:
   nothing runs `daily.sh`. Check with `grep -c daily.sh /etc/cron.d/librenms` or
   `systemctl list-timers | grep librenms`, as under the legacy patch section below.
 
+### Immediately: the settings page
+
+Administrators can use **Check for update** at the bottom of Plugins → Theme Selector, then
+**Install update** if a newer version is available. The check uses the plugin's existing Composer
+source and version constraint; it does not change what the installation follows. The web process
+needs the same access to Composer, its repository configuration, and the LibreNMS files as the
+`librenms` user. Installation can take several minutes and may clear the session, requiring a
+new sign-in. If a web server or proxy terminates long requests, use the command below instead.
+
+The page refuses an unavailable or stale check and checks for a running LibreNMS/Composer update.
+Its local lock prevents overlapping requests on the same shared filesystem; the process check is
+best effort, so avoid starting a nightly or manual update at the same time.
+
 ### Immediately: scripts/update.sh
 
 To update now instead of tonight, as the `librenms` user:
@@ -410,28 +423,28 @@ persistent config.
 
 The series colours of port traffic graphs (`port_bits` and 19 other graph types) are
 hard-coded in `includes/html/graphs/generic_data.inc.php`. The plugin recolours them
-itself: in web and console processes it wraps LibreNMS's RRD store and rewrites exactly those six
+itself: in web and console processes it wraps LibreNMS's RRD store or newer backend and rewrites exactly those six
 options just before rrdtool draws, from the skin's `graph_colours.port_in` / `port_out`.
 **Nothing in LibreNMS is edited**, so nothing here can interfere with `daily.sh`, on a
 cron install or on one where LibreNMS's own scheduler runs it. A reflection check
-refuses to install the wrapper if core's RRD store has changed shape, and if core changes
+refuses to install the wrapper if core's RRD interface has changed shape, and if core changes
 the six lines the series simply draw in stock colours. Design and tests: `docs/PLUGIN.md`.
 
 Nothing to do after `plugin:add` or an update. To check on a host:
 
 ```bash
-sudo -u librenms php artisan tinker --execute='echo Xblossia\ThemeSelector\Graph\PortSeriesSupport::compatible() ? "yes" : "no";'
+sudo -u librenms php artisan tinker --execute='echo Xblossia\ThemeSelector\Graph\PortSeriesSupport::available() ? "yes" : "no";'
 ```
 
 `yes` means the wrapper is available. Then pick a skin (Plugins → Theme Selector) and
 load a port graph.
 
-Run it again after a LibreNMS update. `no` means core changed its RRD store: port series are
+Run it again after a LibreNMS update. `no` means core's RRD interface is unsupported: port series are
 on stock colours (nothing else is affected) until the plugin is updated, and that is one of the
 conditions listed in `docs/ROADMAP.md` for reopening the upstream change. Nothing is logged in
 that case (it would be a line per request and per poller), so this check is the way to know.
 `yes` with port series still stock means the skin sets no `graph_colours.port_in` / `port_out`,
-or the store was already in use when the plugin booted (an `info` line, hidden at LibreNMS's
+or the store/backend was already in use when the plugin booted (an `info` line, hidden at LibreNMS's
 default level; `LOG_LEVEL=info` in `.env` shows it).
 
 **A skin with no port colours of its own shows another skin's.** A skin without
@@ -614,8 +627,9 @@ php scripts/composer_wrapper.php config --global --unset repositories.theme-sele
 ```
 
    `plugin:remove` only runs `composer remove`; it does **not** rebuild the route cache, which
-   keeps routes to the removed controller until something rebuilds it (`route:list` fails with
-   it in that state), so `route:cache` goes right after. The last line removes the Composer
+   keeps routes to the removed controller until something rebuilds it, so `route:cache` goes right
+   after. Some newer LibreNMS images' `route:list` command lists only Restify API routes, so it
+   cannot reliably verify the picker route. The last line removes the Composer
    repository entry that the install added.
 3. **Optional: remove the data.** The tables, the `theme_selector.skin` and `theme_selector.skin_light`
    rows in `users_prefs`, the plugin's six rows in `migrations`, and its row in `plugins` stay
@@ -679,7 +693,7 @@ is cleared, which needs the plugin enabled. `./lnms plugin:enable ThemeSelector`
    see the error.
 3. **Some components still stock-coloured.** Expected: see
    [ROADMAP.md](ROADMAP.md) for coverage.
-4. **Port graph series still green and lavender.** Run the `PortSeriesSupport::compatible()`
+4. **Port graph series still green and lavender.** Run the `PortSeriesSupport::available()`
    check under [Port traffic series](#port-traffic-series). `no` means core changed its RRD store
    (port series stay stock until the plugin is updated; the rest of the graph still follows the
    skin); `yes` means check that the skin sets `graph_colours.port_in` / `port_out`.
